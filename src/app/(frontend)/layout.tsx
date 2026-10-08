@@ -9,6 +9,7 @@ import { FloatingButtons } from '@/components/layout/FloatingButtons'
 import { MobileBar } from '@/components/layout/MobileBar'
 import { RevealObserver } from '@/components/layout/RevealObserver'
 import { LocalBusinessJsonLd } from '@/components/layout/JsonLd'
+import { accentVars } from '@/lib/color'
 import { getSiteSettings } from '@/lib/data'
 import { BRAND } from '@/lib/metadata'
 import { getServerSideURL } from '@/utilities/getURL'
@@ -39,8 +40,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const settings = await getSiteSettings()
 
   return (
-    <html lang="vi" className={`${beVietnam.variable} ${playfair.variable}`}>
+    <html
+      lang="vi"
+      suppressHydrationWarning
+      className={`${beVietnam.variable} ${playfair.variable}`}
+      style={accentVars(settings.accentColor) as React.CSSProperties}
+    >
       <head>
+        {/* Áp chế độ sáng/tối đã lưu trước khi vẽ trang để không bị nháy. Mặc định tối. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "try{var t=localStorage.getItem('theme');if(t==='light'){document.documentElement.setAttribute('data-theme','light')}}catch(e){}",
+          }}
+        />
         {settings.searchConsoleToken && (
           <meta name="google-site-verification" content={settings.searchConsoleToken} />
         )}
@@ -53,6 +65,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <MobileBar hotline={settings.hotline} zalo={settings.zalo} />
         <RevealObserver />
         <LocalBusinessJsonLd settings={settings} />
+        {settings.pixelId && (
+          <Script id="fb-pixel" strategy="afterInteractive">
+            {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${settings.pixelId}');fbq('track','PageView');`}
+          </Script>
+        )}
         {settings.ga4Id && (
           <>
             <Script src={`https://www.googletagmanager.com/gtag/js?id=${settings.ga4Id}`} strategy="afterInteractive" />

@@ -22,7 +22,7 @@ export const FloatingButtons = ({ hotline, zalo }: { hotline?: string | null; za
       <a
         href="#top"
         aria-label="Về đầu trang"
-        className={`${round} border border-white/35 bg-surface-2/90 text-white transition-opacity duration-300`}
+        className={`${round} border border-line-2 bg-surface-2/90 text-ink transition-opacity duration-300`}
         style={{ opacity: showTop ? 1 : 0, pointerEvents: showTop ? 'auto' : 'none' }}
         onClick={(e) => {
           e.preventDefault()

@@ -37,7 +37,7 @@ export default async function PostPage({ params }: Props) {
 
   return (
     <article>
-      <section className="relative overflow-hidden bg-deep pt-[var(--header-h)]">
+      <section className="dark-zone relative overflow-hidden bg-deep pt-[var(--header-h)]">
         <Img media={post.cover} size="wide" className="opacity-35" sizes="100vw" priority />
         <div className="absolute inset-0 bg-gradient-to-t from-deep via-deep/70 to-deep/20" />
         <div className="section-x relative flex max-w-[1000px] flex-col gap-5 py-16 md:py-24">

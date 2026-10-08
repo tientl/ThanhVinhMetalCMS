@@ -10,7 +10,7 @@ export const Footer = async () => {
   const year = new Date().getFullYear()
 
   return (
-    <footer className="section-x flex flex-col gap-6 bg-deep py-10 text-[13.5px] text-muted">
+    <footer className="dark-zone section-x flex flex-col gap-6 bg-deep py-10 text-[13.5px] text-muted">
       <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between md:gap-8">
         <div className="flex items-center gap-3.5">
           <Image src={mediaUrl(settings.logo) || '/logo.png'} alt={`Logo ${settings.brandName}`} width={52} height={52} />

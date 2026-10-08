@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 
+import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { Img } from '@/components/ui/Img'
 import { IconClose, IconDownload, IconHome, IconMenu, IconSearch } from '@/components/ui/Icons'
 import { mediaUrl } from '@/lib/media'
@@ -69,7 +70,7 @@ export const HeaderClient = ({ navigation, settings }: Props) => {
       <button
         key={item.id}
         type="button"
-        className={`navl h-10 cursor-pointer border-0 bg-transparent p-0 text-white ${NAV_TEXT}`}
+        className={`navl h-10 cursor-pointer border-0 bg-transparent p-0 text-current ${NAV_TEXT}`}
         style={NAV_SPACING}
         aria-expanded={open === item.id}
         aria-controls={`mega-${item.id}`}
@@ -81,7 +82,7 @@ export const HeaderClient = ({ navigation, settings }: Props) => {
       <Link
         key={item.id}
         href={item.href || '/'}
-        className={`navl text-white ${NAV_TEXT}`}
+        className={`navl text-current ${NAV_TEXT}`}
         style={NAV_SPACING}
         aria-current={item.href && item.href !== '/' && pathname.startsWith(item.href.split('#')[0]) ? 'page' : undefined}
       >
@@ -94,23 +95,24 @@ export const HeaderClient = ({ navigation, settings }: Props) => {
       <div
         className="fixed inset-x-0 top-0 z-40 transition-colors duration-300"
         style={{
-          background: isOpen ? 'var(--color-bg)' : 'rgba(18, 20, 24, 0.55)',
+          background: isOpen ? 'var(--color-bg)' : 'var(--header-bg)',
           backdropFilter: 'blur(10px)',
           WebkitBackdropFilter: 'blur(10px)',
           borderBottom: `1px solid ${isOpen ? 'var(--color-line)' : 'transparent'}`,
+          color: isOpen ? 'var(--color-ink)' : 'var(--header-ink)',
         }}
       >
         <header className="section-x grid h-[var(--header-h)] grid-cols-[1fr_auto_1fr] items-center gap-4 lg:gap-7 lg:px-10">
           {/* Trái */}
           <nav aria-label="Menu chính" className="hidden items-center gap-5 justify-self-start lg:flex">
-            <Link href="/" aria-label="Trang chủ" className="navl flex text-white">
+            <Link href="/" aria-label="Trang chủ" className="navl flex text-current">
               <IconHome />
             </Link>
             {left.map(renderItem)}
           </nav>
           <button
             type="button"
-            className="flex h-10 w-10 items-center justify-center justify-self-start border-0 bg-transparent text-white lg:hidden"
+            className="flex h-10 w-10 items-center justify-center justify-self-start border-0 bg-transparent text-current lg:hidden"
             aria-label={mobile ? 'Đóng menu' : 'Mở menu'}
             aria-expanded={mobile}
             onClick={() => {
@@ -143,7 +145,7 @@ export const HeaderClient = ({ navigation, settings }: Props) => {
               aria-label="Tìm kiếm"
               aria-expanded={open === 'search'}
               aria-controls="search-overlay"
-              className="flex h-9 w-9 cursor-pointer items-center justify-center border-0 bg-transparent text-white"
+              className="flex h-9 w-9 cursor-pointer items-center justify-center border-0 bg-transparent text-current"
               onClick={() => {
                 setMobile(false)
                 toggle('search')
@@ -151,11 +153,7 @@ export const HeaderClient = ({ navigation, settings }: Props) => {
             >
               <IconSearch />
             </button>
-            <span className="hidden gap-1.5 text-[11.5px] font-semibold text-white/80 lg:flex" style={{ letterSpacing: 1 }} aria-label="Ngôn ngữ">
-              <strong className="text-white">VI</strong>
-              <span aria-hidden="true">|</span>
-              <span>EN</span>
-            </span>
+            <ThemeToggle />
           </div>
         </header>
       </div>
@@ -250,7 +248,7 @@ const MegaPanel = ({ id, label, mega, onClose }: { id: string; label: string; me
 
 const MegaCards = ({ cards, height, wrap = true }: { cards: Mega['cards']; height: number; wrap?: boolean }) => {
   const list = (cards ?? []).map((c) => (
-    <Link key={c.id} href={c.href} className="zoom frame relative block overflow-hidden bg-deep text-white no-underline" style={{ height }}>
+    <Link key={c.id} href={c.href} className="dark-zone zoom frame relative block overflow-hidden bg-deep text-white no-underline" style={{ height }}>
       <Img media={c.image} size="card" sizes="25vw" />
       <span className="overlay-up absolute inset-0" />
       <span className="absolute inset-x-8 bottom-[30px] flex flex-col gap-2">
@@ -282,13 +280,13 @@ const SearchOverlay = ({ suggestions, onClose }: { suggestions: NonNullable<Navi
   return (
     <div
       id="search-overlay"
-      className="mega-drop section-x fixed inset-x-0 top-[var(--header-h)] z-30 flex flex-col gap-7 bg-surface-2 pb-12 pt-10 text-white shadow-[0_24px_40px_rgba(0,0,0,0.4)] md:pb-16 md:pt-14"
+      className="mega-drop section-x fixed inset-x-0 top-[var(--header-h)] z-30 flex flex-col gap-7 bg-surface-2 pb-12 pt-10 text-ink shadow-[0_24px_40px_rgba(0,0,0,0.4)] md:pb-16 md:pt-14"
     >
       <div className="flex items-center justify-between">
         <span className="text-[13px] font-bold uppercase text-muted" style={{ letterSpacing: 1 }}>
           Tìm kiếm
         </span>
-        <button type="button" onClick={onClose} className="h-10 cursor-pointer border border-line-2 bg-transparent px-3.5 text-[13px] font-semibold text-white">
+        <button type="button" onClick={onClose} className="h-10 cursor-pointer border border-line-2 bg-transparent px-3.5 text-[13px] font-semibold text-ink">
           Đóng
         </button>
       </div>
@@ -303,7 +301,7 @@ const SearchOverlay = ({ suggestions, onClose }: { suggestions: NonNullable<Navi
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Tìm sản phẩm, dịch vụ, bài viết..."
-          className="h-[56px] w-full border-0 border-b border-white/35 bg-transparent px-1 text-[22px] font-light text-white outline-none placeholder:text-white/40 focus:border-accent md:h-[72px] md:text-[34px]"
+          className="h-[56px] w-full border-0 border-b border-line-2 bg-transparent px-1 text-[22px] font-light text-ink outline-none placeholder:text-muted-3 focus:border-accent md:h-[72px] md:text-[34px]"
         />
       </form>
       {suggestions.length > 0 && (

@@ -15,7 +15,7 @@ type Props = {
 
 /** Đầu trang con: ảnh nền tối, breadcrumb, tiêu đề serif. */
 export const PageHero = ({ title, intro, label, image, crumbs }: Props) => (
-  <section className="relative overflow-hidden bg-deep pt-[var(--header-h)]">
+  <section className="dark-zone relative overflow-hidden bg-deep pt-[var(--header-h)]">
     {image && (
       <>
         <Img media={image} size="wide" className="opacity-40" sizes="100vw" priority />

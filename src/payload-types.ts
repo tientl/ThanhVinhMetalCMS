@@ -67,15 +67,15 @@ export interface Config {
   };
   blocks: {};
   collections: {
+    'quote-requests': QuoteRequest;
+    subscribers: Subscriber;
     products: Product;
     'product-categories': ProductCategory;
     posts: Post;
     'post-categories': PostCategory;
     pages: Page;
     media: Media;
-    'quote-requests': QuoteRequest;
     'quote-files': QuoteFile;
-    subscribers: Subscriber;
     users: User;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
@@ -84,15 +84,15 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
+    'quote-requests': QuoteRequestsSelect<false> | QuoteRequestsSelect<true>;
+    subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     'product-categories': ProductCategoriesSelect<false> | ProductCategoriesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
     'post-categories': PostCategoriesSelect<false> | PostCategoriesSelect<true>;
     pages: PagesSelect<false> | PagesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
-    'quote-requests': QuoteRequestsSelect<false> | QuoteRequestsSelect<true>;
     'quote-files': QuoteFilesSelect<false> | QuoteFilesSelect<true>;
-    subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -140,6 +140,55 @@ export interface UserAuthOperations {
     email: string;
     password: string;
   };
+}
+/**
+ * Khách gửi từ form trên website. Đổi trạng thái sau khi đã liên hệ.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quote-requests".
+ */
+export interface QuoteRequest {
+  id: number;
+  name: string;
+  phone: string;
+  email?: string | null;
+  company?: string | null;
+  message?: string | null;
+  attachment?: (number | null) | QuoteFile;
+  status?: ('new' | 'contacted' | 'done') | null;
+  source?: string | null;
+  ip?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quote-files".
+ */
+export interface QuoteFile {
+  id: number;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscribers".
+ */
+export interface Subscriber {
+  id: number;
+  email: string;
+  source?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -436,55 +485,6 @@ export interface Page {
   _status?: ('draft' | 'published') | null;
 }
 /**
- * Khách gửi từ form trên website. Đổi trạng thái sau khi đã liên hệ.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "quote-requests".
- */
-export interface QuoteRequest {
-  id: number;
-  name: string;
-  phone: string;
-  email?: string | null;
-  company?: string | null;
-  message?: string | null;
-  attachment?: (number | null) | QuoteFile;
-  status?: ('new' | 'contacted' | 'done') | null;
-  source?: string | null;
-  ip?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "quote-files".
- */
-export interface QuoteFile {
-  id: number;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "subscribers".
- */
-export interface Subscriber {
-  id: number;
-  email: string;
-  source?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -508,6 +508,14 @@ export interface PayloadKv {
 export interface PayloadLockedDocument {
   id: number;
   document?:
+    | ({
+        relationTo: 'quote-requests';
+        value: number | QuoteRequest;
+      } | null)
+    | ({
+        relationTo: 'subscribers';
+        value: number | Subscriber;
+      } | null)
     | ({
         relationTo: 'products';
         value: number | Product;
@@ -533,16 +541,8 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
-        relationTo: 'quote-requests';
-        value: number | QuoteRequest;
-      } | null)
-    | ({
         relationTo: 'quote-files';
         value: number | QuoteFile;
-      } | null)
-    | ({
-        relationTo: 'subscribers';
-        value: number | Subscriber;
       } | null)
     | ({
         relationTo: 'users';
@@ -589,6 +589,33 @@ export interface PayloadMigration {
   batch?: number | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "quote-requests_select".
+ */
+export interface QuoteRequestsSelect<T extends boolean = true> {
+  name?: T;
+  phone?: T;
+  email?: T;
+  company?: T;
+  message?: T;
+  attachment?: T;
+  status?: T;
+  source?: T;
+  ip?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "subscribers_select".
+ */
+export interface SubscribersSelect<T extends boolean = true> {
+  email?: T;
+  source?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -775,23 +802,6 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "quote-requests_select".
- */
-export interface QuoteRequestsSelect<T extends boolean = true> {
-  name?: T;
-  phone?: T;
-  email?: T;
-  company?: T;
-  message?: T;
-  attachment?: T;
-  status?: T;
-  source?: T;
-  ip?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "quote-files_select".
  */
 export interface QuoteFilesSelect<T extends boolean = true> {
@@ -806,16 +816,6 @@ export interface QuoteFilesSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "subscribers_select".
- */
-export interface SubscribersSelect<T extends boolean = true> {
-  email?: T;
-  source?: T;
-  updatedAt?: T;
-  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1129,6 +1129,10 @@ export interface SiteSetting {
   youtube?: string | null;
   tiktok?: string | null;
   /**
+   * Dùng cho nút, gạch chân menu, điểm chấm, viền ảnh. Các tông nhạt hơn cho nhãn nhỏ và chữ trên nút viền được tự suy ra. Nên chọn màu đậm vì chữ trên nền màu luôn là màu tối.
+   */
+  accentColor?: string | null;
+  /**
    * Dạng G-XXXXXXXXXX
    */
   ga4Id?: string | null;
@@ -1361,6 +1365,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   facebook?: T;
   youtube?: T;
   tiktok?: T;
+  accentColor?: T;
   ga4Id?: T;
   searchConsoleToken?: T;
   pixelId?: T;

@@ -16,7 +16,7 @@ const dirname = path.dirname(filename)
 export const QuoteFiles: CollectionConfig = {
   slug: 'quote-files',
   labels: { singular: 'Tệp bản vẽ', plural: 'Tệp bản vẽ' },
-  admin: { group: 'Liên hệ', hidden: true },
+  admin: { components: { edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } }, hideAPIURL: true, group: 'Liên hệ', hidden: true },
   access: {
     create: () => false,
     read: isAdminOrEditor,

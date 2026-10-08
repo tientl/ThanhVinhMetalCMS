@@ -15,7 +15,7 @@ export const Applications = ({ heading, intro, items }: { heading?: string | nul
   const products = (tab.products ?? []).filter((p): p is Product => typeof p === 'object')
 
   return (
-    <section id="ung-dung" className="section flex flex-col gap-8 bg-deep text-white lg:gap-10">
+    <section id="ung-dung" className="dark-zone section flex flex-col gap-8 bg-deep text-white lg:gap-10">
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-12" data-reveal>
         <h2 className="h-serif text-[30px] text-white md:text-[40px]">{heading || 'Khám phá ứng dụng cho công trình'}</h2>
         {intro && <p className="m-0 max-w-[440px] text-[17px] font-light leading-[1.75] text-muted">{intro}</p>}

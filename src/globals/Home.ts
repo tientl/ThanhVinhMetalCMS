@@ -6,7 +6,7 @@ import { revalidateAll } from '@/hooks/revalidate'
 export const Home: GlobalConfig = {
   slug: 'home',
   label: 'Trang chủ',
-  admin: { group: 'Nội dung' },
+  admin: { components: { elements: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } }, hideAPIURL: true, group: 'Nội dung' },
   access: { read: anyone, update: isAdminOrEditor },
   fields: [
     {

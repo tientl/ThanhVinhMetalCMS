@@ -98,7 +98,7 @@ const menuItems = (name: string, label: string): ArrayField => ({
 export const Navigation: GlobalConfig = {
   slug: 'navigation',
   label: 'Menu và mega menu',
-  admin: { group: 'Cài đặt' },
+  admin: { components: { elements: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } }, group: 'Cài đặt', hideAPIURL: true },
   access: { read: anyone, update: isAdmin },
   fields: [
     {

@@ -6,7 +6,7 @@ import { revalidateAll } from '@/hooks/revalidate'
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
   label: 'Thông tin công ty',
-  admin: { group: 'Cài đặt' },
+  admin: { components: { elements: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } }, hideAPIURL: true, group: 'Cài đặt' },
   access: { read: anyone, update: isAdmin },
   fields: [
     {
@@ -61,6 +61,24 @@ export const SiteSettings: GlobalConfig = {
             { name: 'facebook', type: 'text', label: 'Link Facebook' },
             { name: 'youtube', type: 'text', label: 'Link YouTube' },
             { name: 'tiktok', type: 'text', label: 'Link TikTok' },
+          ],
+        },
+        {
+          label: 'Giao diện',
+          fields: [
+            {
+              name: 'accentColor',
+              type: 'text',
+              label: 'Màu chủ đạo',
+              defaultValue: '#E8411A',
+              validate: (value: unknown) =>
+                !value || /^#[0-9a-fA-F]{6}$/.test(String(value).trim()) ? true : 'Nhập mã màu dạng #RRGGBB, ví dụ #E8411A',
+              admin: {
+                description:
+                  'Dùng cho nút, gạch chân menu, điểm chấm, viền ảnh. Các tông nhạt hơn cho nhãn nhỏ và chữ trên nút viền được tự suy ra. Nên chọn màu đậm vì chữ trên nền màu luôn là màu tối.',
+                components: { Field: '@/components/admin/ColorField#ColorField' },
+              },
+            },
           ],
         },
         {

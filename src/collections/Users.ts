@@ -7,9 +7,11 @@ export const Users: CollectionConfig = {
   labels: { singular: 'Tài khoản', plural: 'Tài khoản' },
   auth: true,
   admin: {
+    hideAPIURL: true,
+    components: { edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } },
     useAsTitle: 'name',
     defaultColumns: ['name', 'email', 'role'],
-    group: 'Hệ thống',
+    group: 'Cài đặt',
   },
   access: {
     admin: loggedIn,

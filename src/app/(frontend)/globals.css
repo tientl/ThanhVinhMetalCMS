@@ -29,6 +29,54 @@
 :root {
   --header-h: 80px;
   color-scheme: dark;
+  --header-bg: rgba(18, 20, 24, 0.55);
+  --header-ink: #ffffff;
+  /* Tông của màu chủ đạo, giá trị do layout gắn lên <html> theo màu khách chọn */
+  --accent-text-on-dark: #ff6a45;
+  --accent-ghost-on-dark: #ffb4a2;
+  --accent-text-on-light: #d13a17;
+  --accent-ghost-on-light: #ba3415;
+  --color-accent-text: var(--accent-text-on-dark);
+  --color-accent-ghost: var(--accent-ghost-on-dark);
+}
+
+/* ---------- Chế độ sáng (người xem tự bật, mặc định tối) ---------- */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-bg: #f7f5f0;
+  --color-bg-alt: #efece5;
+  --color-surface: #ffffff;
+  --color-surface-2: #e8e4dc;
+  --color-ink: #15191e;
+  --color-soft: #3f3c36;
+  --color-muted: #5e5a52;
+  --color-muted-2: #736f67;
+  --color-muted-3: #8a857c;
+  --color-line: #dad6ce;
+  --color-line-2: #c9c4ba;
+  --header-bg: rgba(247, 245, 240, 0.72);
+  --header-ink: #15191e;
+  --color-accent-text: var(--accent-text-on-light);
+  --color-accent-ghost: var(--accent-ghost-on-light);
+}
+
+/* Vùng luôn tối dù chế độ nào: slider, ô ảnh, tab ứng dụng, footer, đầu trang con */
+.dark-zone {
+  color-scheme: dark;
+  --color-bg: #0b0d10;
+  --color-bg-alt: #111418;
+  --color-surface: #15191e;
+  --color-surface-2: #1f2328;
+  --color-ink: #f2efe8;
+  --color-soft: #d9d4cb;
+  --color-muted: #b5b0a6;
+  --color-muted-2: #9c978e;
+  --color-muted-3: #8f8a81;
+  --color-line: #2a2d30;
+  --color-line-2: #3a3d40;
+  --color-accent-text: var(--accent-text-on-dark);
+  --color-accent-ghost: var(--accent-ghost-on-dark);
+  color: var(--color-ink);
 }
 
 html {
@@ -111,13 +159,13 @@ img {
   @apply px-5 sm:px-8 md:px-12 lg:px-16;
 }
 .hairline {
-  border-top: 1px solid rgba(232, 65, 26, 0.25);
+  border-top: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
 }
 .frame::after {
   content: '';
   position: absolute;
   inset: 18px;
-  border: 1px solid rgba(232, 65, 26, 0.45);
+  border: 1px solid color-mix(in srgb, var(--color-accent) 45%, transparent);
   pointer-events: none;
 }
 .overlay-up {
@@ -278,6 +326,19 @@ textarea.field {
 }
 .prose-lux img {
   @apply w-full;
+}
+
+:root[data-theme='light'] .prose-lux {
+  --tw-prose-body: var(--color-muted);
+  --tw-prose-code: var(--color-ink);
+  --tw-prose-pre-bg: var(--color-surface-2);
+  --tw-prose-pre-code: var(--color-ink);
+  --tw-prose-captions: var(--color-muted-2);
+  --tw-prose-counters: var(--color-accent);
+}
+
+html {
+  transition: background-color 0.3s ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
