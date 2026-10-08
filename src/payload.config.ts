@@ -1,7 +1,6 @@
 import { postgresAdapter } from '@payloadcms/db-postgres'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
-import { en } from '@payloadcms/translations/languages/en'
 import { vi } from '@payloadcms/translations/languages/vi'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -37,16 +36,20 @@ export default buildConfig({
       titleSuffix: ' – Thành Vinh Metal',
       icons: [{ rel: 'icon', type: 'image/png', url: '/logo.png' }],
     },
+    avatar: { Component: '@/components/admin/Avatar#Avatar' },
     components: {
       graphics: {
         Logo: '@/components/admin/Logo#Logo',
         Icon: '@/components/admin/Icon#Icon',
       },
+      Nav: '@/components/admin/Nav#AdminNav',
+      beforeDashboard: ['@/components/admin/DashboardHeader#DashboardHeader'],
+      actions: ['@/components/admin/AdminThemeToggle#AdminThemeToggle'],
     },
     dateFormat: 'dd/MM/yyyy HH:mm',
   },
   i18n: {
-    supportedLanguages: { vi, en },
+    supportedLanguages: { vi },
     fallbackLanguage: 'vi',
   },
   editor: lexicalEditor(),
@@ -54,15 +57,15 @@ export default buildConfig({
     pool: { connectionString: process.env.DATABASE_URL || '' },
   }),
   collections: [
+    QuoteRequests,
+    Subscribers,
     Products,
     ProductCategories,
     Posts,
     PostCategories,
     Pages,
     Media,
-    QuoteRequests,
     QuoteFiles,
-    Subscribers,
     Users,
   ],
   globals: [Home, Navigation, SiteSettings],

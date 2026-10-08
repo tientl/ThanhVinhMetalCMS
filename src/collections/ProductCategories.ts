@@ -10,6 +10,8 @@ export const ProductCategories: CollectionConfig = {
   slug: 'product-categories',
   labels: { singular: 'Danh mục sản phẩm', plural: 'Danh mục sản phẩm' },
   admin: {
+    hideAPIURL: true,
+    components: { edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } },
     useAsTitle: 'name',
     defaultColumns: ['name', 'slug', 'order', 'showOnHome'],
     group: 'Sản phẩm',

@@ -6,6 +6,8 @@ export const Subscribers: CollectionConfig = {
   slug: 'subscribers',
   labels: { singular: 'Đăng ký bản tin', plural: 'Đăng ký bản tin' },
   admin: {
+    hideAPIURL: true,
+    components: { edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } },
     useAsTitle: 'email',
     defaultColumns: ['email', 'createdAt'],
     group: 'Liên hệ',

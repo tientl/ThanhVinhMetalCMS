@@ -31,7 +31,7 @@ Khối: padding 128px dọc, 64px ngang. Lưới sản phẩm 3 cột gap 28. Th
 
 ## Header (cố định khi cuộn)
 - Cao 80px, nền `rgba(18,20,24,.55)` + `backdrop-filter: blur(10px)`, không viền. Khi mở menu hoặc tìm kiếm: nền đặc #0B0D10, viền dưới #2A2D30.
-- Lưới 3 cột `1fr auto 1fr`: trái = icon trang chủ + Bộ sưu tập, Về Vinh Metal, Sản phẩm, Giải pháp, Dự án; giữa = logo 70px (chỉ huy hiệu, không chữ); phải = Năng lực, Kiến thức, Catalogue, Tin tức, Thư viện, icon tìm kiếm, VI | EN.
+- Lưới 3 cột `1fr auto 1fr`: trái = icon trang chủ + Bộ sưu tập, Về Vinh Metal, Sản phẩm, Giải pháp, Dự án; giữa = logo 70px (chỉ huy hiệu, không chữ); phải = Năng lực, Kiến thức, Catalogue, Tin tức, Tuyển dụng, icon tìm kiếm, nút sáng/tối. (Đã bỏ VI | EN ngày 08/10/2026 theo yêu cầu.)
 - Sản phẩm, Giải pháp, Catalogue là nút mở **mega menu** (panel ngay dưới header, nền surface, có nút Đóng, đóng khi bấm ra ngoài hoặc Esc). Gạch chân 1px accent khi hover hoặc đang mở.
 - Icon tìm kiếm mở **overlay tìm kiếm** dưới header: ô nhập 34px light, gợi ý nhanh dạng chip viền.
 - Mobile: hamburger mở menu ngăn kéo; thanh cố định đáy có Gọi, Zalo, Báo giá.

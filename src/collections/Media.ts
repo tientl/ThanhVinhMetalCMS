@@ -11,7 +11,7 @@ const dirname = path.dirname(filename)
 export const Media: CollectionConfig = {
   slug: 'media',
   labels: { singular: 'Ảnh và tệp', plural: 'Ảnh và tệp' },
-  admin: { group: 'Nội dung', defaultColumns: ['filename', 'alt', 'updatedAt'] },
+  admin: { components: { edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } }, hideAPIURL: true, group: 'Nội dung', defaultColumns: ['filename', 'alt', 'updatedAt'] },
   access: {
     create: isAdminOrEditor,
     read: anyone,

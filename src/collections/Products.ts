@@ -13,6 +13,8 @@ export const Products: CollectionConfig<'products'> = {
   slug: 'products',
   labels: { singular: 'Sản phẩm', plural: 'Sản phẩm' },
   admin: {
+    hideAPIURL: true,
+    components: { edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } },
     useAsTitle: 'name',
     defaultColumns: ['name', 'category', 'featured', '_status', 'updatedAt'],
     group: 'Sản phẩm',
@@ -122,7 +124,9 @@ export const Products: CollectionConfig<'products'> = {
     afterDelete: [revalidateCollectionDelete(paths)],
   },
   versions: {
-    drafts: { autosave: { interval: 1000 } },
+    // Không tự động lưu nháp: nhân viên bấm "Lưu nháp" hoặc "Xuất bản" mới ghi,
+    // nhờ vậy nút Lưu và Hủy chỉ bấm được khi có thay đổi, không sinh nháp rỗng.
+    drafts: true,
     maxPerDoc: 20,
   },
 }

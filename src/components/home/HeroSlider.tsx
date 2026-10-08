@@ -39,7 +39,7 @@ export const HeroSlider = ({ slides }: { slides: Slide[] }) => {
   if (count === 0) return null
 
   return (
-    <section aria-label="Bộ sưu tập nổi bật" className="relative h-[640px] overflow-hidden bg-deep md:h-[760px] lg:h-[860px]">
+    <section aria-label="Bộ sưu tập nổi bật" className="dark-zone relative h-[640px] overflow-hidden bg-deep md:h-[760px] lg:h-[860px]">
       {slides.map((s, i) => (
         <div
           key={s.id ?? i}

@@ -7,6 +7,8 @@ export const QuoteRequests: CollectionConfig = {
   slug: 'quote-requests',
   labels: { singular: 'Yêu cầu báo giá', plural: 'Yêu cầu báo giá' },
   admin: {
+    hideAPIURL: true,
+    components: { edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } },
     useAsTitle: 'name',
     defaultColumns: ['name', 'phone', 'status', 'createdAt'],
     group: 'Liên hệ',

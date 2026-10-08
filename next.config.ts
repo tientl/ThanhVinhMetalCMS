@@ -15,6 +15,8 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
   },
   reactStrictMode: true,
+  // Cho phép mở dev server từ điện thoại trong mạng LAN (chỉ ảnh hưởng pnpm dev)
+  allowedDevOrigins: ['172.20.10.*', '192.168.*.*', '10.*.*.*'],
   agentRules: false,
   turbopack: { root: path.resolve(dirname) },
 }

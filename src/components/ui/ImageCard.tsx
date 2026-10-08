@@ -23,7 +23,7 @@ type Props = {
 export const ImageCard = ({ href, image, title, subtitle, tag, height = 'full', titleSize = 30, strong, cta, sizes = '50vw', priority }: Props) => (
   <Link
     href={href}
-    className={`zoom frame group relative block w-full overflow-hidden bg-deep text-white no-underline ${height === 'full' ? 'h-full' : ''}`}
+    className={`dark-zone zoom frame group relative block w-full overflow-hidden bg-deep text-white no-underline ${height === 'full' ? 'h-full' : ''}`}
     style={height === 'full' ? undefined : { height }}
     data-reveal
   >

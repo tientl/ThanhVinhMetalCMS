@@ -9,7 +9,7 @@ const paths = (doc: { slug?: string | null }) => ['/bai-viet', `/bai-viet/danh-m
 export const PostCategories: CollectionConfig = {
   slug: 'post-categories',
   labels: { singular: 'Danh mục bài viết', plural: 'Danh mục bài viết' },
-  admin: { useAsTitle: 'name', defaultColumns: ['name', 'slug'], group: 'Bài viết' },
+  admin: { components: { edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } }, hideAPIURL: true, useAsTitle: 'name', defaultColumns: ['name', 'slug'], group: 'Bài viết' },
   access: {
     create: isAdminOrEditor,
     read: anyone,
