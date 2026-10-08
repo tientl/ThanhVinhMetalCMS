@@ -1,18 +1,20 @@
 import Link from 'next/link'
 import React from 'react'
 
-import { Button } from '@/components/ui/button'
-
 export default function NotFound() {
   return (
-    <div className="container py-28">
-      <div className="prose max-w-none">
-        <h1 style={{ marginBottom: 0 }}>404</h1>
-        <p className="mb-4">This page could not be found.</p>
+    <section className="section flex min-h-[70vh] flex-col items-start justify-center gap-6 pt-[calc(var(--header-h)+64px)]">
+      <span className="label-sm">Lỗi 404</span>
+      <h1 className="h-serif text-[36px] md:text-[56px]">Không tìm thấy trang</h1>
+      <p className="lead max-w-[560px]">Trang bạn tìm không tồn tại hoặc đã được chuyển đi. Hãy quay về trang chủ hoặc xem sản phẩm.</p>
+      <div className="flex flex-wrap gap-3">
+        <Link href="/" className="btn-solid">
+          Về trang chủ
+        </Link>
+        <Link href="/san-pham" className="btn-ghost">
+          Xem sản phẩm
+        </Link>
       </div>
-      <Button asChild variant="default">
-        <Link href="/">Go home</Link>
-      </Button>
-    </div>
+    </section>
   )
 }
