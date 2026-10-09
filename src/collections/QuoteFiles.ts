@@ -16,7 +16,7 @@ const dirname = path.dirname(filename)
 export const QuoteFiles: CollectionConfig = {
   slug: 'quote-files',
   labels: { singular: 'Tệp bản vẽ', plural: 'Tệp bản vẽ' },
-  admin: { components: { edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } }, hideAPIURL: true, group: 'Liên hệ', hidden: true },
+  admin: { hideAPIURL: true, group: 'Liên hệ', hidden: true, useAsTitle: 'originalName' },
   access: {
     create: () => false,
     read: isAdminOrEditor,
@@ -27,6 +27,16 @@ export const QuoteFiles: CollectionConfig = {
     staticDir: path.resolve(dirname, '../../uploads/quote-files'),
     mimeTypes: QUOTE_FILE_MIME_TYPES,
     disableLocalStorage: false,
+    // Tệp của khách chỉ để xem và tải, không cắt hay chỉnh
+    crop: false,
+    focalPoint: false,
   },
-  fields: [],
+  fields: [
+    {
+      name: 'originalName',
+      type: 'text',
+      label: 'Tên tệp gốc',
+      admin: { readOnly: true, description: 'Tên tệp đúng như khách đặt. Tên lưu trên máy chủ đã bỏ dấu tiếng Việt.' },
+    },
+  ],
 }

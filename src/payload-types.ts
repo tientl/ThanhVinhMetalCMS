@@ -167,6 +167,10 @@ export interface QuoteRequest {
  */
 export interface QuoteFile {
   id: number;
+  /**
+   * Tên tệp đúng như khách đặt. Tên lưu trên máy chủ đã bỏ dấu tiếng Việt.
+   */
+  originalName?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -176,8 +180,6 @@ export interface QuoteFile {
   filesize?: number | null;
   width?: number | null;
   height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -805,6 +807,7 @@ export interface MediaSelect<T extends boolean = true> {
  * via the `definition` "quote-files_select".
  */
 export interface QuoteFilesSelect<T extends boolean = true> {
+  originalName?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -814,8 +817,6 @@ export interface QuoteFilesSelect<T extends boolean = true> {
   filesize?: T;
   width?: T;
   height?: T;
-  focalX?: T;
-  focalY?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -948,7 +949,7 @@ export interface Home {
         image: number | Media;
         products?: (number | Product)[] | null;
         /**
-         * Vị trí tính theo % từ trái và từ trên. Kéo thả trực quan sẽ làm ở giai đoạn 2.
+         * Vị trí tính theo % từ mép trái và mép trên (0–100). Đặt bằng chuột trên ảnh phía trên hoặc gõ số ở đây.
          */
         hotspots?:
           | {

@@ -8,7 +8,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { ThemeToggle } from '@/components/layout/ThemeToggle'
 import { Img } from '@/components/ui/Img'
 import { IconClose, IconDownload, IconHome, IconMenu, IconSearch } from '@/components/ui/Icons'
-import { mediaUrl } from '@/lib/media'
+import { isMedia, mediaDims, mediaUrl } from '@/lib/media'
 import type { Navigation, SiteSetting } from '@/payload-types'
 
 type Item = NonNullable<Navigation['left']>[number]
@@ -20,6 +20,7 @@ const NAV_TEXT = 'text-[12px] font-medium uppercase no-underline'
 const NAV_SPACING = { letterSpacing: 1.6 }
 
 export const HeaderClient = ({ navigation, settings }: Props) => {
+  const logoDims = isMedia(settings.logo) ? mediaDims(settings.logo) : { width: 720, height: 720 }
   const [open, setOpen] = useState<string>('')
   const [mobile, setMobile] = useState(false)
   const pathname = usePathname()
@@ -125,13 +126,14 @@ export const HeaderClient = ({ navigation, settings }: Props) => {
 
           {/* Logo giữa */}
           <Link href="/" aria-label={`${settings.brandName}, về trang chủ`} className="flex items-center justify-center justify-self-center">
+            {/* Cao cố định, rộng theo tỉ lệ ảnh: logo tròn hay logo ngang đều hiển thị đúng */}
             <Image
               src={mediaUrl(settings.logo) || '/logo.png'}
               alt={`Logo ${settings.brandName}`}
-              width={70}
-              height={70}
+              width={logoDims.width}
+              height={logoDims.height}
               priority
-              className="h-[56px] w-[56px] lg:h-[70px] lg:w-[70px]"
+              className="h-[48px] w-auto max-w-[180px] object-contain lg:h-[60px] lg:max-w-[240px]"
             />
           </Link>
 

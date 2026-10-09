@@ -30,9 +30,6 @@ export default async function ContactPage({ searchParams }: Props) {
         product={sp}
         as="h1"
       />
-      {settings.mapEmbed && (
-        <section aria-label="Bản đồ" className="relative h-[360px] bg-deep md:h-[480px] [&_iframe]:h-full [&_iframe]:w-full [&_iframe]:border-0" dangerouslySetInnerHTML={{ __html: settings.mapEmbed }} />
-      )}
     </>
   )
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, useDocumentInfo, useForm, useFormModified } from '@payloadcms/ui'
+import { Button, useDocumentInfo, useEditDepth, useForm, useFormModified } from '@payloadcms/ui'
 import { useRouter } from 'next/navigation'
 import React from 'react'
 
@@ -14,6 +14,7 @@ export const CancelButton = () => {
   const { reset, setModified } = useForm()
   const modified = useFormModified()
   const router = useRouter()
+  const editDepth = useEditDepth()
 
   const onClick = async () => {
     if (modified) {
@@ -30,6 +31,9 @@ export const CancelButton = () => {
       router.push('/admin')
     }
   }
+
+  // Trong hộp thoại (mở từ ô quan hệ hay tệp đính kèm) đã có nút đóng, quay lui sẽ rời khỏi trang đang sửa
+  if (editDepth > 1) return null
 
   return (
     <Button buttonStyle="secondary" size="medium" onClick={onClick} type="button">
