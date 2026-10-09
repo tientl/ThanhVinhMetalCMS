@@ -7,6 +7,8 @@ Website giới thiệu doanh nghiệp và danh mục sản phẩm cho xưởng c
 - `docs/DESIGN.md` – màu, font, các khối trang chủ, hành vi header, menu, slider, hiệu ứng.
 - `docs/DATA-MODEL.md` – collections và globals của Payload, field từng mục.
 - `docs/PLAN.md` – 62 việc chia 4 tuần cho Dev A (backend) và Dev B (giao diện).
+- `docs/KNOWN-ISSUES.md` – lỗi đã biết của app, kèm cách tái hiện và hướng sửa. Đọc trước khi sửa phần liên quan.
+- `docs/TESTING.md` – cách chạy và viết test (Vitest cho unit/int, Playwright cho E2E).
 - `docs/design/mau-3-trang-chu.html` – giao diện mẫu đã duyệt, mở bằng trình duyệt để xem. Đây là nguồn chuẩn cho bố cục, màu, chữ, khoảng cách.
 - `docs/design/images/` – logo PNG và ảnh minh họa dùng cho dữ liệu mẫu.
 

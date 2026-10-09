@@ -14,6 +14,13 @@
     "lint:fix": "cross-env NODE_OPTIONS=--no-deprecation eslint . --fix",
     "payload": "cross-env NODE_OPTIONS=--no-deprecation payload",
     "seed": "cross-env NODE_OPTIONS=--no-deprecation payload run src/seed/index.ts",
+    "test": "pnpm test:unit && pnpm test:int",
+    "test:unit": "vitest run --project unit",
+    "test:int": "vitest run --project int",
+    "test:watch": "vitest --project unit",
+    "test:db": "cross-env NODE_OPTIONS=--no-deprecation payload run tests/setup/prepare.ts",
+    "test:e2e": "pnpm test:db && playwright test",
+    "test:all": "pnpm test && pnpm test:e2e",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -37,28 +44,26 @@
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@tailwindcss/typography": "^0.5.19",
     "@types/node": "22.19.9",
     "@types/nodemailer": "^7.0.0",
+    "@types/pg": "^8.23.1",
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "eslint": "^9.16.0",
     "eslint-config-next": "16.3.3",
+    "pg": "^8.23.1",
     "postcss": "^8.5.28",
     "prettier": "^3.4.2",
     "tailwindcss": "^4.1.18",
-    "typescript": "5.7.3"
+    "typescript": "5.7.3",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^3.2.7"
   },
   "engines": {
     "node": ">=20.18.1",
     "pnpm": "^9 || ^10 || ^11"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "sharp",
-      "esbuild",
-      "unrs-resolver"
-    ]
   }
 }

@@ -5,6 +5,11 @@ on:
   push:
     branches: [main]
 
+env:
+  DATABASE_URL: postgres://postgres:postgres@localhost:5440/thanhvinh
+  PAYLOAD_SECRET: ci-secret
+  NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -17,10 +22,6 @@ jobs:
           POSTGRES_DB: thanhvinh
         ports: ['5440:5432']
         options: --health-cmd pg_isready --health-interval 5s --health-timeout 3s --health-retries 10
-    env:
-      DATABASE_URL: postgres://postgres:postgres@localhost:5440/thanhvinh
-      PAYLOAD_SECRET: ci-secret
-      NEXT_PUBLIC_SERVER_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -35,9 +36,64 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm build
 
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: thanhvinh
+        ports: ['5440:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Nhóm int tự tạo database thanhvinh_test rồi chạy pnpm seed.
+      - run: pnpm test
+
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: thanhvinh
+        ports: ['5440:5432']
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 3s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      # Playwright tự build và chạy web server ở cổng 3100 trên database test.
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
   # Tự deploy lên VPS khi gộp vào main. Cần secrets: VPS_HOST, VPS_USER, VPS_SSH_KEY.
   deploy:
-    needs: check
+    needs: [check, test, e2e]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
