@@ -1,0 +1,11 @@
+# pnpm 10+ đọc cài đặt ở đây thay cho trường "pnpm" trong package.json.
+# allowBuilds: tên dùng từ pnpm 11; onlyBuiltDependencies: giữ cho pnpm 10.
+allowBuilds:
+  sharp: true
+  esbuild: true
+  unrs-resolver: true
+
+onlyBuiltDependencies:
+  - sharp
+  - esbuild
+  - unrs-resolver

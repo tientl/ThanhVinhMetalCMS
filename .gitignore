@@ -4,6 +4,7 @@ node_modules
 .DS_Store
 .env
 .next
+.next-e2e
 next-env.d.ts
 .vercel
 
@@ -21,3 +22,4 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 uploads/
+/playwright/.auth/

@@ -24,7 +24,17 @@ const eslintConfig = [
     },
   },
   {
-    ignores: ['.next/', 'src/payload-types.ts', 'src/app/(payload)/admin/importMap.js', 'uploads/', 'public/media/'],
+    ignores: [
+      '.next/',
+      '.next-e2e/',
+      'src/payload-types.ts',
+      'src/app/(payload)/admin/importMap.js',
+      'uploads/',
+      'public/media/',
+      'playwright-report/',
+      'test-results/',
+      'playwright/.auth/',
+    ],
   },
 ]
 

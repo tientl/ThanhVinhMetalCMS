@@ -26,6 +26,9 @@ Tài khoản mẫu: `admin@thanhvinhmetal.vn` / `ThanhVinh@2026`. Đổi mật k
 | `pnpm generate:importmap` | sinh import map admin sau khi thêm component admin |
 | `pnpm lint`, `pnpm typecheck` | kiểm tra |
 | `pnpm seed` | nạp dữ liệu mẫu |
+| `pnpm test` | test unit + integration (Vitest) |
+| `pnpm test:e2e` | test giao diện trong trình duyệt (Playwright) |
+| `pnpm test:all` | chạy tất cả |
 
 ## Cấu trúc
 
@@ -44,7 +47,7 @@ src/
   app/(payload)/         admin và REST API của Payload
   components/            layout (header, footer, nút nổi), home (8 khối), ui, forms
 deploy/                  nginx.conf, ecosystem PM2, backup.sh, deploy.sh
-docs/                    SCOPE, DESIGN, DATA-MODEL, PLAN, DEPLOY
+docs/                    SCOPE, DESIGN, DATA-MODEL, PLAN, DEPLOY, TESTING, KNOWN-ISSUES
 ```
 
 ## Quy ước
@@ -53,5 +56,19 @@ docs/                    SCOPE, DESIGN, DATA-MODEL, PLAN, DEPLOY
 - Mỗi tính năng một nhánh, mở PR để người kia review. `main` tự deploy lên bản thử qua GitHub Actions.
 - Không thêm tính năng ngoài `docs/SCOPE.md`.
 - Ảnh upload nằm ở `public/media` (Nginx phục vụ trực tiếp), tệp bản vẽ khách gửi ở `uploads/quote-files` (chỉ admin tải qua API).
+
+## Kiểm thử
+
+200 test phủ backend và giao diện. Chi tiết ở `docs/TESTING.md`.
+
+```bash
+pnpm test                        # unit + integration
+pnpm exec playwright install chromium   # lần đầu
+pnpm test:e2e                    # giao diện, cổng 3100, database riêng
+```
+
+Test chạy trên database `thanhvinh_test`, không đụng dữ liệu dev. E2E dùng cổng 3100 và thư mục build `.next-e2e` nên chạy song song với `pnpm dev` được.
+
+Lỗi đã biết và việc còn nợ: `docs/KNOWN-ISSUES.md`.
 
 Triển khai lên VPS: xem `docs/DEPLOY.md`.
