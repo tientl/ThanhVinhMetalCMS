@@ -44,7 +44,7 @@ Từ form: `name`, `phone`, `email`, `company`, `message`, `attachment` (upload 
 - `collections[] {tag, title, description, image, href}` (2 ô).
 - `about {slogan, foundedYear, heading, paragraphs[], image, badgeTitle, badgeSub}`.
 - `solutions[] {title, subtitle, image, href}` (2 ô).
-- `applications[] {tabLabel, title, description, image, products[] (relationship), hotspots[] {x, y, label}}` (4 tab; hotspots chỉ admin đọc để hiển thị, chưa có UI kéo thả).
+- `applications[] {tabLabel, title, description, image, products[] (relationship), hotspots[] {x, y, label}}` (4 tab; hotspots đặt bằng chuột qua UI field `hotspotPicker` trong admin, bấm vào ảnh để thêm, kéo để dời).
 - `homeCategories` (relationship product-categories, 6).
 - `newsCount` (4).
 

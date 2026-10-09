@@ -5,6 +5,8 @@ import React from 'react'
 
 import { getServerSideURL } from '@/utilities/getURL'
 
+import { LiveQuoteCount } from './LiveQuoteCount'
+
 /** Đầu bảng điều khiển: lời chào, 4 ô thống kê, nút thao tác nhanh. */
 export const DashboardHeader = async ({ payload, user }: ServerProps) => {
   const [newQuotes, products, posts, subscribers] = await Promise.all([
@@ -16,10 +18,9 @@ export const DashboardHeader = async ({ payload, user }: ServerProps) => {
 
   const name = user && 'name' in user && user.name ? String(user.name) : 'bạn'
   const n = newQuotes.totalDocs
-  const note = n > 0 ? `Hôm nay có ${n} yêu cầu báo giá mới cần xử lý.` : 'Không có yêu cầu báo giá mới.'
 
   const stats = [
-    { value: n, label: 'Yêu cầu báo giá mới', href: '/admin/collections/quote-requests?where[status][equals]=new', highlight: n > 0 },
+    { value: <LiveQuoteCount initial={n} variant="value" />, label: 'Yêu cầu báo giá mới', href: '/admin/collections/quote-requests?where[status][equals]=new', highlight: n > 0 },
     { value: products.totalDocs, label: 'Sản phẩm đang hiển thị', href: '/admin/collections/products' },
     { value: posts.totalDocs, label: 'Bài viết đã đăng', href: '/admin/collections/posts' },
     { value: subscribers.totalDocs, label: 'Đăng ký bản tin', href: '/admin/collections/subscribers' },
@@ -28,7 +29,9 @@ export const DashboardHeader = async ({ payload, user }: ServerProps) => {
   return (
     <div className="dash-head">
       <h1 className="dash-head__title">Xin chào, {name}</h1>
-      <p className="dash-head__sub">Thành Vinh Metal, trang quản trị website. {note}</p>
+      <p className="dash-head__sub">
+        Thành Vinh Metal, trang quản trị website. <LiveQuoteCount initial={n} variant="note" />
+      </p>
 
       <div className="dash-stats">
         {stats.map((s) => (

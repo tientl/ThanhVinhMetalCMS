@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { QUOTE_FILE_EXTENSIONS, QUOTE_FILE_MAX_BYTES } from '@/lib/quoteFiles'
 import { clientIp, rateLimit } from '@/lib/rateLimit'
+import { unaccent } from '@/utilities/unaccent'
 
 const text = (v: FormDataEntryValue | null, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '')
 
@@ -50,10 +51,14 @@ export async function POST(req: Request) {
     if (file.size > QUOTE_FILE_MAX_BYTES) {
       return NextResponse.json({ ok: false, error: 'Tệp vượt quá 10 MB.' }, { status: 400 })
     }
-    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(-100)
+    // Tên lưu trên máy chủ: bỏ dấu tiếng Việt, thay ký tự lạ bằng gạch dưới; tên gốc giữ ở originalName
+    const safeName = unaccent(file.name)
+      .replace(/[^a-zA-Z0-9._-]+/g, '_')
+      .replace(/_+/g, '_')
+      .slice(-100)
     const uploaded = await payload.create({
       collection: 'quote-files',
-      data: {},
+      data: { originalName: file.name.slice(0, 200) },
       file: {
         data: Buffer.from(await file.arrayBuffer()),
         mimetype: file.type || 'application/octet-stream',

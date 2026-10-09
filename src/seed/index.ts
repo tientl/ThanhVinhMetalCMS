@@ -224,7 +224,6 @@ const run = async () => {
         { label: 'Dự án', type: 'link', href: '/bai-viet/danh-muc/tin-tuc' },
       ],
       right: [
-        { label: 'Năng lực', type: 'link', href: '/gioi-thieu' },
         { label: 'Kiến thức', type: 'link', href: '/bai-viet/danh-muc/kien-thuc' },
         {
           label: 'Catalogue',

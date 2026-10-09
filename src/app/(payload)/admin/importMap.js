@@ -1,3 +1,4 @@
+import { QuoteAttachmentField as QuoteAttachmentField_16cee9a54674cb622a8a4dfb11e0f527 } from '@/components/admin/QuoteAttachmentField'
 import { CancelButton as CancelButton_dcba502f3edb53b85cc67e09157c26cc } from '@/components/admin/CancelButton'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -30,6 +31,7 @@ import { MetaImageComponent as MetaImageComponent_a8a977ebc872c5d5ea7ee689724c08
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { BlocksFeatureClient as BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { TableFeatureClient as TableFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { HotspotPicker as HotspotPicker_1577f6537e69154268209be140555dbe } from '@/components/admin/HotspotPicker'
 import { MenuRowLabel as MenuRowLabel_472e6657e259f8a6faf77ced3923f473 } from '@/components/admin/MenuRowLabel'
 import { ColorField as ColorField_2d3b6dcbebce75fc2ef5ac094f4218f0 } from '@/components/admin/ColorField'
 import { Avatar as Avatar_810d39ff73455224e8eb6f5e1ca0ea2f } from '@/components/admin/Avatar'
@@ -42,6 +44,7 @@ import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } f
 
 /** @type import('payload').ImportMap */
 export const importMap = {
+  "@/components/admin/QuoteAttachmentField#QuoteAttachmentField": QuoteAttachmentField_16cee9a54674cb622a8a4dfb11e0f527,
   "@/components/admin/CancelButton#CancelButton": CancelButton_dcba502f3edb53b85cc67e09157c26cc,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -74,6 +77,7 @@ export const importMap = {
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/richtext-lexical/client#BlocksFeatureClient": BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#TableFeatureClient": TableFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@/components/admin/HotspotPicker#HotspotPicker": HotspotPicker_1577f6537e69154268209be140555dbe,
   "@/components/admin/MenuRowLabel#MenuRowLabel": MenuRowLabel_472e6657e259f8a6faf77ced3923f473,
   "@/components/admin/ColorField#ColorField": ColorField_2d3b6dcbebce75fc2ef5ac094f4218f0,
   "@/components/admin/Avatar#Avatar": Avatar_810d39ff73455224e8eb6f5e1ca0ea2f,

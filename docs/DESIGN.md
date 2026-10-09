@@ -31,7 +31,7 @@ Khối: padding 128px dọc, 64px ngang. Lưới sản phẩm 3 cột gap 28. Th
 
 ## Header (cố định khi cuộn)
 - Cao 80px, nền `rgba(18,20,24,.55)` + `backdrop-filter: blur(10px)`, không viền. Khi mở menu hoặc tìm kiếm: nền đặc #0B0D10, viền dưới #2A2D30.
-- Lưới 3 cột `1fr auto 1fr`: trái = icon trang chủ + Bộ sưu tập, Về Vinh Metal, Sản phẩm, Giải pháp, Dự án; giữa = logo 70px (chỉ huy hiệu, không chữ); phải = Năng lực, Kiến thức, Catalogue, Tin tức, Tuyển dụng, icon tìm kiếm, nút sáng/tối. (Đã bỏ VI | EN ngày 08/10/2026 theo yêu cầu.)
+- Lưới 3 cột `1fr auto 1fr`: trái = icon trang chủ + Bộ sưu tập, Về Vinh Metal, Sản phẩm, Giải pháp, Dự án; giữa = logo 70px (chỉ huy hiệu, không chữ); phải = Kiến thức, Catalogue, Tin tức, Tuyển dụng, icon tìm kiếm, nút sáng/tối. (Đã bỏ VI | EN ngày 08/10/2026 theo yêu cầu.)
 - Sản phẩm, Giải pháp, Catalogue là nút mở **mega menu** (panel ngay dưới header, nền surface, có nút Đóng, đóng khi bấm ra ngoài hoặc Esc). Gạch chân 1px accent khi hover hoặc đang mở.
 - Icon tìm kiếm mở **overlay tìm kiếm** dưới header: ô nhập 34px light, gợi ý nhanh dạng chip viền.
 - Mobile: hamburger mở menu ngăn kéo; thanh cố định đáy có Gọi, Zalo, Báo giá.
@@ -41,11 +41,11 @@ Khối: padding 128px dọc, 64px ngang. Lưới sản phẩm 3 cột gap 28. Th
 2. **Bộ sưu tập**: 2 ô ảnh 680px sát nhau, tràn ngang, overlay tối từ dưới, viền mảnh accent lùi 18px, nhãn nhỏ + tiêu đề + mô tả + "Khám phá ngay" góc dưới trái. Nội dung từ admin.
 3. **Giới thiệu**: 2 cột; trái: câu khẩu hiệu, "Thành lập năm …", tiêu đề, 2 đoạn, nút; phải: ảnh 560px với ô accent "CẮT, CHẤN, HÀN, SƠN" lệch ra ngoài 40px.
 4. **Giải pháp**: tiêu đề + mô tả; 2 ô ảnh 520px overlay chữ.
-5. **Ứng dụng theo công trình** (nền deep): 4 tab; trái ảnh 540px có 3 điểm chấm (vòng accent viền trắng, nhấp nháy, nhãn chip trắng); phải tiêu đề, mô tả, 4 sản phẩm thumbnail 72px, nút "Xem tất cả sản phẩm". Vị trí điểm chấm cố định trong code.
+5. **Ứng dụng theo công trình** (nền deep): 4 tab; trái ảnh 540px có tối đa 5 điểm chấm (nới từ 3 ngày 09/10/2026) (vòng accent viền trắng, nhấp nháy, nhãn chip trắng); phải tiêu đề, mô tả, 4 sản phẩm thumbnail 72px, nút "Xem tất cả sản phẩm". Vị trí điểm chấm đặt bằng chuột trong admin.
 6. **Sản phẩm theo danh mục**: lưới 3×2, ảnh 4:3, tên in hoa + "XEM SẢN PHẨM".
 7. **Kiến thức và tin tức**: 4 thẻ ảnh 230px, nhãn danh mục accent-text, tiêu đề serif, "Đọc thêm".
 8. **Liên hệ**: trái form (Họ tên*, Email*, Điện thoại*, Công ty, Nội dung, nút "Gửi yêu cầu"); phải panel surface: logo, tên công ty, hotline, email, địa chỉ, MST, mạng xã hội, ô đăng ký bản tin.
-Footer: logo nhỏ, 3 link chính sách, © năm.
+Footer: 3 cột (logo + địa chỉ, hotline, email, giờ làm; link chính sách; bản đồ Google Maps nhỏ 300×200 tải trễ), © năm. (Thêm bản đồ ngày 09/10/2026.)
 Nút nổi góc phải dưới: về đầu trang (hiện khi cuộn > 500px), Zalo, gọi.
 
 ## Hiệu ứng

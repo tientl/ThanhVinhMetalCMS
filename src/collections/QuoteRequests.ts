@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { isAdmin, isAdminOrEditor } from '@/access'
+import { notifyQuoteChange } from '@/lib/quoteEvents'
 import { sendQuoteEmail } from '@/lib/email'
 
 export const QuoteRequests: CollectionConfig = {
@@ -37,7 +38,13 @@ export const QuoteRequests: CollectionConfig = {
       ],
     },
     { name: 'message', type: 'textarea', label: 'Nội dung, quy cách cần gia công' },
-    { name: 'attachment', type: 'upload', relationTo: 'quote-files', label: 'Tệp bản vẽ' },
+    {
+      name: 'attachment',
+      type: 'upload',
+      relationTo: 'quote-files',
+      label: 'Tệp bản vẽ',
+      admin: { components: { Field: '@/components/admin/QuoteAttachmentField#QuoteAttachmentField' } },
+    },
     {
       name: 'status',
       type: 'select',
@@ -69,6 +76,13 @@ export const QuoteRequests: CollectionConfig = {
         if (operation === 'create') {
           await sendQuoteEmail({ doc, payload: req.payload })
         }
+        notifyQuoteChange()
+        return doc
+      },
+    ],
+    afterDelete: [
+      ({ doc }) => {
+        notifyQuoteChange()
         return doc
       },
     ],

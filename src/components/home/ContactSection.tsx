@@ -5,7 +5,7 @@ import { NewsletterForm } from '@/components/forms/NewsletterForm'
 import { QuoteForm } from '@/components/forms/QuoteForm'
 import { IconClock, IconMail, IconPhone, IconPin } from '@/components/ui/Icons'
 import { telHref, zaloHref } from '@/lib/format'
-import { mediaUrl } from '@/lib/media'
+import { isMedia, mediaDims, mediaUrl } from '@/lib/media'
 import type { SiteSetting } from '@/payload-types'
 
 type Props = {
@@ -15,9 +15,12 @@ type Props = {
   newsletterNote?: string | null
   product?: string
   as?: 'h1' | 'h2'
+  /** Hiện bản đồ Google Maps (mã nhúng trong Thông tin công ty) trong thẻ thông tin */
+  showMap?: boolean
 }
 
-export const ContactSection = ({ settings, heading, intro, newsletterNote, product, as: Tag = 'h2' }: Props) => {
+export const ContactSection = ({ settings, heading, intro, newsletterNote, product, as: Tag = 'h2', showMap = false }: Props) => {
+  const logoDims = isMedia(settings.logo) ? mediaDims(settings.logo) : { width: 720, height: 720 }
   const socials = [
     { label: 'Facebook', href: settings.facebook },
     { label: 'YouTube', href: settings.youtube },
@@ -35,7 +38,13 @@ export const ContactSection = ({ settings, heading, intro, newsletterNote, produ
 
       <div className="flex flex-col gap-[22px] self-start bg-surface p-6 md:p-10" data-reveal>
         <div className="flex items-center gap-3.5">
-          <Image src={mediaUrl(settings.logo) || '/logo.png'} alt="" width={64} height={64} />
+          <Image
+            src={mediaUrl(settings.logo) || '/logo.png'}
+            alt=""
+            width={logoDims.width}
+            height={logoDims.height}
+            className="h-[56px] w-auto max-w-[220px] object-contain"
+          />
           <span className="h-serif text-[17px] md:text-[19px]" style={{ letterSpacing: 1.2 }}>
             {settings.companyName}
           </span>
@@ -77,6 +86,13 @@ export const ContactSection = ({ settings, heading, intro, newsletterNote, produ
             </li>
           )}
         </ul>
+        {showMap && settings.mapEmbed && (
+          <div
+            aria-label="Bản đồ"
+            className="h-[220px] overflow-hidden border border-line md:h-[260px] [&_iframe]:h-full [&_iframe]:w-full [&_iframe]:border-0"
+            dangerouslySetInnerHTML={{ __html: settings.mapEmbed }}
+          />
+        )}
         {socials.length > 0 && (
           <div className="flex flex-col gap-3 border-t border-line pt-[18px]">
             <span className="text-sm font-semibold">Theo dõi chúng tôi trên</span>

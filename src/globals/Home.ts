@@ -145,12 +145,18 @@ export const Home: GlobalConfig = {
                   label: '4 sản phẩm tiêu biểu',
                 },
                 {
+                  name: 'hotspotPicker',
+                  type: 'ui',
+                  label: 'Điểm chấm trên ảnh',
+                  admin: { components: { Field: '@/components/admin/HotspotPicker#HotspotPicker' } },
+                },
+                {
                   name: 'hotspots',
                   type: 'array',
-                  label: 'Điểm chấm trên ảnh',
+                  label: 'Danh sách điểm chấm',
                   labels: { singular: 'Điểm', plural: 'Điểm' },
-                  maxRows: 3,
-                  admin: { description: 'Vị trí tính theo % từ trái và từ trên. Kéo thả trực quan sẽ làm ở giai đoạn 2.' },
+                  maxRows: 5,
+                  admin: { description: 'Vị trí tính theo % từ mép trái và mép trên (0–100). Đặt bằng chuột trên ảnh phía trên hoặc gõ số ở đây.' },
                   fields: [
                     {
                       type: 'row',

@@ -1,6 +1,8 @@
 'use client'
 
 import { Hamburger, Link, NavGroup, useNav } from '@payloadcms/ui'
+
+import { LiveQuoteCount } from '../LiveQuoteCount'
 import { usePathname } from 'next/navigation'
 import React from 'react'
 
@@ -46,7 +48,7 @@ export const NavClient = ({ groups, brandName }: { groups: NavGroupData[]; brand
                   <>
                     {isActive && <div className={`${baseClass}__link-indicator`} />}
                     <span className={`${baseClass}__link-label`}>{e.label}</span>
-                    {e.badge !== undefined && <span className="nav-badge">{e.badge}</span>}
+                    {e.slug === 'quote-requests' && <LiveQuoteCount initial={e.badge ?? 0} variant="badge" />}
                   </>
                 )
                 if (pathname === href) {
