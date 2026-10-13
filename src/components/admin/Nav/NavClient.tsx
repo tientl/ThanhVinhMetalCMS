@@ -2,18 +2,27 @@
 
 import { Hamburger, Link, NavGroup, useNav } from '@payloadcms/ui'
 
-import { LiveQuoteCount } from '../LiveQuoteCount'
+import type { LiveCounts } from '@/lib/liveEvents'
+
+import { LiveCount, LiveListRefresh } from '../LiveCount'
 import { usePathname } from 'next/navigation'
 import React from 'react'
 
 export type NavGroupData = {
   label: string
-  entities: { slug: string; type: 'collection' | 'global'; label: string; badge?: number }[]
+  entities: { slug: string; type: 'collection' | 'global'; label: string }[]
+}
+
+/** Mục menu nào có huy hiệu realtime, hiện số nào (theo thứ tự). */
+const BADGES: Record<string, (keyof LiveCounts)[]> = {
+  // Cam: yêu cầu Mới. Vàng: yêu cầu Cần liên hệ lại.
+  'quote-requests': ['newQuotes', 'callbackQuotes'],
+  subscribers: ['subscribersToday'],
 }
 
 const baseClass = 'nav'
 
-export const NavClient = ({ groups, brandName }: { groups: NavGroupData[]; brandName: string }) => {
+export const NavClient = ({ groups, brandName, live }: { groups: NavGroupData[]; brandName: string; live: LiveCounts }) => {
   const { hydrated, navOpen, navRef, setNavOpen, shouldAnimate } = useNav()
   const pathname = usePathname()
 
@@ -28,6 +37,7 @@ export const NavClient = ({ groups, brandName }: { groups: NavGroupData[]; brand
 
   return (
     <aside className={classes} inert={!navOpen ? true : undefined}>
+      <LiveListRefresh initial={live} />
       <div className={`${baseClass}__scroll`} ref={navRef}>
         <nav className={`${baseClass}__wrap`}>
           <Link href="/admin" className="nav-brand" prefetch={false}>
@@ -48,7 +58,7 @@ export const NavClient = ({ groups, brandName }: { groups: NavGroupData[]; brand
                   <>
                     {isActive && <div className={`${baseClass}__link-indicator`} />}
                     <span className={`${baseClass}__link-label`}>{e.label}</span>
-                    {e.slug === 'quote-requests' && <LiveQuoteCount initial={e.badge ?? 0} variant="badge" />}
+                    {BADGES[e.slug]?.map((metric) => <LiveCount key={metric} initial={live} metric={metric} variant="badge" />)}
                   </>
                 )
                 if (pathname === href) {

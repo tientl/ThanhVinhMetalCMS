@@ -48,6 +48,7 @@ export const QuoteAttachmentField = ({ field, path }: UploadFieldClientProps) =>
   const current = id && file?.id === id ? file : null
   const url = current?.filename ? `${api}/quote-files/file/${encodeURIComponent(current.filename)}` : null
   const isImage = !!current?.mimeType?.startsWith('image/')
+  const name = current?.originalName || current?.filename || ''
 
   return (
     <div className="field-type quote-attachment">
@@ -59,13 +60,20 @@ export const QuoteAttachmentField = ({ field, path }: UploadFieldClientProps) =>
       ) : (
         <div className="quote-attachment__row">
           {isImage && url ? (
+            // Bấm ảnh hoặc tên tệp mở trình xem ảnh (AdminImageViewer đọc data-image-viewer)
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={url} alt="" className="quote-attachment__thumb" />
+            <img src={url} alt="" className="quote-attachment__thumb is-viewable" data-image-viewer={url} data-image-name={name} />
           ) : (
             <span className="quote-attachment__thumb quote-attachment__thumb--doc">{(current.filename || '').split('.').pop()?.toUpperCase()}</span>
           )}
           <div className="quote-attachment__meta">
-            <strong>{current.originalName || current.filename}</strong>
+            {isImage && url ? (
+              <strong className="is-viewable" data-image-viewer={url} data-image-name={name}>
+                {name}
+              </strong>
+            ) : (
+              <strong>{name}</strong>
+            )}
             <span>
               {formatSize(current.filesize)}
               {current.mimeType ? ` · ${current.mimeType}` : ''}

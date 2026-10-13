@@ -26,6 +26,31 @@ test.describe('Header và menu', () => {
   })
 })
 
+test.describe('Header trên màn hình laptop', () => {
+  for (const width of [1280, 1366]) {
+    test(`ở ${width}px nút tìm kiếm và nút sáng tối không bị đẩy ra ngoài màn hình`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 })
+      await page.goto('/')
+      for (const name of ['Tìm kiếm', /Chuyển sang chế độ/]) {
+        const button = page.locator('header').getByRole('button', { name }).first()
+        await expect.poll(async () => {
+          const box = await button.boundingBox()
+          return box ? box.x + box.width : Infinity
+        }).toBeLessThanOrEqual(width)
+      }
+    })
+  }
+
+  test('menu ngang không đủ chỗ thì thu về nút mở menu và vẫn dùng được', async ({ page }) => {
+    await page.setViewportSize({ width: 1200, height: 800 })
+    await page.goto('/')
+    const toggle = page.getByRole('button', { name: 'Mở menu' })
+    await expect(toggle).toBeVisible()
+    await toggle.click()
+    await expect(page.getByRole('dialog', { name: 'Menu' })).toBeVisible()
+  })
+})
+
 test.describe('Chế độ sáng và tối', () => {
   test('mặc định là nền tối', async ({ page }) => {
     await page.goto('/')

@@ -45,6 +45,12 @@ export default buildConfig({
       Nav: '@/components/admin/Nav#AdminNav',
       beforeDashboard: ['@/components/admin/DashboardHeader#DashboardHeader'],
       actions: ['@/components/admin/AdminThemeToggle#AdminThemeToggle'],
+      providers: [
+        // Trang phiên bản: ẩn nút khôi phục khi giống bản mới nhất, mới vào thì hiện toàn bộ nội dung
+        '@/components/admin/VersionRestoreGuard#VersionRestoreGuard',
+        // Bấm ảnh nhỏ hoặc tên tệp ở ô ảnh trong form: xem ảnh phóng to
+        '@/components/admin/AdminImageViewer#AdminImageViewer',
+      ],
     },
     dateFormat: 'dd/MM/yyyy HH:mm',
   },

@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 import { anyone, isAdmin, isAdminOrEditor } from '@/access'
 import { slugField } from '@/fields/slug'
+import { linkedNameCell, thumbnailColumn } from '@/fields/thumbnail'
 import { revalidateCollection, revalidateCollectionDelete } from '@/hooks/revalidate'
 
 const paths = (doc: { slug?: string | null }) => ['/san-pham', `/san-pham/danh-muc/${doc.slug}`]
@@ -13,7 +14,7 @@ export const ProductCategories: CollectionConfig = {
     hideAPIURL: true,
     components: { edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } },
     useAsTitle: 'name',
-    defaultColumns: ['name', 'slug', 'order', 'showOnHome'],
+    defaultColumns: ['thumbnail', 'name', 'slug', 'order', 'showOnHome'],
     group: 'Sản phẩm',
   },
   access: {
@@ -24,7 +25,8 @@ export const ProductCategories: CollectionConfig = {
   },
   defaultSort: 'order',
   fields: [
-    { name: 'name', type: 'text', label: 'Tên danh mục', required: true },
+    { name: 'name', type: 'text', label: 'Tên danh mục', required: true, admin: { components: linkedNameCell } },
+    thumbnailColumn('image'),
     slugField('name'),
     { name: 'description', type: 'textarea', label: 'Mô tả ngắn' },
     { name: 'image', type: 'upload', relationTo: 'media', label: 'Ảnh đại diện' },

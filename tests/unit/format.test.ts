@@ -1,6 +1,20 @@
 import { describe, expect, it } from 'vitest'
 
-import { formatDate, telHref, youtubeId, zaloHref } from '@/lib/format'
+import { formatDate, startOfDayVN, telHref, youtubeId, zaloHref } from '@/lib/format'
+
+describe('startOfDayVN', () => {
+  it('trả 0 giờ hôm nay giờ Việt Nam, tức 17 giờ hôm trước theo UTC', () => {
+    expect(startOfDayVN(new Date('2026-10-11T10:00:00Z')).toISOString()).toBe('2026-10-10T17:00:00.000Z')
+  })
+
+  it('sau 17 giờ UTC đã sang ngày mới ở Việt Nam', () => {
+    expect(startOfDayVN(new Date('2026-10-11T17:30:00Z')).toISOString()).toBe('2026-10-11T17:00:00.000Z')
+  })
+
+  it('đúng 0 giờ Việt Nam thì trả chính thời điểm đó', () => {
+    expect(startOfDayVN(new Date('2026-10-10T17:00:00Z')).toISOString()).toBe('2026-10-10T17:00:00.000Z')
+  })
+})
 
 describe('formatDate', () => {
   it('định dạng ngày theo kiểu Việt Nam dd/MM/yyyy', () => {

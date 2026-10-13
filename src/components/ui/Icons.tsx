@@ -94,3 +94,9 @@ export const IconFile = ({ size = 20, ...p }: P) => (
     <path d="M14 3v5h5" />
   </svg>
 )
+export const IconExpand = ({ size = 20, ...p }: P) => (
+  <svg {...base(size, p)}>
+    <path d="M15 3h6v6M9 21H3v-6" />
+    <path d="M21 3l-7 7M3 21l7-7" />
+  </svg>
+)

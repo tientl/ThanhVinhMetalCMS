@@ -29,12 +29,16 @@ Chữ trên nền accent dùng #0B0D10 (tối), không dùng trắng. Logo giữ
 ## Khoảng cách
 Khối: padding 128px dọc, 64px ngang. Lưới sản phẩm 3 cột gap 28. Thẻ bài viết 4 cột gap 28. Nút cao 52px, padding 0 30px, viền 1px accent, chữ 12.5px letter-spacing 2px; hover: nền accent, chữ tối.
 
+## Tỉ lệ hiển thị (từ 11/10/2026)
+Từ bề ngang 768px trở lên toàn trang phóng 110% (`zoom` trên `<html>`). Mọi số đo trong file này là số trong code; trên máy tính hiển thị thực tế lớn hơn 10%. Điện thoại giữ 100%. Các mốc đổi bố cục `md`, `lg`, `xl`, `2xl` nhân 1.1 theo; ví dụ menu ngang trên header hiện từ 1127px (trước 1024px). Chi tiết ở `docs/CHANGELOG.md`.
+
 ## Header (cố định khi cuộn)
 - Cao 80px, nền `rgba(18,20,24,.55)` + `backdrop-filter: blur(10px)`, không viền. Khi mở menu hoặc tìm kiếm: nền đặc #0B0D10, viền dưới #2A2D30.
 - Lưới 3 cột `1fr auto 1fr`: trái = icon trang chủ + Bộ sưu tập, Về Vinh Metal, Sản phẩm, Giải pháp, Dự án; giữa = logo 70px (chỉ huy hiệu, không chữ); phải = Kiến thức, Catalogue, Tin tức, Tuyển dụng, icon tìm kiếm, nút sáng/tối. (Đã bỏ VI | EN ngày 08/10/2026 theo yêu cầu.)
 - Sản phẩm, Giải pháp, Catalogue là nút mở **mega menu** (panel ngay dưới header, nền surface, có nút Đóng, đóng khi bấm ra ngoài hoặc Esc). Gạch chân 1px accent khi hover hoặc đang mở.
 - Icon tìm kiếm mở **overlay tìm kiếm** dưới header: ô nhập 34px light, gợi ý nhanh dạng chip viền.
 - Mobile: hamburger mở menu ngăn kéo; thanh cố định đáy có Gọi, Zalo, Báo giá.
+- Màn máy tính mà menu ngang không đủ chỗ (laptop hẹp, hoặc nhiều mục menu) cũng tự thu về hamburger như mobile; với dữ liệu mẫu, menu ngang hiện từ 1366px (11/10/2026).
 
 ## Trang chủ, 8 khối theo thứ tự
 1. **Slider** 860px toàn màn hình, 3 ảnh, tự chuyển 5.5s, crossfade 1.8s, ảnh active scale 1→1.08 trong 9s. Chữ trái dưới: tiêu đề serif, mô tả, nút viền "Khám phá ngay". Phải dưới: số `01 / 03` + 2 nút mũi tên. Đáy: 3 thanh tiến trình, thanh active chạy 5.5s.
@@ -56,3 +60,5 @@ Nút nổi góc phải dưới: về đầu trang (hiện khi cuộn > 500px), Z
 
 ## Trang con (Dev B thiết kế tuần 1, cùng ngôn ngữ hình ảnh)
 Danh sách sản phẩm theo danh mục, chi tiết sản phẩm, danh sách bài viết, chi tiết bài viết, giới thiệu, liên hệ, chính sách, 404, trang kết quả tìm kiếm, bản điện thoại.
+
+Chi tiết sản phẩm, bộ ảnh (cập nhật 11/10/2026): ảnh chính 4:3 có viền mảnh accent và biểu tượng phóng to ở góc; ảnh thu nhỏ vuông, 4 cột trên điện thoại, 5 cột từ 640px. Bấm ảnh chính hoặc ảnh thu nhỏ mở xem ảnh lớn toàn màn hình (ảnh thu nhỏ mở thẳng ảnh đó, 12/10/2026): nền gần đen, ảnh vừa khung theo tỉ lệ, số `01 / 02` trên trái, nút Đóng trên phải, 2 nút mũi tên hai bên, tên sản phẩm dưới cùng. Chuyển bằng mũi tên, phím ← → hoặc vuốt; đóng bằng Esc, nút Đóng hoặc bấm ra ngoài ảnh.

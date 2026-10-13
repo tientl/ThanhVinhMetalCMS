@@ -4,7 +4,16 @@ export const formatDate = (value: string | null | undefined): string => {
   return new Intl.DateTimeFormat('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(d)
 }
 
-export const telHref = (phone: string | null | undefined): string => `tel:${(phone || '').replace(/[^0-9+]/g, '')}`
+const VN_OFFSET_MS = 7 * 60 * 60 * 1000
+
+/** Thời điểm 0 giờ hôm nay theo giờ Việt Nam (UTC+7, không đổi giờ theo mùa), không phụ thuộc múi giờ máy chủ. */
+export const startOfDayVN = (now: Date = new Date()): Date => {
+  const local = new Date(now.getTime() + VN_OFFSET_MS)
+  local.setUTCHours(0, 0, 0, 0)
+  return new Date(local.getTime() - VN_OFFSET_MS)
+}
+
+export const telHref =(phone: string | null | undefined): string => `tel:${(phone || '').replace(/[^0-9+]/g, '')}`
 
 export const zaloHref = (zalo: string | null | undefined): string => `https://zalo.me/${(zalo || '').replace(/[^0-9]/g, '')}`
 

@@ -6,6 +6,7 @@ import { buildSearchText, searchTextField } from '@/fields/searchText'
 import { seoTab } from '@/fields/seo'
 import { slugField } from '@/fields/slug'
 import { revalidateCollection, revalidateCollectionDelete } from '@/hooks/revalidate'
+import { blockNoopRestore, restoreVersionEndpoint, VERSIONS_LIST_VIEW } from '@/hooks/versions'
 
 const paths = (doc: { slug?: string | null }) => ['/bai-viet', `/bai-viet/${doc.slug}`]
 
@@ -14,7 +15,10 @@ export const Posts: CollectionConfig<'posts'> = {
   labels: { singular: 'Bài viết', plural: 'Bài viết' },
   admin: {
     hideAPIURL: true,
-    components: { edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } },
+    components: {
+      edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] },
+      views: { edit: { versions: VERSIONS_LIST_VIEW } },
+    },
     useAsTitle: 'title',
     defaultColumns: ['title', 'category', '_status', 'publishedAt'],
     group: 'Bài viết',
@@ -98,7 +102,10 @@ export const Posts: CollectionConfig<'posts'> = {
     },
     searchTextField,
   ],
+  // Phiên bản là bản nháp thì khôi phục dưới dạng nháp (xem restoreVersionEndpoint)
+  endpoints: [restoreVersionEndpoint],
   hooks: {
+    beforeOperation: [blockNoopRestore],
     beforeChange: [buildSearchText({ fields: ['title', 'excerpt'], relation: { field: 'category', collection: 'post-categories' } })],
     afterChange: [revalidateCollection(paths)],
     afterDelete: [revalidateCollectionDelete(paths)],

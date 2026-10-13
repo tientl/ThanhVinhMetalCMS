@@ -1,12 +1,20 @@
 import { cache } from 'react'
 
-import type { Post, Product } from '@/payload-types'
+import type { Post, Product, User } from '@/payload-types'
 import { normalizeSearch } from '@/utilities/unaccent'
 
 import { getPayloadClient } from './payload'
 
 export const PRODUCTS_PER_PAGE = 12
 export const POSTS_PER_PAGE = 12
+
+/**
+ * Truy vấn cho website chạy dưới quyền khách: Local API mặc định bỏ qua phân quyền,
+ * nên phải tắt để quy tắc "khách chỉ thấy bản đã xuất bản" (publishedOrLoggedIn) được áp dụng.
+ * Quan hệ được populate (sản phẩm liên quan, sản phẩm trong tab Ứng dụng...) cũng qua phân quyền,
+ * bản nháp chỉ còn là id và bị các hàm bên dưới bỏ qua.
+ */
+export const AS_GUEST = { overrideAccess: false } as const
 
 export const getSiteSettings = cache(async () => {
   const payload = await getPayloadClient()
@@ -20,7 +28,7 @@ export const getNavigation = cache(async () => {
 
 export const getHome = cache(async () => {
   const payload = await getPayloadClient()
-  return payload.findGlobal({ slug: 'home', depth: 2 })
+  return payload.findGlobal({ slug: 'home', depth: 2, ...AS_GUEST })
 })
 
 export const getCategories = cache(async () => {
@@ -55,6 +63,7 @@ export const getProducts = cache(
       page,
       limit,
       depth: 1,
+      ...AS_GUEST,
     })
   },
 )
@@ -67,6 +76,7 @@ export const getFeaturedProducts = cache(async (limit = 6) => {
     sort: '-updatedAt',
     limit,
     depth: 1,
+    ...AS_GUEST,
   })
   return res.docs
 })
@@ -78,6 +88,7 @@ export const getProduct = cache(async (slug: string) => {
     where: { slug: { equals: slug } },
     limit: 1,
     depth: 2,
+    ...AS_GUEST,
   })
   return res.docs[0] ?? null
 })
@@ -99,6 +110,7 @@ export const getRelatedProducts = cache(async (product: Product, limit = 4): Pro
     sort: '-updatedAt',
     limit: limit - picked.length,
     depth: 1,
+    ...AS_GUEST,
   })
   return [...picked, ...res.docs]
 })
@@ -129,6 +141,7 @@ export const getPosts = cache(
       page,
       limit,
       depth: 1,
+      ...AS_GUEST,
     })
   },
 )
@@ -140,8 +153,18 @@ export const getPost = cache(async (slug: string) => {
     where: { slug: { equals: slug } },
     limit: 1,
     depth: 2,
+    ...AS_GUEST,
   })
-  return res.docs[0] ?? null
+  const post = res.docs[0]
+  if (!post) return null
+  // Tài khoản không công khai với khách nên người viết chỉ còn là id: lấy riêng tên để hiện dưới tiêu đề
+  if (post.author && typeof post.author !== 'object') {
+    const author = await payload
+      .findByID({ collection: 'users', id: post.author, depth: 0, select: { name: true } })
+      .catch(() => null)
+    if (author) return { ...post, author: { id: author.id, name: author.name } as User }
+  }
+  return post
 })
 
 export const getRelatedPosts = cache(async (post: Post, limit = 3): Promise<Post[]> => {
@@ -161,6 +184,7 @@ export const getRelatedPosts = cache(async (post: Post, limit = 3): Promise<Post
     sort: '-publishedAt',
     limit: limit - picked.length,
     depth: 1,
+    ...AS_GUEST,
   })
   return [...picked, ...res.docs]
 })
@@ -172,6 +196,7 @@ export const getPage = cache(async (slug: string) => {
     where: { slug: { equals: slug } },
     limit: 1,
     depth: 1,
+    ...AS_GUEST,
   })
   return res.docs[0] ?? null
 })
@@ -188,6 +213,7 @@ export const search = cache(async (q: string) => {
       where: { searchText: { like: term } },
       limit: 24,
       depth: 1,
+      ...AS_GUEST,
     }),
     payload.find({
       collection: 'posts',
@@ -195,6 +221,7 @@ export const search = cache(async (q: string) => {
       sort: '-publishedAt',
       limit: 24,
       depth: 1,
+      ...AS_GUEST,
     }),
   ])
   return { products: products.docs, posts: posts.docs }

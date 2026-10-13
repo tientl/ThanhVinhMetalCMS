@@ -5,6 +5,7 @@ import { fullRichText } from '@/fields/richText'
 import { seoTab } from '@/fields/seo'
 import { slugField } from '@/fields/slug'
 import { revalidateCollection, revalidateCollectionDelete } from '@/hooks/revalidate'
+import { blockNoopRestore, restoreVersionEndpoint, VERSIONS_LIST_VIEW } from '@/hooks/versions'
 
 const paths = (doc: { slug?: string | null }) => [`/${doc.slug}`]
 
@@ -13,7 +14,10 @@ export const Pages: CollectionConfig<'pages'> = {
   labels: { singular: 'Trang tĩnh', plural: 'Trang tĩnh' },
   admin: {
     hideAPIURL: true,
-    components: { edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } },
+    components: {
+      edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] },
+      views: { edit: { versions: VERSIONS_LIST_VIEW } },
+    },
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug', '_status', 'updatedAt'],
     group: 'Nội dung',
@@ -43,7 +47,10 @@ export const Pages: CollectionConfig<'pages'> = {
     },
     slugField('title'),
   ],
+  // Phiên bản là bản nháp thì khôi phục dưới dạng nháp (xem restoreVersionEndpoint)
+  endpoints: [restoreVersionEndpoint],
   hooks: {
+    beforeOperation: [blockNoopRestore],
     afterChange: [revalidateCollection(paths)],
     afterDelete: [revalidateCollectionDelete(paths)],
   },

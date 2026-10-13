@@ -3,6 +3,8 @@ import type { ServerProps, VisibleEntities } from 'payload'
 import { EntityType, groupNavItems } from '@payloadcms/ui/shared'
 import React from 'react'
 
+import { getLiveCounts, type LiveCounts } from '@/lib/liveEvents'
+
 import { NavClient, type NavGroupData } from './NavClient'
 
 /** Thứ tự nhóm và mục trong menu bên trái. Mục không có trong danh sách xếp cuối. */
@@ -29,7 +31,7 @@ const rank = (list: string[], key: string) => {
 
 type Props = ServerProps & { visibleEntities?: VisibleEntities }
 
-/** Menu bên trái tùy chỉnh: thương hiệu, nhóm theo thứ tự cố định, huy hiệu số yêu cầu báo giá mới. */
+/** Menu bên trái tùy chỉnh: thương hiệu, nhóm theo thứ tự cố định, huy hiệu realtime (yêu cầu báo giá mới, đăng ký bản tin hôm nay). */
 export const AdminNav = async ({ i18n, payload, permissions, visibleEntities }: Props) => {
   if (!payload?.config || !permissions) return null
   const { collections, globals } = payload.config
@@ -49,11 +51,11 @@ export const AdminNav = async ({ i18n, payload, permissions, visibleEntities }: 
     i18n,
   )
 
-  let newQuotes = 0
-  if (visibleCollections.includes('quote-requests') && permissions.collections?.['quote-requests']?.read) {
-    const res = await payload.count({ collection: 'quote-requests', where: { status: { equals: 'new' } } })
-    newQuotes = res.totalDocs
-  }
+  // Số ban đầu cho huy hiệu realtime (yêu cầu báo giá Mới, đăng ký bản tin hôm nay)
+  const canSeeLive = Boolean(permissions.collections?.['quote-requests']?.read || permissions.collections?.subscribers?.read)
+  const live: LiveCounts = canSeeLive
+    ? await getLiveCounts(payload)
+    : { newQuotes: 0, callbackQuotes: 0, contactedQuotes: 0, doneQuotes: 0, subscribers: 0, subscribersToday: 0 }
 
   const groups: NavGroupData[] = raw
     .map((g) => ({
@@ -64,14 +66,13 @@ export const AdminNav = async ({ i18n, payload, permissions, visibleEntities }: 
           slug: e.slug,
           type: e.type === EntityType.collection ? ('collection' as const) : ('global' as const),
           label: typeof e.label === 'string' ? e.label : i18n.t(e.label as never),
-          badge: e.slug === 'quote-requests' && newQuotes > 0 ? newQuotes : undefined,
         })),
     }))
     .sort((a, b) => rank(GROUP_ORDER, a.label) - rank(GROUP_ORDER, b.label))
 
   const settings = await payload.findGlobal({ slug: 'site-settings', depth: 0 })
 
-  return <NavClient groups={groups} brandName={settings.brandName || 'Thành Vinh Metal'} />
+  return <NavClient groups={groups} brandName={settings.brandName || 'Thành Vinh Metal'} live={live} />
 }
 
 export default AdminNav

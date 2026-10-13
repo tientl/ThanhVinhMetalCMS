@@ -43,11 +43,11 @@ src/
   seed/                  dữ liệu mẫu
   lib/data.ts            hàm lấy dữ liệu cho giao diện (getHome, getProducts, search...)
   app/(frontend)/        trang người dùng: /, /san-pham, /san-pham/danh-muc/[slug], /san-pham/[slug], /bai-viet..., /lien-he, /tim-kiem, /[slug]
-  app/(frontend)/api/    quote (form báo giá), subscribe (bản tin), search
+  app/(frontend)/api/    quote (form báo giá), subscribe (bản tin), search, live-counts (số realtime cho admin)
   app/(payload)/         admin và REST API của Payload
   components/            layout (header, footer, nút nổi), home (8 khối), ui, forms
 deploy/                  nginx.conf, ecosystem PM2, backup.sh, deploy.sh
-docs/                    SCOPE, DESIGN, DATA-MODEL, PLAN, DEPLOY, TESTING, KNOWN-ISSUES
+docs/                    SCOPE, DESIGN, DATA-MODEL, PLAN, DEPLOY, TESTING, KNOWN-ISSUES, CHANGELOG
 ```
 
 ## Quy ước
@@ -59,7 +59,7 @@ docs/                    SCOPE, DESIGN, DATA-MODEL, PLAN, DEPLOY, TESTING, KNOWN
 
 ## Kiểm thử
 
-200 test phủ backend và giao diện. Chi tiết ở `docs/TESTING.md`.
+254 test phủ backend và giao diện. Chi tiết ở `docs/TESTING.md`.
 
 ```bash
 pnpm test                        # unit + integration

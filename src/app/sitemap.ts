@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 
+import { AS_GUEST } from '@/lib/data'
 import { getPayloadClient } from '@/lib/payload'
 import { getServerSideURL } from '@/utilities/getURL'
 
@@ -10,11 +11,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const payload = await getPayloadClient()
 
   const [products, categories, posts, postCategories, pages] = await Promise.all([
-    payload.find({ collection: 'products', limit: 1000, select: { slug: true, updatedAt: true } }),
+    // Chỉ bản đã xuất bản: sản phẩm, bài viết, trang tĩnh có nháp
+    payload.find({ collection: 'products', limit: 1000, select: { slug: true, updatedAt: true }, ...AS_GUEST }),
     payload.find({ collection: 'product-categories', limit: 100, select: { slug: true, updatedAt: true } }),
-    payload.find({ collection: 'posts', limit: 1000, select: { slug: true, updatedAt: true } }),
+    payload.find({ collection: 'posts', limit: 1000, select: { slug: true, updatedAt: true }, ...AS_GUEST }),
     payload.find({ collection: 'post-categories', limit: 50, select: { slug: true, updatedAt: true } }),
-    payload.find({ collection: 'pages', limit: 100, select: { slug: true, updatedAt: true } }),
+    payload.find({ collection: 'pages', limit: 100, select: { slug: true, updatedAt: true }, ...AS_GUEST }),
   ])
 
   const entry = (path: string, updatedAt?: string, priority = 0.6): MetadataRoute.Sitemap[number] => ({

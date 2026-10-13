@@ -26,6 +26,33 @@ test.describe('Sản phẩm', () => {
     await expect(page.getByRole('link', { name: /báo giá/i }).or(page.getByRole('button', { name: /báo giá/i })).first()).toBeVisible()
   })
 
+  test('bấm ảnh chính mở ảnh phóng to, Esc đóng lại', async ({ page }) => {
+    await page.goto('/san-pham')
+    await page.locator('a[href^="/san-pham/"]:not([href*="/danh-muc/"])').first().click()
+    await page.getByRole('button', { name: /xem ảnh lớn:/i }).click()
+
+    const viewer = page.getByRole('dialog', { name: /ảnh phóng to/i })
+    await expect(viewer).toBeVisible()
+    await expect(viewer.locator('img')).toBeVisible()
+
+    await page.keyboard.press('Escape')
+    await expect(viewer).toBeHidden()
+  })
+
+  test('bấm ảnh thu nhỏ mở thẳng ảnh đó phóng to', async ({ page }) => {
+    // Sản phẩm mẫu có 2 ảnh
+    await page.goto('/san-pham/vach-hoa-tiet-tron-vang-dong')
+    await page.getByRole('button', { name: 'Xem ảnh lớn 2' }).click()
+
+    const viewer = page.getByRole('dialog', { name: /ảnh phóng to/i })
+    await expect(viewer).toBeVisible()
+    await expect(viewer.getByText('02 / 02')).toBeVisible()
+
+    await viewer.getByRole('button', { name: /đóng/i }).click()
+    await expect(viewer).toBeHidden()
+    await expect(page.getByRole('button', { name: 'Xem ảnh lớn 2' })).toHaveAttribute('aria-current', 'true')
+  })
+
   test('trang danh mục chỉ hiện sản phẩm của danh mục đó', async ({ page }) => {
     await page.goto('/san-pham')
     const categoryLink = page.locator('a[href^="/san-pham/danh-muc/"]').first()

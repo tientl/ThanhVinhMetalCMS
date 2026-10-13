@@ -5,7 +5,10 @@ import { simpleRichText } from '@/fields/richText'
 import { buildSearchText, searchTextField } from '@/fields/searchText'
 import { seoTab } from '@/fields/seo'
 import { slugField } from '@/fields/slug'
+import { linkedNameCell, thumbnailColumn } from '@/fields/thumbnail'
 import { revalidateCollection, revalidateCollectionDelete } from '@/hooks/revalidate'
+import { dropEmptyRows } from '@/hooks/arrays'
+import { blockNoopRestore, restoreVersionEndpoint, VERSIONS_LIST_VIEW } from '@/hooks/versions'
 
 const paths = (doc: { slug?: string | null }) => ['/san-pham', `/san-pham/${doc.slug}`]
 
@@ -14,9 +17,12 @@ export const Products: CollectionConfig<'products'> = {
   labels: { singular: 'Sản phẩm', plural: 'Sản phẩm' },
   admin: {
     hideAPIURL: true,
-    components: { edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } },
+    components: {
+      edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] },
+      views: { edit: { versions: VERSIONS_LIST_VIEW } },
+    },
     useAsTitle: 'name',
-    defaultColumns: ['name', 'category', 'featured', '_status', 'updatedAt'],
+    defaultColumns: ['thumbnail', 'name', 'category', 'featured', '_status', 'updatedAt'],
     group: 'Sản phẩm',
   },
   access: {
@@ -34,7 +40,8 @@ export const Products: CollectionConfig<'products'> = {
     price: true,
   },
   fields: [
-    { name: 'name', type: 'text', label: 'Tên sản phẩm', required: true },
+    { name: 'name', type: 'text', label: 'Tên sản phẩm', required: true, admin: { components: linkedNameCell } },
+    thumbnailColumn('images.0.image'),
     {
       type: 'tabs',
       tabs: [
@@ -118,7 +125,12 @@ export const Products: CollectionConfig<'products'> = {
     },
     searchTextField,
   ],
+  // Phiên bản là bản nháp thì khôi phục dưới dạng nháp (xem restoreVersionEndpoint)
+  endpoints: [restoreVersionEndpoint],
   hooks: {
+    beforeOperation: [blockNoopRestore],
+    // Bỏ dòng "Bộ ảnh" chưa chọn ảnh, dòng "Thông số" trống cả tên lẫn giá trị (lưu nháp vẫn lọt nếu không bỏ)
+    beforeValidate: [dropEmptyRows({ images: ['image'], spec: ['label', 'value'] })],
     beforeChange: [buildSearchText({ fields: ['name', 'summary', 'material'], relation: { field: 'category', collection: 'product-categories' } })],
     afterChange: [revalidateCollection(paths)],
     afterDelete: [revalidateCollectionDelete(paths)],

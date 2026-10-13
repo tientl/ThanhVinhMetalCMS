@@ -85,4 +85,10 @@ test.describe('Giao diện trên điện thoại', () => {
     await page.goto('/')
     await expect(page.locator('a[href^="tel:"]').first()).toBeVisible()
   })
+
+  test('điện thoại giữ tỉ lệ 100%, không phóng 110% như máy tính', async ({ page }) => {
+    await page.goto('/')
+    const zoom = await page.evaluate(() => getComputedStyle(document.documentElement).zoom)
+    expect(zoom).toBe('1')
+  })
 })
