@@ -66,4 +66,9 @@ test.describe('Trang chủ', () => {
     const raw = await jsonLd.first().textContent()
     expect(() => JSON.parse(raw || '')).not.toThrow()
   })
+
+  test('máy tính hiển thị phóng 110%', async ({ page }) => {
+    const zoom = await page.evaluate(() => getComputedStyle(document.documentElement).zoom)
+    expect(zoom).toBe('1.1')
+  })
 })

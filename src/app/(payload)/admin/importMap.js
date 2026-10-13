@@ -1,5 +1,10 @@
 import { QuoteAttachmentField as QuoteAttachmentField_16cee9a54674cb622a8a4dfb11e0f527 } from '@/components/admin/QuoteAttachmentField'
+import { QuoteStatusCell as QuoteStatusCell_c7ed968cdd7b1d32526e78b157b6089d } from '@/components/admin/QuoteStatusCell'
+import { QuoteStatusCards as QuoteStatusCards_fb3f0f31f63df082dd1d9a8d8dce6d29 } from '@/components/admin/QuoteStatusCards'
 import { CancelButton as CancelButton_dcba502f3edb53b85cc67e09157c26cc } from '@/components/admin/CancelButton'
+import { VersionsList as VersionsList_2593915adb29dfa441680e68e05517c5 } from '@/components/admin/VersionsList'
+import { DocLinkCell as DocLinkCell_853fe2a7185b129430f005097d480f04 } from '@/components/admin/DocLinkCell'
+import { ThumbnailCell as ThumbnailCell_4eaa5ab3baa8885583aa5f24c3db421f } from '@/components/admin/ThumbnailCell'
 import { RscEntryLexicalCell as RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { RscEntryLexicalField as RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
 import { LexicalDiffComponent as LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e } from '@payloadcms/richtext-lexical/rsc'
@@ -40,12 +45,19 @@ import { Icon as Icon_534076e2c753ea5d539a54b05f456b1b } from '@/components/admi
 import { Logo as Logo_a44df17d0fc3dcd873dae43dc3bf66bd } from '@/components/admin/Logo'
 import { AdminThemeToggle as AdminThemeToggle_e9d2c96263c126e37765894bd4e8a4bd } from '@/components/admin/AdminThemeToggle'
 import { DashboardHeader as DashboardHeader_cd0feacc198e63b71a4a6f8d61cea33f } from '@/components/admin/DashboardHeader'
+import { VersionRestoreGuard as VersionRestoreGuard_4d458a9cbb34c60c39c41ae2e710ab70 } from '@/components/admin/VersionRestoreGuard'
+import { AdminImageViewer as AdminImageViewer_447688a77add4c537b797ffb426ab6b1 } from '@/components/admin/AdminImageViewer'
 import { CollectionCards as CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1 } from '@payloadcms/next/rsc'
 
 /** @type import('payload').ImportMap */
 export const importMap = {
   "@/components/admin/QuoteAttachmentField#QuoteAttachmentField": QuoteAttachmentField_16cee9a54674cb622a8a4dfb11e0f527,
+  "@/components/admin/QuoteStatusCell#QuoteStatusCell": QuoteStatusCell_c7ed968cdd7b1d32526e78b157b6089d,
+  "@/components/admin/QuoteStatusCards#QuoteStatusCards": QuoteStatusCards_fb3f0f31f63df082dd1d9a8d8dce6d29,
   "@/components/admin/CancelButton#CancelButton": CancelButton_dcba502f3edb53b85cc67e09157c26cc,
+  "@/components/admin/VersionsList#VersionsList": VersionsList_2593915adb29dfa441680e68e05517c5,
+  "@/components/admin/DocLinkCell#DocLinkCell": DocLinkCell_853fe2a7185b129430f005097d480f04,
+  "@/components/admin/ThumbnailCell#ThumbnailCell": ThumbnailCell_4eaa5ab3baa8885583aa5f24c3db421f,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalCell": RscEntryLexicalCell_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#RscEntryLexicalField": RscEntryLexicalField_44fe37237e0ebf4470c9990d8cb7b07e,
   "@payloadcms/richtext-lexical/rsc#LexicalDiffComponent": LexicalDiffComponent_44fe37237e0ebf4470c9990d8cb7b07e,
@@ -86,5 +98,7 @@ export const importMap = {
   "@/components/admin/Logo#Logo": Logo_a44df17d0fc3dcd873dae43dc3bf66bd,
   "@/components/admin/AdminThemeToggle#AdminThemeToggle": AdminThemeToggle_e9d2c96263c126e37765894bd4e8a4bd,
   "@/components/admin/DashboardHeader#DashboardHeader": DashboardHeader_cd0feacc198e63b71a4a6f8d61cea33f,
+  "@/components/admin/VersionRestoreGuard#VersionRestoreGuard": VersionRestoreGuard_4d458a9cbb34c60c39c41ae2e710ab70,
+  "@/components/admin/AdminImageViewer#AdminImageViewer": AdminImageViewer_447688a77add4c537b797ffb426ab6b1,
   "@payloadcms/next/rsc#CollectionCards": CollectionCards_f9c02e79a4aed9a3924487c0cd4cafb1
 }

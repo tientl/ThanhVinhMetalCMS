@@ -22,6 +22,9 @@ const withPaths = () => [tsconfigPaths()]
 
 export default defineConfig({
   test: {
+    // Nhóm int dùng chung một database nên các file phải chạy tuần tự.
+    // Vitest 3 chỉ đọc fileParallelism ở cấp gốc; đặt trong từng project sẽ bị bỏ qua (các file int từng chạy chồng nhau).
+    fileParallelism: false,
     projects: [
       {
         plugins: withPaths(),
@@ -39,8 +42,6 @@ export default defineConfig({
           include: ['tests/int/**/*.test.ts'],
           env,
           globalSetup: ['tests/setup/global.ts'],
-          // Dùng chung một database nên chạy tuần tự cho dễ đoán.
-          fileParallelism: false,
           testTimeout: 60_000,
           hookTimeout: 180_000,
         },

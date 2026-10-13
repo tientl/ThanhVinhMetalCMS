@@ -36,7 +36,8 @@ export default defineConfig({
     { name: 'setup', testMatch: /auth\.setup\.ts/, use: { ...devices['Desktop Chrome'] } },
     {
       name: 'desktop',
-      use: { ...devices['Desktop Chrome'] },
+      // 1440px là bề ngang của thiết kế gốc. Màn laptop nhỏ hơn có test riêng trong theme-nav.spec.ts.
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
       testIgnore: [/responsive\.spec\.ts/, /admin\.spec\.ts/],
     },
     {

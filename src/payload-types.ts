@@ -155,8 +155,14 @@ export interface QuoteRequest {
   company?: string | null;
   message?: string | null;
   attachment?: (number | null) | QuoteFile;
-  status?: ('new' | 'contacted' | 'done') | null;
+  status?: ('new' | 'callback' | 'contacted' | 'done') | null;
+  /**
+   * Trang khách đang mở khi gửi: "/" là trang chủ, "/lien-he" là trang Liên hệ; có "?sp=..." là bấm "Yêu cầu báo giá" từ sản phẩm đó. Dùng để biết trang nào mang lại khách.
+   */
   source?: string | null;
+  /**
+   * Địa chỉ mạng của người gửi, chỉ dùng để truy vết khi bị gửi spam. "::1" hay "192.168..." là máy trong mạng nội bộ (lúc thử nghiệm).
+   */
   ip?: string | null;
   updatedAt: string;
   createdAt: string;

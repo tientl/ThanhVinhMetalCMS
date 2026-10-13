@@ -24,9 +24,22 @@
   --ease-lux: cubic-bezier(0.2, 0.7, 0.2, 1);
 
   --breakpoint-xs: 30rem;
+  /*
+   * Từ máy tính bảng trở lên giao diện phóng 110% (xem --zoom bên dưới).
+   * Các mốc md trở lên nhân 1.1 theo, để bố cục đổi ở đúng bề ngang như khi người xem tự phóng 110% trên trình duyệt.
+   */
+  --breakpoint-md: 52.8rem;
+  --breakpoint-lg: 70.4rem;
+  --breakpoint-xl: 88rem;
+  --breakpoint-2xl: 105.6rem;
 }
 
 :root {
+  /*
+   * Mức phóng toàn trang: 100% của người xem bằng 110% thiết kế cũ (yêu cầu 11/10/2026).
+   * Điện thoại giữ nguyên. Đơn vị vh bị phóng theo nên chiều cao theo màn hình phải chia cho --zoom.
+   */
+  --zoom: 1;
   --header-h: 80px;
   color-scheme: dark;
   --header-bg: rgba(18, 20, 24, 0.55);
@@ -79,7 +92,14 @@
   color: var(--color-ink);
 }
 
+@media (width >= 48rem) {
+  :root {
+    --zoom: 1.1;
+  }
+}
+
 html {
+  zoom: var(--zoom);
   scroll-behavior: smooth;
   scroll-padding-top: var(--header-h);
   -webkit-text-size-adjust: 100%;
@@ -245,6 +265,17 @@ img {
 }
 .mega-drop {
   animation: drop 0.3s ease both;
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.fade-in {
+  animation: fade-in 0.25s ease both;
 }
 .dot-pulse {
   animation: pulse-dot 2.2s infinite;

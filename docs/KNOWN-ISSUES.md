@@ -7,6 +7,7 @@ Những chỗ phát hiện khi viết bộ test (09/10/2026). Mỗi mục có c�
 | 1 | `/api/quote` trả 500 khi tệp đính kèm bị Payload từ chối | Cao | Mất yêu cầu báo giá của khách |
 | 2 | Không gán được "Sản phẩm liên quan" lúc tạo mới qua API | Trung bình | Import, seed, tích hợp ngoài |
 | 3 | `/api/search` chưa có nơi nào gọi | Thấp | Code chết, hoặc tính năng dang dở |
+| 4 | Chưa có migration database, `deploy.sh` không cập nhật schema | Cao (khi lên VPS) | Bản mới có bảng hoặc cột mới sẽ lỗi trên production |
 
 ---
 
@@ -77,6 +78,22 @@ filterOptions: ({ id }) => (id ? { id: { not_in: [id] } } : true),
 Ô tìm kiếm trên header ([HeaderClient.tsx](../src/components/layout/HeaderClient.tsx), phần `SearchOverlay`) chỉ hiện chip "Gợi ý tìm nhanh" lấy từ global Điều hướng; gõ xong Enter thì chuyển sang `/tim-kiem`. Trang `/tim-kiem` gọi thẳng `search()` trong `src/lib/data.ts`, không qua API.
 
 **Cần quyết:** endpoint này vốn định dùng cho gợi ý tức thì khi gõ trong overlay (đúng phạm vi `docs/SCOPE.md` không?), hay là code thừa nên xóa. Nếu làm gợi ý tức thì thì nhớ thêm debounce và giới hạn số lần gọi.
+
+---
+
+## 4. Chưa có migration database, `deploy.sh` không cập nhật schema
+
+**Mức độ:** cao khi đã có VPS. Ghi nhận ngày 11/10/2026, lúc bật lịch sử phiên bản cho yêu cầu báo giá (thêm bảng `_quote_requests_v`).
+
+**Nơi xảy ra:** [deploy/deploy.sh](../deploy/deploy.sh), [src/payload.config.ts](../src/payload.config.ts) (`postgresAdapter` không khai báo `migrationDir`/`prodMigrations`), thư mục `src/migrations` chưa có.
+
+Adapter Postgres của Payload chỉ tự đẩy schema (push) khi `NODE_ENV` khác `production`, tức là lúc chạy `pnpm dev` hoặc `payload run` (`pnpm seed`). `pnpm build && pnpm start` và PM2 trên VPS chạy production nên **không** cập nhật schema. `deploy.sh` chỉ `git pull`, `build`, `pm2 reload`. Hiện chưa lộ vì VPS chưa dựng và database lần đầu được tạo bằng `pnpm seed`.
+
+**Tái hiện (máy local):** database đang có dữ liệu cũ, kéo code có collection mới hoặc bật `versions`, chạy thẳng `pnpm build && pnpm start` rồi mở trang sửa yêu cầu báo giá → lỗi bảng `_quote_requests_v` không tồn tại.
+
+**Cách xử lý tạm:** chạy `pnpm dev` một lần (hoặc `pnpm seed`, sẽ tự thoát vì đã có dữ liệu) cho schema cập nhật rồi mới build.
+
+**Hướng sửa:** chuyển sang migration: `pnpm payload migrate:create init` tạo bản đầu, commit `src/migrations`, khai báo `migrationDir` và `prodMigrations` trong `postgresAdapter` (hoặc thêm `pnpm payload migrate` vào `deploy.sh` trước `pnpm build`). Từ đó mỗi lần sửa collection/global thì tạo thêm một migration.
 
 ---
 

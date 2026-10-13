@@ -5,14 +5,14 @@ import React from 'react'
 import { PageHero } from '@/components/ui/PageHero'
 import { RichText } from '@/components/ui/RichText'
 import { getPayloadClient } from '@/lib/payload'
-import { getPage } from '@/lib/data'
+import { AS_GUEST, getPage } from '@/lib/data'
 import { buildMetadata } from '@/lib/metadata'
 
 type Props = { params: Promise<{ slug: string }> }
 
 export async function generateStaticParams() {
   const payload = await getPayloadClient()
-  const res = await payload.find({ collection: 'pages', limit: 100, select: { slug: true } })
+  const res = await payload.find({ collection: 'pages', limit: 100, select: { slug: true }, ...AS_GUEST })
   return res.docs.map((p) => ({ slug: p.slug }))
 }
 

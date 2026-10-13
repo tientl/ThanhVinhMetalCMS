@@ -59,12 +59,40 @@ export const HeaderClient = ({ navigation, settings }: Props) => {
     }
   }, [mobile])
 
+  // Menu ngang không đủ chỗ (màn hình laptop hẹp, hoặc admin thêm nhiều mục) thì thu về nút mở menu như điện thoại.
+  // Đo bề ngang cần lúc menu đang hiện; khi đã thu thì chờ header rộng bằng chừng đó mới hiện lại.
+  const headerRef = useRef<HTMLElement>(null)
+  const needWidth = useRef(0)
+  const [squeezed, setSqueezed] = useState(false)
+  useEffect(() => {
+    const el = headerRef.current
+    if (!el) return
+    const check = () => {
+      if (!squeezed) {
+        if (el.scrollWidth > el.clientWidth + 1) {
+          needWidth.current = el.scrollWidth
+          setSqueezed(true)
+        }
+      } else if (el.clientWidth >= needWidth.current) {
+        setSqueezed(false)
+      }
+    }
+    check()
+    const ro = new ResizeObserver(check)
+    ro.observe(el)
+    // Font tải xong làm chữ menu rộng ra mà header không đổi cỡ, nên đo lại
+    document.fonts?.ready.then(check).catch(() => {})
+    return () => ro.disconnect()
+  }, [squeezed])
+
   const isOpen = open !== '' || mobile
   const toggle = (key: string) => setOpen((cur) => (cur === key ? '' : key))
   const left = navigation.left ?? []
   const right = navigation.right ?? []
   const allItems = [...left, ...right]
-  const current = allItems.find((i) => i.id === open)
+  const current = squeezed ? undefined : allItems.find((i) => i.id === open)
+  const desktopNav = squeezed ? 'hidden' : 'hidden lg:flex'
+  const mobileOnly = squeezed ? '' : 'lg:hidden'
 
   const renderItem = (item: Item) =>
     item.type === 'mega' ? (
@@ -103,9 +131,9 @@ export const HeaderClient = ({ navigation, settings }: Props) => {
           color: isOpen ? 'var(--color-ink)' : 'var(--header-ink)',
         }}
       >
-        <header className="section-x grid h-[var(--header-h)] grid-cols-[1fr_auto_1fr] items-center gap-4 lg:gap-7 lg:px-10">
+        <header ref={headerRef} className="section-x grid h-[var(--header-h)] grid-cols-[1fr_auto_1fr] items-center gap-4 lg:gap-7 lg:px-10">
           {/* Trái */}
-          <nav aria-label="Menu chính" className="hidden items-center gap-5 justify-self-start lg:flex">
+          <nav aria-label="Menu chính" className={`${desktopNav} items-center gap-5 justify-self-start`}>
             <Link href="/" aria-label="Trang chủ" className="navl flex text-current">
               <IconHome />
             </Link>
@@ -113,7 +141,7 @@ export const HeaderClient = ({ navigation, settings }: Props) => {
           </nav>
           <button
             type="button"
-            className="flex h-10 w-10 items-center justify-center justify-self-start border-0 bg-transparent text-current lg:hidden"
+            className={`flex h-10 w-10 items-center justify-center justify-self-start border-0 bg-transparent text-current ${mobileOnly}`}
             aria-label={mobile ? 'Đóng menu' : 'Mở menu'}
             aria-expanded={mobile}
             onClick={() => {
@@ -139,7 +167,7 @@ export const HeaderClient = ({ navigation, settings }: Props) => {
 
           {/* Phải */}
           <div className="flex items-center gap-4 justify-self-end lg:gap-5">
-            <nav aria-label="Menu chính, phần phải" className="hidden items-center gap-5 lg:flex">
+            <nav aria-label="Menu chính, phần phải" className={`${desktopNav} items-center gap-5`}>
               {right.map(renderItem)}
             </nav>
             <button
@@ -164,7 +192,7 @@ export const HeaderClient = ({ navigation, settings }: Props) => {
         <MegaPanel id={`mega-${current.id}`} label={current.label} mega={current.megaMenu} onClose={close} />
       )}
       {open === 'search' && <SearchOverlay suggestions={navigation.searchSuggestions ?? []} onClose={close} />}
-      {mobile && <MobileDrawer items={allItems} onClose={close} />}
+      {mobile && <MobileDrawer items={allItems} onClose={close} className={mobileOnly} />}
     </div>
   )
 }
@@ -180,7 +208,7 @@ const MegaPanel = ({ id, label, mega, onClose }: { id: string; label: string; me
   return (
     <div
       id={id}
-      className="mega-drop section-x fixed inset-x-0 top-[var(--header-h)] z-30 hidden max-h-[calc(100vh-var(--header-h))] flex-col gap-6 overflow-y-auto border-t border-line bg-surface pb-12 pt-10 shadow-[0_24px_40px_rgba(15,19,23,0.16)] lg:flex"
+      className="mega-drop section-x fixed inset-x-0 top-[var(--header-h)] z-30 hidden max-h-[calc(100vh_/_var(--zoom)_-_var(--header-h))] flex-col gap-6 overflow-y-auto border-t border-line bg-surface pb-12 pt-10 shadow-[0_24px_40px_rgba(15,19,23,0.16)] lg:flex"
     >
       <div className="flex items-center justify-between">
         <span className="text-[13px] font-bold uppercase text-muted-3" style={{ letterSpacing: 1 }}>
@@ -323,10 +351,10 @@ const SearchOverlay = ({ suggestions, onClose }: { suggestions: NonNullable<Navi
 }
 
 /* ---------- Ngăn kéo mobile ---------- */
-const MobileDrawer = ({ items, onClose }: { items: Item[]; onClose: () => void }) => {
+const MobileDrawer = ({ items, onClose, className }: { items: Item[]; onClose: () => void; className: string }) => {
   const [expanded, setExpanded] = useState<string>('')
   return (
-    <div className="fixed inset-x-0 bottom-0 top-[var(--header-h)] z-30 overflow-y-auto bg-bg lg:hidden" role="dialog" aria-label="Menu">
+    <div className={`fixed inset-x-0 bottom-0 top-[var(--header-h)] z-30 overflow-y-auto bg-bg ${className}`} role="dialog" aria-label="Menu">
       <nav className="flex flex-col">
         <Link href="/" onClick={onClose} className="border-b border-line px-5 py-4 text-[13px] font-medium uppercase text-ink no-underline" style={{ letterSpacing: 1.6 }}>
           Trang chủ

@@ -4,9 +4,9 @@ Bộ test phủ cả backend (Payload, phân quyền, API) và giao diện (tran
 
 | Nhóm | Công cụ | Chạy gì | Số test |
 |---|---|---|---|
-| unit | Vitest | Hàm thuần: bỏ dấu, slug, định dạng, ảnh, màu, rate limit | 48 |
-| int | Vitest + Payload Local API | Collection, phân quyền, `src/lib/data.ts`, 3 API route | 79 |
-| e2e | Playwright (Chromium) | Trang thật trong trình duyệt, cả desktop và điện thoại | 73 |
+| unit | Vitest | Hàm thuần: bỏ dấu, slug, định dạng, ảnh, màu, rate limit, so sánh phiên bản | 60 |
+| int | Vitest + Payload Local API | Collection, phân quyền, `src/lib/data.ts`, 4 API route, kênh realtime, lịch sử phiên bản, bản nháp không lên web, khôi phục bản nháp | 102 |
+| e2e | Playwright (Chromium) | Trang thật trong trình duyệt, cả desktop và điện thoại | 92 |
 
 ## Chạy
 
@@ -19,6 +19,12 @@ pnpm test:int               # chỉ int
 pnpm test:watch             # unit ở chế độ watch khi đang code
 pnpm test:e2e               # e2e (tự nạp database rồi build và chạy web server)
 pnpm test:all               # tất cả
+```
+
+Máy còn ít RAM (khoảng 2 GB trống), `next build` và Playwright chạy song song nhiều tiến trình có thể hết bộ nhớ (`JavaScript heap out of memory`, server test sập giữa chừng). Giảm số tiến trình:
+
+```bash
+CIRCLE_NODE_TOTAL=4 pnpm test:e2e --workers=2   # build 3 tiến trình, 2 trình duyệt
 ```
 
 Lần đầu chạy e2e cần tải trình duyệt:
@@ -37,7 +43,7 @@ Trước mỗi lần chạy, `tests/setup/prepare-database.ts` xóa và tạo l�
 TEST_DB_REUSE=1 pnpm test:int
 ```
 
-Các file int tự dọn bản ghi mình tạo (tiền tố `Zz`) ở `beforeAll` nên chạy lại nhiều lần vẫn đúng.
+Các file int chạy tuần tự (`fileParallelism: false` ở **cấp gốc** `vitest.config.mts`; Vitest 3 bỏ qua nếu đặt trong project) và tự dọn bản ghi mình tạo (tiền tố `Zz`) ở `beforeAll` nên chạy lại nhiều lần vẫn đúng.
 
 ## E2E chạy tách biệt
 
@@ -54,7 +60,7 @@ Playwright tự chạy `pnpm build && pnpm start`. Ở máy local nếu đã có
 | Project | Chạy file | Ghi chú |
 |---|---|---|
 | `setup` | `auth.setup.ts` | Đăng nhập admin một lần, lưu cookie vào `playwright/.auth/admin.json` |
-| `desktop` | tất cả trừ `responsive`, `admin` | Chrome desktop |
+| `desktop` | tất cả trừ `responsive`, `admin` | Chrome desktop 1440×900 (bề ngang thiết kế gốc); laptop 1280, 1366 có test riêng trong `theme-nav.spec.ts` |
 | `admin` | `admin.spec.ts` | Dùng cookie từ `setup`; nhóm "chưa đăng nhập" tự xóa cookie |
 | `mobile` | `responsive.spec.ts` | Pixel 7 |
 
@@ -62,7 +68,7 @@ Playwright tự chạy `pnpm build && pnpm start`. Ở máy local nếu đã có
 
 ### Rate limit
 
-`/api/quote` và `/api/subscribe` chặn sau 5 lần mỗi IP mỗi giờ, tính trong bộ nhớ tiến trình. Test nào gửi form thì gọi `useOwnRateLimitBucket()` (`tests/e2e/rate-limit.ts`) để gắn một IP giả riêng qua `X-Forwarded-For`, nhờ vậy chạy lại hay retry đều không bị chặn. Nhóm int cũng đổi IP theo từng test vì lý do tương tự.
+`/api/quote` và `/api/subscribe` chặn sau 5 lần mỗi IP mỗi giờ, tính trong bộ nhớ tiến trình. Test nào gửi form thì gọi `useOwnRateLimitBucket()` (gửi qua page) hoặc `randomIp()` (gửi thẳng bằng fixture `request`) trong `tests/e2e/rate-limit.ts` để gắn một IP giả riêng qua `X-Forwarded-For`, nhờ vậy chạy lại hay retry đều không bị chặn. Nhóm int cũng đổi IP theo từng test vì lý do tương tự.
 
 ## Viết thêm test
 

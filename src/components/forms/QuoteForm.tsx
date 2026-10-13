@@ -29,7 +29,15 @@ export const QuoteForm = ({ product }: { product?: string }) => {
         return
       }
     }
-    data.set('source', window.location.pathname)
+    // Ghi cả phần ?sp=<tên sản phẩm> khi khách bấm "Yêu cầu báo giá" từ trang sản phẩm, giải mã để đọc được trong admin
+    const page = window.location.pathname + window.location.search
+    let source = page
+    try {
+      source = decodeURIComponent(page)
+    } catch {
+      // Địa chỉ có ký tự % lẻ: giữ nguyên
+    }
+    data.set('source', source)
     setStatus('sending')
     setError('')
     try {

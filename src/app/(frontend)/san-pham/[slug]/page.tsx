@@ -11,7 +11,7 @@ import { ProductCard } from '@/components/ui/ProductCard'
 import { RichText } from '@/components/ui/RichText'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { getPayloadClient } from '@/lib/payload'
-import { getProduct, getRelatedProducts, getSiteSettings } from '@/lib/data'
+import { AS_GUEST, getProduct, getRelatedProducts, getSiteSettings } from '@/lib/data'
 import { telHref, zaloHref } from '@/lib/format'
 import { buildMetadata } from '@/lib/metadata'
 
@@ -19,7 +19,7 @@ type Props = { params: Promise<{ slug: string }> }
 
 export async function generateStaticParams() {
   const payload = await getPayloadClient()
-  const res = await payload.find({ collection: 'products', limit: 500, select: { slug: true } })
+  const res = await payload.find({ collection: 'products', limit: 500, select: { slug: true }, ...AS_GUEST })
   return res.docs.map((p) => ({ slug: p.slug }))
 }
 

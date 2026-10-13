@@ -8,7 +8,7 @@ import { PostCard } from '@/components/ui/PostCard'
 import { RichText } from '@/components/ui/RichText'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { getPayloadClient } from '@/lib/payload'
-import { getPost, getRelatedPosts } from '@/lib/data'
+import { AS_GUEST, getPost, getRelatedPosts } from '@/lib/data'
 import { formatDate } from '@/lib/format'
 import { buildMetadata } from '@/lib/metadata'
 
@@ -16,7 +16,7 @@ type Props = { params: Promise<{ slug: string }> }
 
 export async function generateStaticParams() {
   const payload = await getPayloadClient()
-  const res = await payload.find({ collection: 'posts', limit: 500, select: { slug: true } })
+  const res = await payload.find({ collection: 'posts', limit: 500, select: { slug: true }, ...AS_GUEST })
   return res.docs.map((p) => ({ slug: p.slug }))
 }
 

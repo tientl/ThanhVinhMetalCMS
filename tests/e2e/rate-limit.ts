@@ -15,3 +15,6 @@ export const useOwnRateLimitBucket = async (page: Page, testInfo: TestInfo) => {
     'x-forwarded-for': `203.0.${worker + 1}.${((counter + attempt * 50) % 250) + 1}`,
   })
 }
+
+/** IP giả ngẫu nhiên cho request gửi thẳng bằng fixture `request` (không qua page), để không đụng giới hạn 5 lần mỗi IP mỗi giờ. */
+export const randomIp = () => `10.${[0, 0, 0].map(() => Math.floor(Math.random() * 254) + 1).join('.')}`

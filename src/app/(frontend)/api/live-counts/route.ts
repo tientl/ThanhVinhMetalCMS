@@ -1,13 +1,16 @@
+import { NextResponse } from 'next/server'
+
+import { getLiveCounts, liveEvents } from '@/lib/liveEvents'
 import { getPayloadClient } from '@/lib/payload'
-import { quoteEvents } from '@/lib/quoteEvents'
 
 export const dynamic = 'force-dynamic'
 
 const HEARTBEAT_MS = 25_000
 
 /**
- * SSE: đẩy số yêu cầu báo giá "Mới" xuống admin ngay khi có thay đổi.
- * Chỉ admin/editor đã đăng nhập (cookie payload-token) mới kết nối được.
+ * Số liệu realtime cho trang quản trị: yêu cầu báo giá "Mới", đăng ký bản tin (tổng và hôm nay).
+ * `?stream=1`: SSE, đẩy số mới ngay khi có thay đổi. Không có tham số: trả JSON một lần, dùng cho thăm dò dự phòng.
+ * Chỉ admin/editor đã đăng nhập (cookie payload-token) mới gọi được.
  */
 export async function GET(req: Request) {
   const payload = await getPayloadClient()
@@ -17,7 +20,9 @@ export async function GET(req: Request) {
     return new Response('Unauthorized', { status: 401 })
   }
 
-  const count = async () => (await payload.count({ collection: 'quote-requests', where: { status: { equals: 'new' } } })).totalDocs
+  if (new URL(req.url).searchParams.get('stream') !== '1') {
+    return NextResponse.json(await getLiveCounts(payload), { headers: { 'Cache-Control': 'no-store' } })
+  }
 
   const encoder = new TextEncoder()
   const stream = new ReadableStream({
@@ -25,7 +30,7 @@ export async function GET(req: Request) {
       const send = (data: unknown) => controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`))
       const push = async () => {
         try {
-          send({ count: await count() })
+          send(await getLiveCounts(payload))
         } catch {
           /* kết nối đã đóng */
         }
@@ -38,9 +43,9 @@ export async function GET(req: Request) {
         }
       }, HEARTBEAT_MS)
 
-      quoteEvents.on('change', push)
+      liveEvents.on('change', push)
       req.signal.addEventListener('abort', () => {
-        quoteEvents.off('change', push)
+        liveEvents.off('change', push)
         clearInterval(heartbeat)
         try {
           controller.close()

@@ -11,10 +11,10 @@ Auth. `role: 'admin' | 'editor'`. Editor: tạo và sửa products, posts, media
 Upload. `alt` bắt buộc. Sizes: `thumb` 300×300 cover, `card` 800×600 cover, `wide` 1600 width, `hero` 2400 width. Lưu `/media` trên VPS, nằm trong backup.
 
 ### product-categories
-`name`, `slug` (tự sinh), `description`, `image` (media), `order` (number), `showOnHome` (bool). Dùng cho menu, lưới danh mục trang chủ, mega menu.
+`name`, `slug` (tự sinh), `description`, `image` (media), `order` (number), `showOnHome` (bool). Dùng cho menu, lưới danh mục trang chủ, mega menu. Danh sách admin có cột "Ảnh" (field ui `thumbnail`, không lưu DB) đứng trước tên (12/10/2026).
 
 ### products
-`name`, `slug`, `category` (relationship), `images` (array media, ảnh đầu là ảnh đại diện), `summary` (text ngắn), `description` (richText), `material`, `spec` (array {label, value}), `price` (text, mặc định "Liên hệ"), `featured` (bool), `related` (relationship many), `seo` (plugin), `status` draft/published.
+`name`, `slug`, `category` (relationship), `images` (array media, ảnh đầu là ảnh đại diện), `summary` (text ngắn), `description` (richText), `material`, `spec` (array {label, value}), `price` (text, mặc định "Liên hệ"), `featured` (bool), `related` (relationship many), `seo` (plugin), `status` draft/published. Danh sách admin có cột "Ảnh" lấy ảnh đầu của bộ ảnh (field ui `thumbnail`) (12/10/2026). Hook `beforeValidate` bỏ dòng `images` chưa chọn ảnh và dòng `spec` trống (13/10/2026).
 
 ### post-categories
 `name`, `slug`. Dữ liệu mẫu: Kiến thức, Tin tức, Tuyển dụng.
@@ -26,10 +26,10 @@ Upload. `alt` bắt buộc. Sizes: `thumb` 300×300 cover, `card` 800×600 cover
 Trang tĩnh: `title`, `slug`, `content` (richText), `seo`. Mẫu: gioi-thieu, chinh-sach-bao-hanh, chinh-sach-bao-mat, huong-dan-gui-ban-ve.
 
 ### quote-requests
-Từ form: `name`, `phone`, `email`, `company`, `message`, `attachment` (upload riêng, chỉ dxf/dwg/pdf/jpg/png ≤10 MB), `status: new | contacted | done`, `source` (trang gửi). Access: public create; admin/editor read; không public read. Hook afterChange: gửi email SMTP cho Mr Vinh.
+Từ form: `name`, `phone`, `email`, `company`, `message`, `attachment` (upload riêng, chỉ dxf/dwg/pdf/jpg/png ≤10 MB), `status: new | callback | contacted | done` (Mới, Cần liên hệ lại, Đã liên hệ, Hoàn tất; khai báo ở `src/lib/quoteStatus.ts`, `callback` thêm ngày 12/10/2026), `source` (trang gửi, gồm cả `?sp=<tên sản phẩm>` khi gửi từ nút báo giá của sản phẩm), `ip` (chỉ để truy vết spam). Access: public create; admin/editor read; không public read. Hook afterChange: gửi email SMTP cho Mr Vinh, báo realtime cho admin (`notifyLiveChange`). Bật `versions` (tối đa 50, không nháp): tab "Danh sách phiên bản" để xem, so sánh, khôi phục (11/10/2026). Yêu cầu chưa có phiên bản thì lần sửa đầu tự lưu bản gốc (hook `saveBaselineVersion`). `status` không được để trống (validate, không NOT NULL) (12/10/2026). Không cho khôi phục phiên bản giống hệt nội dung hiện tại (hook `beforeOperation` `blockNoopRestore`).
 
 ### subscribers
-`email` unique, `createdAt`. Public create, chặn trùng, giới hạn 5 lần/IP/giờ.
+`email` unique, `createdAt`. Public create, chặn trùng, giới hạn 5 lần/IP/giờ. Hook afterChange/afterDelete báo realtime cho admin (huy hiệu số đăng ký hôm nay, 11/10/2026).
 
 ## Globals
 
@@ -55,4 +55,4 @@ Từ form: `name`, `phone`, `email`, `company`, `message`, `attachment` (upload 
 - Seed script: nạp danh mục, 12 sản phẩm, 8 bài, home, navigation từ `docs/design/images`.
 
 ## Truy vấn cho giao diện (Dev A viết, Dev B gọi)
-`getHome()`, `getNavigation()`, `getSiteSettings()`, `getCategories()`, `getProducts({category, page})`, `getProduct(slug)`, `getRelatedProducts(id)`, `getPosts({category, page})`, `getPost(slug)`, `getPage(slug)`, `search(q)`. Dùng Local API của Payload, cache theo tag.
+`getHome()`, `getNavigation()`, `getSiteSettings()`, `getCategories()`, `getProducts({category, page})`, `getProduct(slug)`, `getRelatedProducts(id)`, `getPosts({category, page})`, `getPost(slug)`, `getPage(slug)`, `search(q)`. Dùng Local API của Payload, cache theo tag. Truy vấn sản phẩm, bài viết, trang tĩnh, trang chủ chạy dưới quyền khách (`AS_GUEST`, `overrideAccess: false`) để bản nháp không lên website (12/10/2026).
