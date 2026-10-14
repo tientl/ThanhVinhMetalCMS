@@ -24,6 +24,11 @@ export const Home: GlobalConfig = {
               maxRows: 5,
               fields: [
                 { name: 'image', type: 'upload', relationTo: 'media', label: 'Ảnh (nên 2400×1200, nền tối)', required: true },
+                {
+                  name: 'sliderCrop',
+                  type: 'ui',
+                  admin: { components: { Field: '@/components/admin/SliderCropField#SliderCropField' } },
+                },
                 { name: 'title', type: 'text', label: 'Tiêu đề', required: true },
                 { name: 'description', type: 'textarea', label: 'Mô tả' },
                 {

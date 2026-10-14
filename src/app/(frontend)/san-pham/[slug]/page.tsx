@@ -5,6 +5,7 @@ import React from 'react'
 
 import { ProductJsonLd } from '@/components/layout/JsonLd'
 import { ProductGallery } from '@/components/product/ProductGallery'
+import { ShareBar } from '@/components/ui/ShareBar'
 import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { IconChat, IconFile, IconPhone } from '@/components/ui/Icons'
 import { ProductCard } from '@/components/ui/ProductCard'
@@ -14,6 +15,7 @@ import { getPayloadClient } from '@/lib/payload'
 import { AS_GUEST, getProduct, getRelatedProducts, getSiteSettings } from '@/lib/data'
 import { telHref, zaloHref } from '@/lib/format'
 import { buildMetadata } from '@/lib/metadata'
+import { getServerSideURL } from '@/utilities/getURL'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -91,11 +93,12 @@ export default async function ProductPage({ params }: Props) {
                 <IconChat size={18} /> Zalo
               </a>
             )}
-            <Link href={`/lien-he?sp=${encodeURIComponent(product.name)}#bao-gia`} className="btn-ghost gap-2.5">
+            <Link href={`/lien-he?sp=${encodeURIComponent(product.name)}&from=${encodeURIComponent(`/san-pham/${product.slug}`)}#bao-gia`} className="btn-ghost gap-2.5">
               <IconFile size={18} /> Yêu cầu báo giá
             </Link>
           </div>
           <p className="m-0 text-[13.5px] text-muted-2">Gửi bản vẽ DXF, DWG, PDF để nhận báo giá trong 24 giờ.</p>
+          <ShareBar url={`${getServerSideURL()}/san-pham/${product.slug}`} title={product.name} />
         </div>
       </section>
 

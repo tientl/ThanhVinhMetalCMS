@@ -4,6 +4,7 @@ import type { Post, Product, User } from '@/payload-types'
 import { normalizeSearch } from '@/utilities/unaccent'
 
 import { getPayloadClient } from './payload'
+import { readStats } from './visitors'
 
 export const PRODUCTS_PER_PAGE = 12
 export const POSTS_PER_PAGE = 12
@@ -37,8 +38,7 @@ export const getCategories = cache(async () => {
     collection: 'product-categories',
     sort: 'order',
     limit: 50,
-    depth: 1,
-  })
+    depth: 1, ...AS_GUEST,})
   return res.docs
 })
 
@@ -48,8 +48,7 @@ export const getCategory = cache(async (slug: string) => {
     collection: 'product-categories',
     where: { slug: { equals: slug } },
     limit: 1,
-    depth: 1,
-  })
+    depth: 1, ...AS_GUEST,})
   return res.docs[0] ?? null
 })
 
@@ -95,7 +94,8 @@ export const getProduct = cache(async (slug: string) => {
 
 export const getRelatedProducts = cache(async (product: Product, limit = 4): Promise<Product[]> => {
   const picked = (product.related ?? []).filter((p): p is Product => typeof p === 'object')
-  if (picked.length >= limit) return picked.slice(0, limit)
+  // Đã chọn thì hiện đúng những gì đã chọn; để trống mới tự lấy cùng danh mục
+  if (picked.length > 0) return picked.slice(0, limit)
 
   const payload = await getPayloadClient()
   const categoryId = typeof product.category === 'object' ? product.category.id : product.category
@@ -117,7 +117,7 @@ export const getRelatedProducts = cache(async (product: Product, limit = 4): Pro
 
 export const getPostCategories = cache(async () => {
   const payload = await getPayloadClient()
-  const res = await payload.find({ collection: 'post-categories', limit: 20, sort: 'createdAt' })
+  const res = await payload.find({ collection: 'post-categories', limit: 20, sort: 'createdAt', ...AS_GUEST,})
   return res.docs
 })
 
@@ -126,8 +126,7 @@ export const getPostCategory = cache(async (slug: string) => {
   const res = await payload.find({
     collection: 'post-categories',
     where: { slug: { equals: slug } },
-    limit: 1,
-  })
+    limit: 1, ...AS_GUEST,})
   return res.docs[0] ?? null
 })
 
@@ -169,7 +168,8 @@ export const getPost = cache(async (slug: string) => {
 
 export const getRelatedPosts = cache(async (post: Post, limit = 3): Promise<Post[]> => {
   const picked = (post.related ?? []).filter((p): p is Post => typeof p === 'object')
-  if (picked.length >= limit) return picked.slice(0, limit)
+  // Đã chọn thì hiện đúng những gì đã chọn; để trống mới tự lấy cùng danh mục
+  if (picked.length > 0) return picked.slice(0, limit)
 
   const payload = await getPayloadClient()
   const categoryId = typeof post.category === 'object' ? post.category.id : post.category
@@ -195,7 +195,7 @@ export const getPage = cache(async (slug: string) => {
     collection: 'pages',
     where: { slug: { equals: slug } },
     limit: 1,
-    depth: 1,
+    depth: 2, // nạp cả ảnh của bản ghi được chèn qua "Mối quan hệ" trong nội dung
     ...AS_GUEST,
   })
   return res.docs[0] ?? null
@@ -226,3 +226,6 @@ export const search = cache(async (q: string) => {
   ])
   return { products: products.docs, posts: posts.docs }
 })
+
+/** Số liệu bộ đếm truy cập cho footer. */
+export const getVisitorStats = cache(async () => readStats(await getPayloadClient()))

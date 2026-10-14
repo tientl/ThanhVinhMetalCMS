@@ -6,20 +6,24 @@ import { Applications } from '@/components/home/Applications'
 import { CategoriesGrid } from '@/components/home/CategoriesGrid'
 import { Collections } from '@/components/home/Collections'
 import { ContactSection } from '@/components/home/ContactSection'
+import { IntroSplash } from '@/components/layout/IntroSplash'
+import { mediaUrl } from '@/lib/media'
 import { HeroSlider } from '@/components/home/HeroSlider'
 import { NewsGrid } from '@/components/home/NewsGrid'
 import { Solutions } from '@/components/home/Solutions'
 import { getCategories, getHome, getPosts, getSiteSettings } from '@/lib/data'
-import { BRAND, buildMetadata } from '@/lib/metadata'
+import { buildMetadata } from '@/lib/metadata'
 import type { ProductCategory } from '@/payload-types'
 
 export const revalidate = 3600
 
 export async function generateMetadata(): Promise<Metadata> {
   const [home, settings] = await Promise.all([getHome(), getSiteSettings()])
+  // "Tiêu đề trang chủ" nhập trong admin dùng nguyên văn (qua meta.title), không nối thêm tên thương hiệu
   return buildMetadata({
-    title: home.metaTitle || `${BRAND} – ${settings.tagline || 'Cắt laser CNC, gia công kim loại tấm'}`,
+    title: `${settings.brandName} – ${settings.tagline || 'Cắt laser CNC, gia công kim loại tấm'}`,
     description: home.metaDescription,
+    meta: { title: home.metaTitle, description: home.metaDescription },
     path: '/',
     image: home.metaImage,
   })
@@ -34,6 +38,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <IntroSplash logo={mediaUrl(settings.logo) || '/logo.png'} brand={settings.brandName} />
       <HeroSlider slides={home.slides ?? []} />
       <Collections items={home.collections ?? []} />
       <About about={home.about} />

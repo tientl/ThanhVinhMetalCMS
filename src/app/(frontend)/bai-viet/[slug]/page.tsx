@@ -7,10 +7,12 @@ import { Img } from '@/components/ui/Img'
 import { PostCard } from '@/components/ui/PostCard'
 import { RichText } from '@/components/ui/RichText'
 import { SectionHeading } from '@/components/ui/SectionHeading'
+import { ShareBar } from '@/components/ui/ShareBar'
 import { getPayloadClient } from '@/lib/payload'
 import { AS_GUEST, getPost, getRelatedPosts } from '@/lib/data'
 import { formatDate } from '@/lib/format'
 import { buildMetadata } from '@/lib/metadata'
+import { getServerSideURL } from '@/utilities/getURL'
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -55,6 +57,9 @@ export default async function PostPage({ params }: Props) {
         <div className="max-w-[860px]">
           {post.excerpt && <p className="lead mb-8 border-l-[3px] border-accent pl-5 text-ink">{post.excerpt}</p>}
           <RichText data={post.content} />
+          <div className="mt-10 border-t border-line pt-6">
+            <ShareBar url={`${getServerSideURL()}/bai-viet/${post.slug}`} title={post.title} />
+          </div>
         </div>
       </section>
 

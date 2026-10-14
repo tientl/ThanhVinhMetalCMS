@@ -62,3 +62,5 @@ Nút nổi góc phải dưới: về đầu trang (hiện khi cuộn > 500px), Z
 Danh sách sản phẩm theo danh mục, chi tiết sản phẩm, danh sách bài viết, chi tiết bài viết, giới thiệu, liên hệ, chính sách, 404, trang kết quả tìm kiếm, bản điện thoại.
 
 Chi tiết sản phẩm, bộ ảnh (cập nhật 11/10/2026): ảnh chính 4:3 có viền mảnh accent và biểu tượng phóng to ở góc; ảnh thu nhỏ vuông, 4 cột trên điện thoại, 5 cột từ 640px. Bấm ảnh chính hoặc ảnh thu nhỏ mở xem ảnh lớn toàn màn hình (ảnh thu nhỏ mở thẳng ảnh đó, 12/10/2026): nền gần đen, ảnh vừa khung theo tỉ lệ, số `01 / 02` trên trái, nút Đóng trên phải, 2 nút mũi tên hai bên, tên sản phẩm dưới cùng. Chuyển bằng mũi tên, phím ← → hoặc vuốt; đóng bằng Esc, nút Đóng hoặc bấm ra ngoài ảnh.
+
+Slider (cập nhật 13/10/2026): ảnh slide được Payload cắt sẵn về 2400×1200 (2:1) quanh điểm lấy nét khi tải lên. Trên desktop khung slider theo tỉ lệ 2:1, tối thiểu 600px, tối đa bằng chiều cao màn hình; điện thoại giữ 640px.

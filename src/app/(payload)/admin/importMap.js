@@ -36,6 +36,7 @@ import { MetaImageComponent as MetaImageComponent_a8a977ebc872c5d5ea7ee689724c08
 import { PreviewComponent as PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860 } from '@payloadcms/plugin-seo/client'
 import { BlocksFeatureClient as BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
 import { TableFeatureClient as TableFeatureClient_e70f5e05f09f93e00b997edb1ef0c864 } from '@payloadcms/richtext-lexical/client'
+import { SliderCropField as SliderCropField_06bf29dcbf80261f71960943d500138a } from '@/components/admin/SliderCropField'
 import { HotspotPicker as HotspotPicker_1577f6537e69154268209be140555dbe } from '@/components/admin/HotspotPicker'
 import { MenuRowLabel as MenuRowLabel_472e6657e259f8a6faf77ced3923f473 } from '@/components/admin/MenuRowLabel'
 import { ColorField as ColorField_2d3b6dcbebce75fc2ef5ac094f4218f0 } from '@/components/admin/ColorField'
@@ -89,6 +90,7 @@ export const importMap = {
   "@payloadcms/plugin-seo/client#PreviewComponent": PreviewComponent_a8a977ebc872c5d5ea7ee689724c0860,
   "@payloadcms/richtext-lexical/client#BlocksFeatureClient": BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
   "@payloadcms/richtext-lexical/client#TableFeatureClient": TableFeatureClient_e70f5e05f09f93e00b997edb1ef0c864,
+  "@/components/admin/SliderCropField#SliderCropField": SliderCropField_06bf29dcbf80261f71960943d500138a,
   "@/components/admin/HotspotPicker#HotspotPicker": HotspotPicker_1577f6537e69154268209be140555dbe,
   "@/components/admin/MenuRowLabel#MenuRowLabel": MenuRowLabel_472e6657e259f8a6faf77ced3923f473,
   "@/components/admin/ColorField#ColorField": ColorField_2d3b6dcbebce75fc2ef5ac094f4218f0,

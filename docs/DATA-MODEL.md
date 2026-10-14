@@ -55,4 +55,7 @@ Từ form: `name`, `phone`, `email`, `company`, `message`, `attachment` (upload 
 - Seed script: nạp danh mục, 12 sản phẩm, 8 bài, home, navigation từ `docs/design/images`.
 
 ## Truy vấn cho giao diện (Dev A viết, Dev B gọi)
-`getHome()`, `getNavigation()`, `getSiteSettings()`, `getCategories()`, `getProducts({category, page})`, `getProduct(slug)`, `getRelatedProducts(id)`, `getPosts({category, page})`, `getPost(slug)`, `getPage(slug)`, `search(q)`. Dùng Local API của Payload, cache theo tag. Truy vấn sản phẩm, bài viết, trang tĩnh, trang chủ chạy dưới quyền khách (`AS_GUEST`, `overrideAccess: false`) để bản nháp không lên website (12/10/2026).
+`getHome()`, `getNavigation()`, `getSiteSettings()`, `getCategories()`, `getProducts({category, page})`, `getProduct(slug)`, `getRelatedProducts(id)`, `getPosts({category, page})`, `getPost(slug)`, `getPage(slug)`, `search(q)`. Dùng Local API của Payload, cache theo tag.
+
+### visitor-stats (thêm 13/10/2026)
+`showInFooter`, `total`, `today`, `todayDate`. Website tự tăng qua `POST /api/visit`; admin có thể đặt số khởi điểm cho `total`.

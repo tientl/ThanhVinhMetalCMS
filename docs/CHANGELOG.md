@@ -4,6 +4,50 @@ Mỗi lần sửa code thì thêm một mục vào đầu file, commit cùng v�
 
 ---
 
+## 13–14/10/2026 · nhánh `dev`
+
+### Admin: khung cắt 2:1 cho ảnh slider, ô SEO do plugin quản lý, ẩn ô kỹ thuật ở yêu cầu báo giá
+
+**Vì sao:** ảnh slide tải lên tỉ lệ bất kỳ bị slider cắt không kiểm soát; nút "Tự động tạo" ở tab SEO trả 403 vì plugin SEO chỉ cấp quyền cho collection khai báo trong `collections`, mà ô SEO được thêm tay; hai ô "Gửi từ trang" và "IP" gây thắc mắc cho nhân viên.
+
+**Cách làm:**
+- Media: cỡ `hero` cắt sẵn 2400×1200 và `og` 1200×630 quanh điểm lấy nét, cho phép phóng to ảnh nhỏ (`withoutEnlargement: false`). `SliderCropField` (field ui trong mỗi slide của global Home, đọc ảnh cùng hàng) kéo khung 2:1 bằng `react-image-crop`, gọi `POST /api/media/:id/hero-crop` → `src/lib/heroCrop.ts` (sharp) ghi file hero **tên mới mỗi lần** (tránh cache trình duyệt/Next/Nginx), xóa file cũ, lưu `heroCrop` + `focalX/Y`. Thư mục ảnh dùng chung `src/lib/mediaDir.ts`.
+- `Img`: `object-position` theo điểm lấy nét chỉ cho cỡ chưa cắt (`wide`, gốc); cỡ đã cắt quanh điểm đó thì giữ 50%/50%.
+- Slider desktop cao `min(50vw, 90svh ÷ --zoom)`, min 560px; `--zoom` vì html phóng 110%.
+- SEO: `seoPlugin({ collections: ['products','posts','pages'], uploadsCollection: 'media' })`, bỏ `src/fields/seo.ts` và tab SEO thủ công; plugin tự chèn nhóm `meta` (cùng cột database, không mất dữ liệu). `generateTitle` đọc tên thương hiệu từ site-settings.
+- Tiêu đề tab và `og:site_name` lấy từ ô "Tên thương hiệu" (`getBrand()` trong `src/lib/metadata.ts`, `buildMetadata` thành async, trả `title.absolute` để layout không nối tên lần hai). Trang chủ dùng nguyên văn "Tiêu đề trang chủ" nếu có. Ba trang có `metadata` tĩnh chuyển sang `generateMetadata`.
+- Quote-requests: ẩn `source` và `ip` (`admin.hidden`), vẫn lưu. `QuoteForm` ghi trang sản phẩm xuất phát qua tham số `from` (trang sản phẩm gửi kèm), không có thì ghi đường dẫn + `?sp=`.
+- Nội dung rich text: nút "Mối quan hệ" render thành thẻ liên kết (`RichText.tsx`), trước đó in "unknown node"; giới hạn Relationship/Upload tới collection công khai. `getPage` depth 2 để có ảnh của bản ghi được chèn.
+
+### Giao diện: footer có bản đồ, bộ đếm truy cập, nút chia sẻ, màn chào trang chủ, logo ngang
+
+- Footer 3 cột: thông tin liên hệ, link chính sách, Google Maps nhỏ 300×200 `loading="lazy"`; bản đồ bỏ khỏi thân trang Liên hệ (`ContactSection` còn prop `showMap`, mặc định tắt).
+- Bộ đếm truy cập: global `visitor-stats`, `POST /api/visit` (cookie `tv_day` chống trùng trong ngày, `tv_id` + Map bộ nhớ cho "đang online" 5 phút, bỏ bot, rate limit 30/phút/IP, tự tạo dòng khi database mới), `VisitorCounter` ở footer luôn mount để vẫn đếm khi ẩn; số đọc qua `getVisitorStats()` trong data.ts.
+- `ShareBar` ở trang sản phẩm và bài viết: Facebook (popup), Web Share (Zalo, Messenger trên điện thoại), sao chép link. Thẻ OG đã có sẵn; tạo lại cỡ `og` cho 9 ảnh mẫu.
+- `IntroSplash` ở trang chủ: nền tối, logo + vạch accent + tên thương hiệu 1,5 giây rồi tan; hiệu ứng và đồng hồ chỉ bắt đầu khi logo đã tải (tải lại trang không bị "nhanh quá"); hiện mỗi lần mở trang chủ; tắt khi `prefers-reduced-motion`.
+- Logo: header/footer/thẻ liên hệ cao cố định, rộng theo tỉ lệ (logo tròn hay ngang đều đúng). Ba bản logo ngang "VINH METAL" ở `public/logo-ngang-*.png` và `docs/design/images/`.
+- `next.config.ts`: rewrite `afterFiles` `/media/:path*` → `/api/media/file/:path*` để ảnh tải lên sau khi build vẫn phục vụ được khi chạy `pnpm start` (trên VPS Nginx phục vụ `/media/` trước).
+- Menu: bỏ mục "Năng lực" (trùng "Về Vinh Metal"); thử tăng cỡ chữ menu rồi hoàn lại theo yêu cầu.
+
+### Sửa lỗi
+
+- Bản nháp lọt ra website: truy vấn giao diện thiếu `overrideAccess: false` (upstream đã thêm `AS_GUEST`, gộp lại).
+- Hook làm mới cache ném lỗi khi chạy ngoài Next (seed, `payload run`): bọc `revalidatePath` trong try/catch (`src/hooks/revalidate.ts`). Media chỉ làm mới cache khi `update`.
+- Sản phẩm liên quan: chọn gì hiện nấy, để trống mới tự lấy cùng danh mục (trước bù thêm cho đủ 4).
+- Endpoint cắt ảnh dùng `isAdminOrEditor` thay vì so chuỗi role.
+
+**File chính:** `src/collections/Media.ts`, `QuoteRequests.ts`, `src/globals/Home.ts`, `VisitorStats.ts` (mới), `src/lib/{heroCrop,mediaDir,visitors,metadata,data}.ts`, `src/components/admin/SliderCropField.tsx` (mới), `src/components/layout/{Footer,VisitorCounter,IntroSplash,HeaderClient}.tsx`, `src/components/ui/{ShareBar,RichText,Img}.tsx`, `src/components/home/{HeroSlider,ContactSection}.tsx`, `src/components/forms/QuoteForm.tsx`, `src/app/(frontend)/api/visit/route.ts` (mới), `src/plugins/index.ts`, `next.config.ts`, `custom.scss`, `globals.css`.
+
+**Kiểm tra:** `pnpm typecheck`, `pnpm lint`, `pnpm build`, `pnpm test:unit` (60 test) đều đạt. Thử tay trên bản build cổng tạm: cắt khung slider và xem trang chủ đổi theo; `POST /api/visit` khách mới/cũ/bot; chia sẻ qua ngrok thấy đủ thẻ OG; màn chào ở 0,3s/1,0s/1,8s/2,6s/3,4s.
+
+**Lưu ý:**
+- Schema đổi (global `visitor-stats`, field `heroCrop` ở media, enum status của quote-requests, bảng phiên bản): local đã push; **VPS cần push schema hoặc migration** trước khi khởi động bản mới.
+- Trang sản phẩm/bài viết/trang tĩnh có `revalidate`; đổi ảnh làm mới toàn site qua hook của Media.
+- Ô "Tên thương hiệu" trong Thông tin công ty quyết định tiêu đề tab, màn chào, footer; hiện đang là tên pháp nhân, nên đổi về "Thành Vinh Metal".
+- Các tính năng ngoài 9 hạng mục ghi ở cuối `docs/SCOPE.md`.
+
+---
+
 ## 13/10/2026 · nhánh `test` (đợt 2)
 
 ### Sửa lỗi: khôi phục phiên bản là bản nháp báo "Đã xảy ra vấn đề khi khôi phục phiên bản này"

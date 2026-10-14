@@ -101,23 +101,15 @@ export const QuoteRequests: CollectionConfig = {
       name: 'source',
       type: 'text',
       label: 'Gửi từ trang',
-      admin: {
-        position: 'sidebar',
-        readOnly: true,
-        description:
-          'Trang khách đang mở khi gửi: "/" là trang chủ, "/lien-he" là trang Liên hệ; có "?sp=..." là bấm "Yêu cầu báo giá" từ sản phẩm đó. Dùng để biết trang nào mang lại khách.',
-      },
+      // Vẫn lưu để thống kê sau này, không hiện trong form
+      admin: { position: 'sidebar', readOnly: true, hidden: true },
     },
     {
       name: 'ip',
       type: 'text',
       label: 'IP',
-      admin: {
-        position: 'sidebar',
-        readOnly: true,
-        description:
-          'Địa chỉ mạng của người gửi, chỉ dùng để truy vết khi bị gửi spam. "::1" hay "192.168..." là máy trong mạng nội bộ (lúc thử nghiệm).',
-      },
+      // Vẫn lưu để tra khi bị spam, không hiện trong form
+      admin: { position: 'sidebar', readOnly: true, hidden: true },
     },
   ],
   hooks: {

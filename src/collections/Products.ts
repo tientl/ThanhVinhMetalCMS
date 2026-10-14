@@ -3,7 +3,6 @@ import type { CollectionConfig } from 'payload'
 import { isAdmin, isAdminOrEditor, publishedOrLoggedIn } from '@/access'
 import { simpleRichText } from '@/fields/richText'
 import { buildSearchText, searchTextField } from '@/fields/searchText'
-import { seoTab } from '@/fields/seo'
 import { slugField } from '@/fields/slug'
 import { linkedNameCell, thumbnailColumn } from '@/fields/thumbnail'
 import { revalidateCollection, revalidateCollectionDelete } from '@/hooks/revalidate'
@@ -95,7 +94,6 @@ export const Products: CollectionConfig<'products'> = {
             },
           ],
         },
-        seoTab(),
       ],
     },
     {
@@ -120,7 +118,7 @@ export const Products: CollectionConfig<'products'> = {
       relationTo: 'products',
       hasMany: true,
       label: 'Sản phẩm liên quan',
-      admin: { position: 'sidebar', description: 'Để trống sẽ tự lấy sản phẩm cùng danh mục.' },
+      admin: { position: 'sidebar', description: 'Chọn gì hiện nấy (tối đa 4). Để trống sẽ tự lấy 4 sản phẩm cùng danh mục.' },
       filterOptions: ({ id }) => ({ id: { not_in: [id] } }),
     },
     searchTextField,
