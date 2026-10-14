@@ -372,7 +372,95 @@ html {
   transition: background-color 0.3s ease;
 }
 
+
+/* ---------- Màn chào trang chủ (IntroSplash) ---------- */
+.intro-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  background: #0b0d10;
+  transition: opacity 0.6s ease, visibility 0.6s;
+}
+.intro-splash--hide {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+/* Chưa tải xong logo: giữ nền tối, các phần tử chưa chạy hiệu ứng */
+.intro-splash--wait .intro-splash__logo,
+.intro-splash--wait .intro-splash__line,
+.intro-splash--wait .intro-splash__brand {
+  animation-play-state: paused;
+}
+/* Logo tròn: giới hạn theo chiều cao; logo ngang: giới hạn theo chiều rộng */
+.intro-splash__logo {
+  display: flex;
+  justify-content: center;
+  width: clamp(160px, 24vw, 340px);
+  animation: intro-logo 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.intro-splash__logo img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: clamp(96px, 12vw, 160px);
+}
+.intro-splash__line {
+  display: block;
+  width: 120px;
+  height: 2px;
+  background: var(--color-accent);
+  transform-origin: left;
+  animation: intro-line 0.8s 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.intro-splash__brand {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: #f2efe8;
+  animation: intro-fade 0.6s 0.55s ease both;
+}
+@keyframes intro-logo {
+  from {
+    opacity: 0;
+    transform: scale(0.82) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes intro-line {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes intro-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .intro-splash {
+    display: none;
+  }
+
   *,
   *::before,
   *::after {

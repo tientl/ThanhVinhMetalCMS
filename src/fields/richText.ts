@@ -7,6 +7,8 @@ import {
   HeadingFeature,
   InlineToolbarFeature,
   lexicalEditor,
+  RelationshipFeature,
+  UploadFeature,
 } from '@payloadcms/richtext-lexical'
 
 export const YouTubeBlock: Block = {
@@ -27,7 +29,10 @@ export const YouTubeBlock: Block = {
 /** Trình soạn thảo đầy đủ cho bài viết và trang tĩnh. */
 export const fullRichText = lexicalEditor({
   features: ({ defaultFeatures }) => [
-    ...defaultFeatures,
+    // Mối quan hệ chỉ tới nội dung công khai, ảnh chỉ từ Thư viện (không lộ tệp bản vẽ, tài khoản, yêu cầu báo giá)
+    ...defaultFeatures.filter((f) => f.key !== 'relationship' && f.key !== 'upload'),
+    RelationshipFeature({ enabledCollections: ['products', 'posts', 'pages', 'product-categories', 'post-categories'] }),
+    UploadFeature({ enabledCollections: ['media'] }),
     HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
     EXPERIMENTAL_TableFeature(),
     BlocksFeature({ blocks: [YouTubeBlock] }),

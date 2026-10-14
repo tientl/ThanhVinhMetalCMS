@@ -6,7 +6,7 @@ import { QUOTE_FILE_EXTENSIONS, QUOTE_FILE_MAX_BYTES } from '@/lib/quoteFiles'
 
 type Status = 'idle' | 'sending' | 'sent' | 'error'
 
-export const QuoteForm = ({ product }: { product?: string }) => {
+export const QuoteForm = ({ product, sourcePage }: { product?: string; sourcePage?: string }) => {
   const [status, setStatus] = useState<Status>('idle')
   const [error, setError] = useState('')
   const [fileName, setFileName] = useState('')
@@ -29,7 +29,8 @@ export const QuoteForm = ({ product }: { product?: string }) => {
         return
       }
     }
-    // Ghi cả phần ?sp=<tên sản phẩm> khi khách bấm "Yêu cầu báo giá" từ trang sản phẩm, giải mã để đọc được trong admin
+    // Khách bấm "Yêu cầu báo giá" từ trang sản phẩm: ghi trang sản phẩm đó (tham số from).
+    // Còn lại ghi đường dẫn hiện tại kèm ?sp=<tên sản phẩm>, giải mã để đọc được trong admin
     const page = window.location.pathname + window.location.search
     let source = page
     try {
@@ -37,6 +38,7 @@ export const QuoteForm = ({ product }: { product?: string }) => {
     } catch {
       // Địa chỉ có ký tự % lẻ: giữ nguyên
     }
+    if (sourcePage && /^\/[a-z0-9\-\/]*$/i.test(sourcePage)) source = sourcePage
     data.set('source', source)
     setStatus('sending')
     setError('')

@@ -870,3 +870,81 @@ html[data-theme='dark'] {
     font-weight: 500;
   }
 }
+
+/* ---------- Khung slider 2:1 trong trang ảnh ---------- */
+.slider-crop__hint {
+  margin: -0.5rem 0 1.25rem;
+  font-size: 0.85rem;
+  color: var(--theme-elevation-500);
+}
+
+.slider-crop {
+  margin: 0 0 1.5rem;
+  padding: 1rem;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: 6px;
+  background: var(--theme-elevation-50);
+
+  &__head {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 0.75rem;
+
+    span {
+      font-size: 0.85rem;
+      color: var(--theme-elevation-600);
+    }
+  }
+
+  &__editor {
+    max-width: 720px;
+    background: var(--theme-elevation-100);
+
+    .ReactCrop {
+      display: block;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 520px;
+      object-fit: contain;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+
+    .btn {
+      margin: 0;
+    }
+  }
+
+  &__preview {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+
+    span {
+      font-size: 0.85rem;
+      color: var(--theme-elevation-600);
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      max-width: 480px;
+      border: 1px solid var(--theme-elevation-150);
+    }
+  }
+}
+
+/* Hàng tab đầu trang (Chỉnh sửa / Phiên bản / API) chỉ còn một tab thì ẩn đi, bấm vào cũng không làm gì */
+.doc-tabs:has(.doc-tabs__tabs > :only-child) {
+  display: none;
+}

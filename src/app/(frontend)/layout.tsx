@@ -11,7 +11,7 @@ import { RevealObserver } from '@/components/layout/RevealObserver'
 import { LocalBusinessJsonLd } from '@/components/layout/JsonLd'
 import { accentVars } from '@/lib/color'
 import { getSiteSettings } from '@/lib/data'
-import { BRAND } from '@/lib/metadata'
+import { getBrand } from '@/lib/metadata'
 import { getServerSideURL } from '@/utilities/getURL'
 
 import './globals.css'
@@ -30,10 +30,13 @@ const playfair = Playfair_Display({
   display: 'swap',
 })
 
-export const metadata: Metadata = {
-  metadataBase: new URL(getServerSideURL()),
-  title: { default: BRAND, template: `%s | ${BRAND}` },
-  icons: { icon: '/logo.png', apple: '/logo.png' },
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getBrand()
+  return {
+    metadataBase: new URL(getServerSideURL()),
+    title: { default: brand, template: `%s | ${brand}` },
+    icons: { icon: '/logo.png', apple: '/logo.png' },
+  }
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {

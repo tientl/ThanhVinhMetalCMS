@@ -6,16 +6,17 @@ import { Breadcrumb } from '@/components/ui/Breadcrumb'
 import { getHome, getSiteSettings } from '@/lib/data'
 import { buildMetadata } from '@/lib/metadata'
 
-type Props = { searchParams: Promise<{ sp?: string }> }
+type Props = { searchParams: Promise<{ sp?: string; from?: string }> }
 
-export const metadata: Metadata = buildMetadata({
-  title: 'Liên hệ và yêu cầu báo giá',
-  description: 'Gửi bản vẽ DXF, DWG, PDF để nhận báo giá cắt laser, chấn gấp, hàn, sơn tĩnh điện. Hotline 0946.272.467.',
-  path: '/lien-he',
-})
-
+export async function generateMetadata(): Promise<Metadata> {
+  return buildMetadata({
+    title: 'Liên hệ và yêu cầu báo giá',
+    description: 'Gửi bản vẽ DXF, DWG, PDF để nhận báo giá cắt laser, chấn gấp, hàn, sơn tĩnh điện. Hotline 0946.272.467.',
+    path: '/lien-he',
+  })
+}
 export default async function ContactPage({ searchParams }: Props) {
-  const [{ sp }, settings, home] = await Promise.all([searchParams, getSiteSettings(), getHome()])
+  const [{ sp, from }, settings, home] = await Promise.all([searchParams, getSiteSettings(), getHome()])
 
   return (
     <>
@@ -28,6 +29,7 @@ export default async function ContactPage({ searchParams }: Props) {
         intro={home.contactIntro}
         newsletterNote={home.newsletterNote}
         product={sp}
+        sourcePage={from}
         as="h1"
       />
     </>

@@ -21,6 +21,11 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ['172.20.10.*', '192.168.*.*', '10.*.*.*'],
   agentRules: false,
   turbopack: { root: path.resolve(dirname) },
+  // Ảnh trong public/media có sẵn lúc build thì Next phục vụ tĩnh (afterFiles chỉ chạy khi không tìm thấy file).
+  // Ảnh tải lên sau khi build (chạy `pnpm start` local) được chuyển sang Payload API. Trên VPS, Nginx phục vụ /media/ trước.
+  async rewrites() {
+    return { afterFiles: [{ source: '/media/:path*', destination: '/api/media/file/:path*' }] }
+  },
 }
 
 export default withPayload(nextConfig, { devBundleServerPackages: false })

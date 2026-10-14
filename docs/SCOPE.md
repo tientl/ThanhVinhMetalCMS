@@ -29,3 +29,6 @@ Bàn giao sau 20–25 ngày làm việc kể từ khi nhận cọc và đủ n�
 
 ## Khách phải cung cấp
 Ảnh xưởng và sản phẩm (ưu tiên nền tối), danh mục và sản phẩm thật, email công ty, địa chỉ mới, link Fanpage, nội dung giới thiệu và chính sách, tên miền và VPS đứng tên khách.
+
+## Phát sinh đã làm thêm theo yêu cầu trong quá trình phát triển (13/10/2026)
+Không thuộc 9 hạng mục ký, làm theo yêu cầu của dev/khách khi chạy thử, không tính thêm phí: kéo đặt điểm chấm trên ảnh tab ứng dụng; khung cắt 2:1 cho ảnh slider; thông báo yêu cầu báo giá thời gian thực trong admin; bản đồ nhỏ ở footer; bộ đếm lượt truy cập ở footer; nút chia sẻ ở trang sản phẩm và bài viết; màn chào có logo khi vào trang chủ.
