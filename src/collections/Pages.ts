@@ -1,9 +1,10 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAdmin, isAdminOrEditor, publishedOrLoggedIn } from '@/access'
+import { adminOrEditorDraft, isAdmin, publishedOrLoggedIn } from '@/access'
 import { fullRichText } from '@/fields/richText'
 import { slugField } from '@/fields/slug'
 import { revalidateCollection, revalidateCollectionDelete } from '@/hooks/revalidate'
+import { editorDraftsOnly } from '@/hooks/drafts'
 import { blockNoopRestore, restoreVersionEndpoint, VERSIONS_LIST_VIEW } from '@/hooks/versions'
 
 const paths = (doc: { slug?: string | null }) => [`/${doc.slug}`]
@@ -14,7 +15,7 @@ export const Pages: CollectionConfig<'pages'> = {
   admin: {
     hideAPIURL: true,
     components: {
-      edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] },
+      edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton', '@/components/admin/EditorDraftNotice#EditorDraftNotice'] },
       views: { edit: { versions: VERSIONS_LIST_VIEW } },
     },
     useAsTitle: 'title',
@@ -23,9 +24,10 @@ export const Pages: CollectionConfig<'pages'> = {
     description: 'Giới thiệu, chính sách bảo hành, bảo mật, hướng dẫn gửi bản vẽ.',
   },
   access: {
-    create: isAdminOrEditor,
+    // Nhân viên chỉ lưu nháp, Quản trị xuất bản
+    create: adminOrEditorDraft,
     read: publishedOrLoggedIn,
-    update: isAdminOrEditor,
+    update: adminOrEditorDraft,
     delete: isAdmin,
   },
   fields: [
@@ -48,7 +50,7 @@ export const Pages: CollectionConfig<'pages'> = {
   // Phiên bản là bản nháp thì khôi phục dưới dạng nháp (xem restoreVersionEndpoint)
   endpoints: [restoreVersionEndpoint],
   hooks: {
-    beforeOperation: [blockNoopRestore],
+    beforeOperation: [blockNoopRestore, editorDraftsOnly],
     afterChange: [revalidateCollection(paths)],
     afterDelete: [revalidateCollectionDelete(paths)],
   },

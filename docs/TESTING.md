@@ -5,8 +5,8 @@ Bộ test phủ cả backend (Payload, phân quyền, API) và giao diện (tran
 | Nhóm | Công cụ | Chạy gì | Số test |
 |---|---|---|---|
 | unit | Vitest | Hàm thuần: bỏ dấu, slug, định dạng, ảnh, màu, rate limit, so sánh phiên bản | 60 |
-| int | Vitest + Payload Local API | Collection, phân quyền, `src/lib/data.ts`, 4 API route, kênh realtime, lịch sử phiên bản, bản nháp không lên web, khôi phục bản nháp | 102 |
-| e2e | Playwright (Chromium) | Trang thật trong trình duyệt, cả desktop và điện thoại | 92 |
+| int | Vitest + Payload Local API | Collection, phân quyền, `src/lib/data.ts`, 4 API route, kênh realtime, lịch sử phiên bản, bản nháp không lên web, khôi phục bản nháp, quyền Nhân viên | 117 |
+| e2e | Playwright (Chromium) | Trang thật trong trình duyệt, cả desktop và điện thoại, quyền Nhân viên | 99 |
 
 ## Chạy
 
@@ -55,14 +55,16 @@ E2E không đụng `pnpm dev` đang chạy:
 
 Playwright tự chạy `pnpm build && pnpm start`. Ở máy local nếu đã có server ở 3100 thì dùng lại (`reuseExistingServer`), trên CI luôn dựng mới.
 
-### Bốn project
+### Các project
 
 | Project | Chạy file | Ghi chú |
 |---|---|---|
 | `setup` | `auth.setup.ts` | Đăng nhập admin một lần, lưu cookie vào `playwright/.auth/admin.json` |
-| `desktop` | tất cả trừ `responsive`, `admin` | Chrome desktop 1440×900 (bề ngang thiết kế gốc); laptop 1280, 1366 có test riêng trong `theme-nav.spec.ts` |
+| `desktop` | tất cả trừ `responsive`, `admin`, `editor` | Chrome desktop 1440×900 (bề ngang thiết kế gốc); laptop 1280, 1366 có test riêng trong `theme-nav.spec.ts` |
 | `admin` | `admin.spec.ts` | Dùng cookie từ `setup`; nhóm "chưa đăng nhập" tự xóa cookie |
 | `mobile` | `responsive.spec.ts` | Pixel 7 |
+| `setup-editor` | `editor.setup.ts` | Tạo tài khoản Nhân viên `editor.e2e@thanhvinhmetal.vn` qua REST bằng quyền Quản trị (nếu chưa có), đăng nhập, lưu cookie vào `playwright/.auth/editor.json` |
+| `editor` | `editor.spec.ts` | Dùng cookie Nhân viên: không có nút Xuất bản, menu không có mục chỉ Quản trị, yêu cầu báo giá chỉ đổi trạng thái |
 
 Đăng nhập một lần thay vì mỗi test một lần, vì nhiều phiên đăng nhập song song cùng tài khoản gây lỗi chập chờn.
 

@@ -1,12 +1,14 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAdmin, isAdminField, isAdminOrSelf, loggedIn } from '@/access'
+import { hiddenFromEditors, isAdmin, isAdminField, isAdminOrSelf, loggedIn } from '@/access'
 
 export const Users: CollectionConfig = {
   slug: 'users',
   labels: { singular: 'Tài khoản', plural: 'Tài khoản' },
   auth: true,
   admin: {
+    // Nhân viên không quản lý tài khoản; vẫn đổi tên, mật khẩu của mình ở trang "Tài khoản của tôi" (bấm ảnh đại diện)
+    hidden: hiddenFromEditors,
     hideAPIURL: true,
     components: { edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } },
     useAsTitle: 'name',
@@ -35,7 +37,7 @@ export const Users: CollectionConfig = {
       access: { update: isAdminField },
       admin: {
         description:
-          'Quản trị: toàn quyền. Nhân viên: đăng sản phẩm, bài viết, ảnh; xem yêu cầu báo giá; không xóa sản phẩm, không sửa tài khoản và cài đặt chung.',
+          'Quản trị: toàn quyền. Nhân viên: thêm, sửa sản phẩm, bài viết, trang tĩnh nhưng chỉ lưu nháp (Quản trị duyệt và xuất bản); tải ảnh; sửa trang chủ; đổi trạng thái yêu cầu báo giá. Nhân viên không xóa gì, không sửa danh mục, menu, thông tin công ty, tài khoản.',
       },
     },
   ],

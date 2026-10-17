@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { anyone, isAdmin, isAdminOrEditor } from '@/access'
+import { anyone, isAdmin } from '@/access'
 import { slugField } from '@/fields/slug'
 import { linkedNameCell, thumbnailColumn } from '@/fields/thumbnail'
 import { revalidateCollection, revalidateCollectionDelete } from '@/hooks/revalidate'
@@ -18,9 +18,10 @@ export const ProductCategories: CollectionConfig = {
     group: 'Sản phẩm',
   },
   access: {
-    create: isAdminOrEditor,
+    // Danh mục ảnh hưởng menu, trang chủ, đường dẫn: chỉ Quản trị thêm, sửa
+    create: isAdmin,
     read: anyone,
-    update: isAdminOrEditor,
+    update: isAdmin,
     delete: isAdmin,
   },
   defaultSort: 'order',

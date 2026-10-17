@@ -52,7 +52,7 @@ describe('sản phẩm', () => {
     ).rejects.toThrow()
   })
 
-  it('nhân viên tạo và sửa được sản phẩm', async () => {
+  it('nhân viên tạo và sửa được sản phẩm (dưới dạng nháp)', async () => {
     const editor = await as('editor')
     const created = await payload.create({
       collection: 'products',
@@ -60,7 +60,6 @@ describe('sản phẩm', () => {
         name: `${PREFIX} Nhân Viên Tạo`,
         category: categoryId,
         images: [{ image: mediaId }],
-        _status: 'published',
       } as never,
       ...editor,
       ...noRevalidate,

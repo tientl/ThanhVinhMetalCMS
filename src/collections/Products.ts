@@ -1,12 +1,13 @@
 import type { CollectionConfig } from 'payload'
 
-import { isAdmin, isAdminOrEditor, publishedOrLoggedIn } from '@/access'
+import { adminOrEditorDraft, isAdmin, publishedOrLoggedIn } from '@/access'
 import { simpleRichText } from '@/fields/richText'
 import { buildSearchText, searchTextField } from '@/fields/searchText'
 import { slugField } from '@/fields/slug'
 import { linkedNameCell, thumbnailColumn } from '@/fields/thumbnail'
 import { revalidateCollection, revalidateCollectionDelete } from '@/hooks/revalidate'
 import { dropEmptyRows } from '@/hooks/arrays'
+import { editorDraftsOnly } from '@/hooks/drafts'
 import { blockNoopRestore, restoreVersionEndpoint, VERSIONS_LIST_VIEW } from '@/hooks/versions'
 
 const paths = (doc: { slug?: string | null }) => ['/san-pham', `/san-pham/${doc.slug}`]
@@ -17,7 +18,7 @@ export const Products: CollectionConfig<'products'> = {
   admin: {
     hideAPIURL: true,
     components: {
-      edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] },
+      edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton', '@/components/admin/EditorDraftNotice#EditorDraftNotice'] },
       views: { edit: { versions: VERSIONS_LIST_VIEW } },
     },
     useAsTitle: 'name',
@@ -25,9 +26,10 @@ export const Products: CollectionConfig<'products'> = {
     group: 'Sản phẩm',
   },
   access: {
-    create: isAdminOrEditor,
+    // Nhân viên chỉ lưu nháp, Quản trị xuất bản
+    create: adminOrEditorDraft,
     read: publishedOrLoggedIn,
-    update: isAdminOrEditor,
+    update: adminOrEditorDraft,
     delete: isAdmin,
   },
   defaultPopulate: {
@@ -126,7 +128,7 @@ export const Products: CollectionConfig<'products'> = {
   // Phiên bản là bản nháp thì khôi phục dưới dạng nháp (xem restoreVersionEndpoint)
   endpoints: [restoreVersionEndpoint],
   hooks: {
-    beforeOperation: [blockNoopRestore],
+    beforeOperation: [blockNoopRestore, editorDraftsOnly],
     // Bỏ dòng "Bộ ảnh" chưa chọn ảnh, dòng "Thông số" trống cả tên lẫn giá trị (lưu nháp vẫn lọt nếu không bỏ)
     beforeValidate: [dropEmptyRows({ images: ['image'], spec: ['label', 'value'] })],
     beforeChange: [buildSearchText({ fields: ['name', 'summary', 'material'], relation: { field: 'category', collection: 'product-categories' } })],

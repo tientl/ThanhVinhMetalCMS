@@ -429,7 +429,7 @@ export interface User {
   id: number;
   name: string;
   /**
-   * Quản trị: toàn quyền. Nhân viên: đăng sản phẩm, bài viết, ảnh; xem yêu cầu báo giá; không xóa sản phẩm, không sửa tài khoản và cài đặt chung.
+   * Quản trị: toàn quyền. Nhân viên: thêm, sửa sản phẩm, bài viết, trang tĩnh nhưng chỉ lưu nháp (Quản trị duyệt và xuất bản); tải ảnh; sửa trang chủ; đổi trạng thái yêu cầu báo giá. Nhân viên không xóa gì, không sửa danh mục, menu, thông tin công ty, tài khoản.
    */
   role: 'admin' | 'editor';
   updatedAt: string;

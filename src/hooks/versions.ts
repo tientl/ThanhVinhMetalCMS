@@ -1,5 +1,6 @@
 import { APIError, restoreVersionOperation, type CollectionBeforeOperationHook, type CollectionSlug, type Endpoint } from 'payload'
 
+import { isEditorUser } from '@/access'
 import { sameContent } from '@/lib/versions'
 
 export const NOOP_RESTORE_MESSAGE = 'Phiên bản này giống hệt nội dung hiện tại, không cần khôi phục.'
@@ -70,7 +71,8 @@ export const restoreVersionEndpoint: Endpoint = {
 
     const version = await req.payload.findVersionByID({ collection: slug, id, depth: 0, overrideAccess: false, req })
     const isDraftVersion = (version.version as { _status?: string } | undefined)?._status === 'draft'
-    const draft = req.searchParams.get('draft') === 'true' || isDraftVersion
+    // Nhân viên chỉ lưu nháp nên khôi phục cũng luôn dưới dạng nháp (khôi phục bản đã xuất bản = xuất bản lại)
+    const draft = req.searchParams.get('draft') === 'true' || isDraftVersion || isEditorUser(req.user)
 
     const depth = req.searchParams.get('depth')
     // Gọi thẳng operation như endpoint gốc: payload.restoreVersion (Local API) bỏ qua tham số draft.

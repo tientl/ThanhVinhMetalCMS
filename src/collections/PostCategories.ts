@@ -1,6 +1,6 @@
 import type { CollectionConfig } from 'payload'
 
-import { anyone, isAdmin, isAdminOrEditor } from '@/access'
+import { anyone, isAdmin } from '@/access'
 import { slugField } from '@/fields/slug'
 import { revalidateCollection, revalidateCollectionDelete } from '@/hooks/revalidate'
 
@@ -11,9 +11,10 @@ export const PostCategories: CollectionConfig = {
   labels: { singular: 'Danh mục bài viết', plural: 'Danh mục bài viết' },
   admin: { components: { edit: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } }, hideAPIURL: true, useAsTitle: 'name', defaultColumns: ['name', 'slug'], group: 'Bài viết' },
   access: {
-    create: isAdminOrEditor,
+    // Danh mục ảnh hưởng menu, trang chủ, đường dẫn: chỉ Quản trị thêm, sửa
+    create: isAdmin,
     read: anyone,
-    update: isAdminOrEditor,
+    update: isAdmin,
     delete: isAdmin,
   },
   fields: [

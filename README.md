@@ -59,7 +59,7 @@ docs/                    SCOPE, DESIGN, DATA-MODEL, PLAN, DEPLOY, TESTING, KNOWN
 
 ## Kiểm thử
 
-254 test phủ backend và giao diện. Chi tiết ở `docs/TESTING.md`.
+276 test phủ backend và giao diện. Chi tiết ở `docs/TESTING.md`.
 
 ```bash
 pnpm test                        # unit + integration

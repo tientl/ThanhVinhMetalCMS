@@ -953,3 +953,21 @@ html[data-theme='dark'] {
 .file-field__previewSizes {
   display: none;
 }
+
+/* ---------- Vai trò Nhân viên: chỉ lưu nháp ---------- */
+/* Nút xuất bản và ẩn hàng loạt ở danh sách (Payload chỉ xét quyền sửa chung nên vẫn hiện; server sẽ từ chối) */
+html[data-role='editor'] .list-selection button[aria-label='Xuất bản'],
+html[data-role='editor'] .list-selection button[aria-label='Ẩn tài liệu'] {
+  display: none;
+}
+
+.editor-draft-notice {
+  align-self: center;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--qs-callback) 18%, transparent);
+  color: var(--qs-callback-text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}

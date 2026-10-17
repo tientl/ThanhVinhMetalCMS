@@ -1,6 +1,6 @@
 import type { ArrayField, Field, GlobalConfig } from 'payload'
 
-import { anyone, isAdmin } from '@/access'
+import { anyone, hiddenFromEditors, isAdmin } from '@/access'
 import { revalidateAll } from '@/hooks/revalidate'
 
 const simpleLink = (): Field[] => [
@@ -98,7 +98,7 @@ const menuItems = (name: string, label: string): ArrayField => ({
 export const Navigation: GlobalConfig = {
   slug: 'navigation',
   label: 'Menu và mega menu',
-  admin: { components: { elements: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } }, group: 'Cài đặt', hideAPIURL: true },
+  admin: { components: { elements: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } }, group: 'Cài đặt', hideAPIURL: true, hidden: hiddenFromEditors },
   access: { read: anyone, update: isAdmin },
   fields: [
     {

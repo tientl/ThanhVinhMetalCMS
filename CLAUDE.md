@@ -23,7 +23,7 @@ Website giới thiệu doanh nghiệp và danh mục sản phẩm cho xưởng c
 - Deploy: VPS Ubuntu, Nginx, SSL, PM2, swap 2 GB, backup hằng ngày. File mẫu trong `deploy/`, hướng dẫn `docs/DEPLOY.md`. CI ở `.github/workflows/ci.yml`.
 
 ## Cấu trúc đã có
-- `src/collections/*`, `src/globals/*` theo `docs/DATA-MODEL.md`. Phân quyền `src/access/index.ts` (admin, editor).
+- `src/collections/*`, `src/globals/*` theo `docs/DATA-MODEL.md`. Phân quyền `src/access/index.ts` (admin, editor). Nhân viên (editor) chỉ lưu nháp sản phẩm, bài viết, trang tĩnh (`adminOrEditorDraft` + hook `editorDraftsOnly` trong `src/hooks/drafts.ts` ép mọi lần ghi thành nháp), sửa được trang chủ, không thêm sửa danh mục, yêu cầu báo giá chỉ đổi trạng thái (thông tin khách `access.update` admin), không xóa gì; mục chỉ Quản trị ẩn khỏi menu bằng `hiddenFromEditors`. Bảng đầy đủ ở CHANGELOG 17/10/2026.
 - `src/fields/slug.ts` slug không dấu; `src/fields/searchText.ts` field ẩn không dấu cho tìm kiếm (gồm cả tên danh mục).
 - `src/hooks/revalidate.ts`: `revalidatePath` khi đăng/sửa; globals làm mới toàn bộ layout.
 - `src/lib/data.ts`: mọi truy vấn cho giao diện (React `cache`, Local API). Giao diện không gọi Payload trực tiếp. **Truy vấn cho người xem phải có `...AS_GUEST`** (`overrideAccess: false`): Local API mặc định bỏ qua phân quyền, thiếu là bản nháp lọt ra website.

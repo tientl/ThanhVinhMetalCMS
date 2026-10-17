@@ -1,6 +1,6 @@
 import type { CollectionBeforeChangeHook, CollectionConfig } from 'payload'
 
-import { isAdmin, isAdminOrEditor } from '@/access'
+import { isAdmin, isAdminField, isAdminOrEditor } from '@/access'
 import { blockNoopRestore, VERSIONS_LIST_VIEW } from '@/hooks/versions'
 import { sendQuoteEmail } from '@/lib/email'
 import { notifyLiveChange } from '@/lib/liveEvents'
@@ -34,6 +34,12 @@ const saveBaselineVersion: CollectionBeforeChangeHook = async ({ data, operation
   return data
 }
 
+/** Thông tin khách gửi: Nhân viên chỉ xem, chỉ Quản trị sửa (ví dụ sửa số điện thoại khách ghi nhầm). */
+const customerField = { access: { update: isAdminField } }
+
+/** Ghi lúc khách gửi form (route /api/quote, bỏ qua phân quyền), sau đó không ai sửa. */
+const systemField = { access: { update: () => false } }
+
 export const QuoteRequests: CollectionConfig = {
   slug: 'quote-requests',
   labels: { singular: 'Yêu cầu báo giá', plural: 'Yêu cầu báo giá' },
@@ -62,23 +68,24 @@ export const QuoteRequests: CollectionConfig = {
     {
       type: 'row',
       fields: [
-        { name: 'name', type: 'text', label: 'Họ tên', required: true },
-        { name: 'phone', type: 'text', label: 'Điện thoại', required: true },
+        { name: 'name', type: 'text', label: 'Họ tên', required: true, ...customerField },
+        { name: 'phone', type: 'text', label: 'Điện thoại', required: true, ...customerField },
       ],
     },
     {
       type: 'row',
       fields: [
-        { name: 'email', type: 'email', label: 'Email' },
-        { name: 'company', type: 'text', label: 'Công ty' },
+        { name: 'email', type: 'email', label: 'Email', ...customerField },
+        { name: 'company', type: 'text', label: 'Công ty', ...customerField },
       ],
     },
-    { name: 'message', type: 'textarea', label: 'Nội dung, quy cách cần gia công' },
+    { name: 'message', type: 'textarea', label: 'Nội dung, quy cách cần gia công', ...customerField },
     {
       name: 'attachment',
       type: 'upload',
       relationTo: 'quote-files',
       label: 'Tệp bản vẽ',
+      ...customerField,
       admin: { components: { Field: '@/components/admin/QuoteAttachmentField#QuoteAttachmentField' } },
     },
     {
@@ -101,6 +108,7 @@ export const QuoteRequests: CollectionConfig = {
       name: 'source',
       type: 'text',
       label: 'Gửi từ trang',
+      ...systemField,
       // Vẫn lưu để thống kê sau này, không hiện trong form
       admin: { position: 'sidebar', readOnly: true, hidden: true },
     },
@@ -108,6 +116,7 @@ export const QuoteRequests: CollectionConfig = {
       name: 'ip',
       type: 'text',
       label: 'IP',
+      ...systemField,
       // Vẫn lưu để tra khi bị spam, không hiện trong form
       admin: { position: 'sidebar', readOnly: true, hidden: true },
     },

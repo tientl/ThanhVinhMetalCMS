@@ -1,12 +1,12 @@
 import type { GlobalConfig } from 'payload'
 
-import { anyone, isAdmin } from '@/access'
+import { anyone, hiddenFromEditors, isAdmin } from '@/access'
 import { revalidateAll } from '@/hooks/revalidate'
 
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
   label: 'Thông tin công ty',
-  admin: { components: { elements: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } }, hideAPIURL: true, group: 'Cài đặt' },
+  admin: { components: { elements: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } }, hideAPIURL: true, group: 'Cài đặt', hidden: hiddenFromEditors },
   access: { read: anyone, update: isAdmin },
   fields: [
     {

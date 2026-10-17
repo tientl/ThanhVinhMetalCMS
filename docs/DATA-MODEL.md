@@ -5,7 +5,7 @@ Tên collection, slug và field bằng tiếng Anh; label hiển thị trong adm
 ## Collections
 
 ### users
-Auth. `role: 'admin' | 'editor'`. Editor: tạo và sửa products, posts, media, quotes (đọc), subscribers (đọc); không xóa products, không sửa users và globals.
+Auth. `role: 'admin' | 'editor'`. Editor (Nhân viên, siết ngày 17/10/2026): thêm, sửa products, posts, pages **chỉ dưới dạng nháp** (Quản trị duyệt và xuất bản); tải lên, sửa media; sửa global home; quote-requests chỉ đổi `status`; subscribers chỉ đọc; product-categories, post-categories chỉ đọc; không xóa gì; không sửa navigation, site-settings, visitor-stats, users khác (các mục này ẩn khỏi menu của editor). Bảng đầy đủ ở `docs/CHANGELOG.md` mục 17/10/2026.
 
 ### media
 Upload. `alt` bắt buộc. Sizes: `thumb` 300×300 cover, `card` 800×600 cover, `wide` 1600 width, `hero` 2400 width. Lưu `/media` trên VPS, nằm trong backup.
@@ -55,7 +55,7 @@ Từ form: `name`, `phone`, `email`, `company`, `message`, `attachment` (upload 
 - Seed script: nạp danh mục, 12 sản phẩm, 8 bài, home, navigation từ `docs/design/images`.
 
 ## Truy vấn cho giao diện (Dev A viết, Dev B gọi)
-`getHome()`, `getNavigation()`, `getSiteSettings()`, `getCategories()`, `getProducts({category, page})`, `getProduct(slug)`, `getRelatedProducts(id)`, `getPosts({category, page})`, `getPost(slug)`, `getPage(slug)`, `search(q)`. Dùng Local API của Payload, cache theo tag.
+`getHome()`, `getNavigation()`, `getSiteSettings()`, `getCategories()`, `getProducts({category, page})`, `getProduct(slug)`, `getRelatedProducts(id)`, `getPosts({category, page})`, `getPost(slug)`, `getPage(slug)`, `search(q)`. Dùng Local API của Payload, cache theo tag. Truy vấn sản phẩm, bài viết, trang tĩnh, trang chủ chạy dưới quyền khách (`AS_GUEST`, `overrideAccess: false`) để bản nháp không lên website (12/10/2026).
 
 ### visitor-stats (thêm 13/10/2026)
 `showInFooter`, `total`, `today`, `todayDate`. Website tự tăng qua `POST /api/visit`; admin có thể đặt số khởi điểm cho `total`.

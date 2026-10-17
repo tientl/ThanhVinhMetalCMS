@@ -263,7 +263,7 @@ describe('GET /api/search', () => {
   }
 
   it('trả sản phẩm kèm đường dẫn và ảnh', async () => {
-    const products = await payload.find({ collection: 'products', limit: 1, ...asRoot })
+    const products = await payload.find({ collection: 'products', where: { _status: { equals: 'published' } }, limit: 1, ...asRoot })
     const product = products.docs[0]!
     const data = await call(product.name)
 
@@ -274,7 +274,7 @@ describe('GET /api/search', () => {
   })
 
   it('tìm được khi gõ không dấu', async () => {
-    const products = await payload.find({ collection: 'products', limit: 1, ...asRoot })
+    const products = await payload.find({ collection: 'products', where: { _status: { equals: 'published' } }, limit: 1, ...asRoot })
     const product = products.docs[0]!
     const noAccent = product.name
       .normalize('NFD')
@@ -286,7 +286,8 @@ describe('GET /api/search', () => {
   })
 
   it('trả bài viết kèm đường dẫn', async () => {
-    const posts = await payload.find({ collection: 'posts', limit: 1, ...asRoot })
+    // Chỉ lấy bài đã xuất bản: file test khác có thể để lại bản nháp, tìm kiếm của khách không trả bản nháp
+    const posts = await payload.find({ collection: 'posts', where: { _status: { equals: 'published' } }, limit: 1, ...asRoot })
     const post = posts.docs[0]!
     const data = await call(post.title)
     const hit = data.posts.find((p) => p.title === post.title)

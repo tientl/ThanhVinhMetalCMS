@@ -4,6 +4,71 @@ Mỗi lần sửa code thì thêm một mục vào đầu file, commit cùng v�
 
 ---
 
+## 18/10/2026 · nhánh `test`
+
+### Gộp `main` (#4, #5, #6) vào `test`, gỡ conflict
+
+**Vì sao:** kéo `main` về `test` thì conflict 9 file (`CLAUDE.md`, `CHANGELOG.md`, `DATA-MODEL.md`, `DESIGN.md`, `custom.scss`, `QuoteRequests.ts`, `QuoteForm.tsx`, `data.ts`, `payload-types.ts`). Phần việc 17/10 (phân quyền Nhân viên) chưa commit nên đã được cất vào stash trước khi kéo.
+
+**Cách gỡ:**
+- Commit `2ca3fa9` của `test` giống hệt `428c8b4` (#4) trên `main`, tức mọi thứ phía `test` đã có trong `main`; `main` sửa tiếp các dòng đó ở #5, #6. Nên mọi conflict lấy bản của `main`. Kết quả gộp (đã `git add`) trùng từng byte với `main`. Riêng `payload-types.ts` git tự gộp còn sót chú thích cũ của ô `ip`, đã bỏ.
+- Stash = bản chưa commit của #5 (đã có trong `main`) + phần việc 17/10. Không `stash pop` thẳng vì sẽ khôi phục file cũ đã bị #6 bỏ (`SliderCropField.tsx`). Chỉ lấy phần chênh giữa stash và `606bd82` (#5), tức đúng phần việc 17/10, áp lại vào thư mục làm việc (chưa `git add`). `custom.scss` (#6 thêm khối ẩn "Kích cỡ xem trước" cùng chỗ) gắn tay khối CSS Nhân viên vào cuối file; `importMap.js` chạy lại `pnpm generate:importmap`.
+- `DATA-MODEL.md`: bỏ dòng "Truy vấn cho giao diện" bị lặp (bản cũ không có ghi chú `AS_GUEST`). Code `data.ts` của `main` vẫn đủ `AS_GUEST`.
+- Phần việc 17/10 vẫn chạy với tính năng mới của `main`: khung chọn vùng ảnh `ImageFrameField` gọi `PATCH /api/media/:id` và `/api/media/:id/hero-crop`, cả hai cho Quản trị và Nhân viên; Trang chủ Nhân viên vẫn sửa được.
+
+**Sửa test:** `tests/int/api.test.ts` 3 test tìm kiếm lấy "bản ghi đầu tiên" với quyền root rồi tìm như khách; database test còn bản nháp do file test khác để lại (`restore`, `data`, `editor` chỉ dọn ở `beforeAll`), nên tùy thứ tự chạy file mà lấy trúng bản nháp và hỏng. Giờ chỉ lấy bản đã xuất bản.
+
+**Kiểm tra:** `pnpm lint`, `pnpm typecheck` sạch; unit 60/60, int 117/117; e2e chạy lại toàn bộ.
+
+**Lưu ý:**
+- Merge chưa commit: `git commit` sẽ chỉ ghi phần gộp `main` (đã stage); phần việc 17/10 vẫn là thay đổi chưa stage như trước khi kéo.
+- `stash@{0}` không cần nữa (nội dung đã có trong `main` + thư mục làm việc). Đừng `stash pop` vì sẽ khôi phục `SliderCropField.tsx`; xóa bằng `git stash drop` khi đã yên tâm.
+- Schema đổi theo `main` (Media `heroCrop`, `focalX/Y`, cỡ `og`, global `visitor-stats`): database dev máy này đã có sẵn; máy khác, VPS cần `pnpm dev` một lần hoặc migration (KNOWN-ISSUES #4).
+
+---
+
+## 17/10/2026 · nhánh `test`
+
+### Siết phân quyền vai trò Nhân viên (editor)
+
+**Vì sao:** yêu cầu quản lý thêm, sửa, xóa của Nhân viên cho chặt. Rà lại thì thấy:
+- Nhân viên tự xuất bản được; gọi API sửa không kèm `_status` còn ghi thẳng vào bản đang hiện trên web, gửi `_status: 'draft'` thì gỡ được bài khỏi web.
+- Nhân viên sửa được cả thông tin khách gửi trong yêu cầu báo giá. "Gửi từ trang", "IP" tuy ẩn khỏi form nhưng vẫn sửa được qua API.
+- Nhân viên thêm, sửa được danh mục.
+- Menu trái vẫn hiện "Menu và mega menu", "Thông tin công ty", "Thống kê truy cập", "Tài khoản" cho Nhân viên (mở ra chỉ xem, không lưu được).
+
+**Chính sách đã chốt với khách:**
+
+| | Quản trị | Nhân viên |
+|---|---|---|
+| Sản phẩm, bài viết, trang tĩnh | toàn quyền | thêm, sửa **chỉ dưới dạng nháp**; không xuất bản, không gỡ khỏi web, không xóa |
+| Danh mục sản phẩm, danh mục bài viết | toàn quyền | chỉ xem (chọn khi đăng bài) |
+| Ảnh và tệp | toàn quyền | tải lên, sửa; không xóa |
+| Trang chủ | sửa | sửa |
+| Yêu cầu báo giá | toàn quyền (IP, "Gửi từ trang" thì không ai sửa) | xem, **chỉ đổi trạng thái**; không xóa |
+| Đăng ký bản tin | toàn quyền | chỉ xem |
+| Menu, Thông tin công ty, Thống kê truy cập | sửa | ẩn khỏi menu trái |
+| Tài khoản | toàn quyền | chỉ tài khoản của mình (đổi tên, mật khẩu ở "Tài khoản của tôi"); danh sách tài khoản ẩn |
+
+**Cách làm:**
+- `src/access/index.ts`: `adminOrEditorDraft` cho `create`/`update` của Sản phẩm, Bài viết, Trang tĩnh. Payload tính quyền sửa với `_status: 'draft'` và quyền xuất bản với `_status: 'published'`, nên nút "Xuất bản tài liệu" tự ẩn với Nhân viên mà form vẫn sửa được. Thêm `hiddenFromEditors` (ẩn Menu, Thông tin công ty, Thống kê truy cập, Tài khoản khỏi Nhân viên), `isAdminUser`, `isEditorUser`.
+- `src/hooks/drafts.ts` → `editorDraftsOnly` (`beforeOperation`): ép mọi lần tạo, sửa của Nhân viên thành lưu nháp (`draft: true`, `_status: 'draft'`), nên bản trên web không đổi. Cố ý gửi `published` thì báo "Nhân viên chỉ lưu được bản nháp. Quản trị sẽ duyệt và xuất bản.". Khôi phục phiên bản của Nhân viên chỉ được dưới dạng nháp (`restoreVersionEndpoint` tự ép; đường khác bị chặn).
+- Danh mục sản phẩm, danh mục bài viết: `create`/`update` chỉ Quản trị.
+- Yêu cầu báo giá: thông tin khách (tên, SĐT, email, công ty, nội dung, tệp bản vẽ) `access.update` chỉ Quản trị (Nhân viên thấy ô bị khóa); "Gửi từ trang", "IP" không ai sửa (chỉ route `/api/quote` ghi khi khách gửi).
+- Giao diện: cạnh nút Lưu của Sản phẩm, Bài viết, Trang tĩnh hiện nhãn "Chỉ lưu nháp, chờ Quản trị duyệt" cho Nhân viên (`EditorDraftNotice`). Menu trái đặt `data-role` trên `<html>`; `custom.scss` ẩn nút "Xuất bản", "Ẩn tài liệu" hàng loạt ở danh sách với Nhân viên (Payload chỉ xét quyền sửa chung nên vẫn hiện; server sẽ từ chối).
+- Mô tả vai trò ở trang Tài khoản cập nhật theo chính sách mới.
+
+**File:** `src/access/index.ts`, `src/hooks/drafts.ts` (mới), `src/hooks/versions.ts`, `src/collections/Products.ts`, `Posts.ts`, `Pages.ts`, `ProductCategories.ts`, `PostCategories.ts`, `QuoteRequests.ts`, `Users.ts`, `src/globals/Navigation.ts`, `SiteSettings.ts`, `VisitorStats.ts`, `src/components/admin/EditorDraftNotice.tsx` (mới), `Nav/NavClient.tsx`, `src/app/(payload)/custom.scss`, `importMap.js`.
+
+**Lưu ý:**
+- Quản trị duyệt: mở sản phẩm, bài viết có trạng thái "Bản nháp" hoặc "Đã thay đổi" rồi bấm "Xuất bản tài liệu". Chưa có ô "chờ duyệt" trên bảng điều khiển.
+- Thêm collection có nháp mới: dùng `adminOrEditorDraft` cho create/update và gắn `editorDraftsOnly` vào `beforeOperation`.
+- Không đổi schema database.
+
+**Kiểm tra:** `tests/int/editor.test.ts` (15 test ở tầng API: không xuất bản khi tạo, khi sửa; sửa bản đang bán chỉ thành nháp; không gỡ được khỏi web; khôi phục luôn dưới dạng nháp; danh mục chỉ Quản trị; yêu cầu báo giá chỉ đổi trạng thái, IP không ai sửa; trang chủ sửa được; menu, thống kê không sửa được; không xóa). `tests/int/access.test.ts`: test cũ cho Nhân viên tạo sản phẩm đã xuất bản đổi thành tạo nháp. e2e: project mới `setup-editor` (tạo tài khoản `editor.e2e@thanhvinhmetal.vn` nếu chưa có, đăng nhập) và `editor` (`tests/e2e/editor.spec.ts`, 6 test giao diện).
+
+---
+
 ## 13–14/10/2026 · nhánh `dev`
 
 ### Admin: khung cắt 2:1 cho ảnh slider, ô SEO do plugin quản lý, ẩn ô kỹ thuật ở yêu cầu báo giá
