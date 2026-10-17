@@ -2,15 +2,17 @@ import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
 
-import { getNavigation, getSiteSettings } from '@/lib/data'
+import { getNavigation, getSiteSettings, getVisitorStats } from '@/lib/data'
 import { telHref } from '@/lib/format'
 import { isMedia, mediaDims, mediaUrl } from '@/lib/media'
+
+import { VisitorCounter } from './VisitorCounter'
 
 /** Bảo đảm iframe bản đồ tải trễ: footer ở cuối trang nên chỉ tải khi khách cuộn gần tới. */
 const lazyEmbed = (html: string) => (/loading=/.test(html) ? html : html.replace('<iframe', '<iframe loading="lazy"'))
 
 export const Footer = async () => {
-  const [navigation, settings] = await Promise.all([getNavigation(), getSiteSettings()])
+  const [navigation, settings, stats] = await Promise.all([getNavigation(), getSiteSettings(), getVisitorStats()])
   const year = new Date().getFullYear()
   const logoDims = isMedia(settings.logo) ? mediaDims(settings.logo) : { width: 720, height: 720 }
 
@@ -66,9 +68,16 @@ export const Footer = async () => {
           />
         )}
       </div>
-      <div className="border-t border-line pt-5">
-        © {year} {settings.companyName}. Bảo lưu mọi quyền.
-        {settings.taxCode && <span className="ml-2 text-muted-3">MST {settings.taxCode}</span>}
+      <div className="flex flex-col gap-2 border-t border-line pt-5 md:flex-row md:items-center md:justify-between">
+        <div>
+          © {year} {settings.companyName}. Bảo lưu mọi quyền.
+          {settings.taxCode && <span className="ml-2 text-muted-3">MST {settings.taxCode}</span>}
+        </div>
+        {/* Chừa chỗ cho cụm nút nổi (gọi, Zalo, lên đầu trang) ở góc phải */}
+        {/* Luôn mount để vẫn ghi nhận lượt vào kể cả khi ẩn bộ đếm */}
+        <div className={stats.showInFooter ? 'md:pr-24' : 'hidden'}>
+          <VisitorCounter initial={stats} />
+        </div>
       </div>
     </footer>
   )

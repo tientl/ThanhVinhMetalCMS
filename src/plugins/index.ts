@@ -13,7 +13,11 @@ const BRAND = 'Thành Vinh Metal'
 const titleOf = (doc: Doc): string =>
   'name' in doc && typeof doc.name === 'string' ? doc.name : (doc as Page | Post).title
 
-const generateTitle: GenerateTitle<Doc> = ({ doc }) => (doc ? `${titleOf(doc)} | ${BRAND}` : BRAND)
+const generateTitle: GenerateTitle<Doc> = async ({ doc, req }) => {
+  const settings = await req.payload.findGlobal({ slug: 'site-settings', depth: 0 })
+  const brand = settings.brandName || BRAND
+  return doc ? `${titleOf(doc)} | ${brand}` : brand
+}
 
 const generateDescription: GenerateDescription<Doc> = ({ doc }) => {
   if (!doc) return ''
@@ -33,6 +37,9 @@ const generateURL: GenerateURL<Doc> = ({ doc, collectionSlug }) => {
 
 export const plugins: Plugin[] = [
   seoPlugin({
+    // Plugin tự thêm nhóm "SEO" vào các collection này và cấp quyền cho nút "Tự động tạo"
+    collections: ['products', 'posts', 'pages'],
+    uploadsCollection: 'media',
     generateTitle,
     generateDescription,
     generateURL,

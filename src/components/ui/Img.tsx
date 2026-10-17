@@ -32,7 +32,15 @@ export const Img = ({ media, size = 'card', alt, className, sizes, priority, fil
     style,
   }
   if (fill) {
-    return <Image {...common} alt={altText} fill style={{ objectFit: 'cover', ...style }} />
+    // Điểm lấy nét chọn trong admin: chỉ áp cho cỡ còn nguyên khung (wide, ảnh gốc).
+    // Các cỡ có cả rộng lẫn cao (thumb, card, hero, og) Payload đã cắt quanh điểm đó, chủ thể đã ở giữa.
+    const sized = size ? media.sizes?.[size] : undefined
+    const alreadyCropped = Boolean(sized?.url && sized?.width && sized?.height && size !== 'wide')
+    const focal =
+      !alreadyCropped && typeof media.focalX === 'number' && typeof media.focalY === 'number'
+        ? `${media.focalX}% ${media.focalY}%`
+        : undefined
+    return <Image {...common} alt={altText} fill style={{ objectFit: 'cover', objectPosition: focal, ...style }} />
   }
   return <Image {...common} alt={altText} width={dims.width} height={dims.height} />
 }

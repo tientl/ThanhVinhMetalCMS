@@ -3,7 +3,6 @@ import type { CollectionConfig } from 'payload'
 import { isAdmin, isAdminOrEditor, publishedOrLoggedIn } from '@/access'
 import { fullRichText } from '@/fields/richText'
 import { buildSearchText, searchTextField } from '@/fields/searchText'
-import { seoTab } from '@/fields/seo'
 import { slugField } from '@/fields/slug'
 import { revalidateCollection, revalidateCollectionDelete } from '@/hooks/revalidate'
 import { blockNoopRestore, restoreVersionEndpoint, VERSIONS_LIST_VIEW } from '@/hooks/versions'
@@ -50,7 +49,6 @@ export const Posts: CollectionConfig<'posts'> = {
             { name: 'content', type: 'richText', label: 'Nội dung', editor: fullRichText, required: true },
           ],
         },
-        seoTab(),
       ],
     },
     {
@@ -97,7 +95,7 @@ export const Posts: CollectionConfig<'posts'> = {
       relationTo: 'posts',
       hasMany: true,
       label: 'Bài viết liên quan',
-      admin: { position: 'sidebar', description: 'Để trống sẽ tự lấy bài cùng danh mục.' },
+      admin: { position: 'sidebar', description: 'Chọn gì hiện nấy (tối đa 4). Để trống sẽ tự lấy 4 bài cùng danh mục.' },
       filterOptions: ({ id }) => ({ id: { not_in: [id] } }),
     },
     searchTextField,

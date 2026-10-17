@@ -38,8 +38,10 @@ export const HeroSlider = ({ slides }: { slides: Slide[] }) => {
 
   if (count === 0) return null
 
+  // Desktop: khung 2:1 đúng tỉ lệ ảnh slide (cỡ hero 2400x1200), trần 90% chiều cao màn hình (chia --zoom vì html phóng 110%)
+  // để nút và mũi tên không chạm đáy và không đè lên cụm nút nổi
   return (
-    <section aria-label="Bộ sưu tập nổi bật" className="dark-zone relative h-[640px] overflow-hidden bg-deep md:h-[760px] lg:h-[860px]">
+    <section aria-label="Bộ sưu tập nổi bật" className="dark-zone relative h-[640px] overflow-hidden bg-deep md:h-[min(50vw,calc(90svh/var(--zoom)))] md:min-h-[560px]">
       {slides.map((s, i) => (
         <div
           key={s.id ?? i}

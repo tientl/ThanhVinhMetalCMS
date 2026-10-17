@@ -20,6 +20,7 @@ import { Users } from './collections/Users'
 import { Home } from './globals/Home'
 import { Navigation } from './globals/Navigation'
 import { SiteSettings } from './globals/SiteSettings'
+import { VisitorStats } from './globals/VisitorStats'
 import { plugins } from './plugins'
 import { getServerSideURL } from './utilities/getURL'
 
@@ -74,7 +75,7 @@ export default buildConfig({
     QuoteFiles,
     Users,
   ],
-  globals: [Home, Navigation, SiteSettings],
+  globals: [Home, Navigation, SiteSettings, VisitorStats],
   cors: [getServerSideURL()].filter(Boolean),
   csrf: [getServerSideURL()].filter(Boolean),
   plugins,

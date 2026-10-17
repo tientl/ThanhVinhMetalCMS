@@ -14,12 +14,14 @@ type Props = {
   intro?: string | null
   newsletterNote?: string | null
   product?: string
+  /** Trang khách bấm nút báo giá (ví dụ /san-pham/vach-hoa-van), ghi vào ô "Gửi từ trang" */
+  sourcePage?: string
   as?: 'h1' | 'h2'
   /** Hiện bản đồ Google Maps (mã nhúng trong Thông tin công ty) trong thẻ thông tin */
   showMap?: boolean
 }
 
-export const ContactSection = ({ settings, heading, intro, newsletterNote, product, as: Tag = 'h2', showMap = false }: Props) => {
+export const ContactSection = ({ settings, heading, intro, newsletterNote, product, sourcePage, as: Tag = 'h2', showMap = false }: Props) => {
   const logoDims = isMedia(settings.logo) ? mediaDims(settings.logo) : { width: 720, height: 720 }
   const socials = [
     { label: 'Facebook', href: settings.facebook },
@@ -33,7 +35,7 @@ export const ContactSection = ({ settings, heading, intro, newsletterNote, produ
       <div id="bao-gia" className="relative flex scroll-mt-24 flex-col gap-6" data-reveal>
         <Tag className="h-serif text-[30px] md:text-[40px]">{heading || 'Liên hệ với chúng tôi'}</Tag>
         {intro && <p className="lead m-0">{intro}</p>}
-        <QuoteForm product={product} />
+        <QuoteForm product={product} sourcePage={sourcePage} />
       </div>
 
       <div className="flex flex-col gap-[22px] self-start bg-surface p-6 md:p-10" data-reveal>

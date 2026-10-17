@@ -107,11 +107,13 @@ export interface Config {
     home: Home;
     navigation: Navigation;
     'site-settings': SiteSetting;
+    'visitor-stats': VisitorStat;
   };
   globalsSelect: {
     home: HomeSelect<false> | HomeSelect<true>;
     navigation: NavigationSelect<false> | NavigationSelect<true>;
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    'visitor-stats': VisitorStatsSelect<false> | VisitorStatsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -156,13 +158,7 @@ export interface QuoteRequest {
   message?: string | null;
   attachment?: (number | null) | QuoteFile;
   status?: ('new' | 'callback' | 'contacted' | 'done') | null;
-  /**
-   * Trang khách đang mở khi gửi: "/" là trang chủ, "/lien-he" là trang Liên hệ; có "?sp=..." là bấm "Yêu cầu báo giá" từ sản phẩm đó. Dùng để biết trang nào mang lại khách.
-   */
   source?: string | null;
-  /**
-   * Địa chỉ mạng của người gửi, chỉ dùng để truy vết khi bị gửi spam. "::1" hay "192.168..." là máy trong mạng nội bộ (lúc thử nghiệm).
-   */
   ip?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -248,6 +244,17 @@ export interface Product {
    * Nhập giá hoặc để "Liên hệ".
    */
   price?: string | null;
+  category: number | ProductCategory;
+  /**
+   * Để trống sẽ tự tạo từ tiêu đề, không dấu, cách nhau bằng dấu gạch ngang.
+   */
+  slug?: string | null;
+  featured?: boolean | null;
+  /**
+   * Chọn gì hiện nấy (tối đa 4). Để trống sẽ tự lấy 4 sản phẩm cùng danh mục.
+   */
+  related?: (number | Product)[] | null;
+  searchText?: string | null;
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -256,17 +263,6 @@ export interface Product {
      */
     image?: (number | null) | Media;
   };
-  category: number | ProductCategory;
-  /**
-   * Để trống sẽ tự tạo từ tiêu đề, không dấu, cách nhau bằng dấu gạch ngang.
-   */
-  slug?: string | null;
-  featured?: boolean | null;
-  /**
-   * Để trống sẽ tự lấy sản phẩm cùng danh mục.
-   */
-  related?: (number | Product)[] | null;
-  searchText?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -277,10 +273,16 @@ export interface Product {
  */
 export interface Media {
   id: number;
-  /**
-   * Mô tả ngắn nội dung ảnh, dùng cho SEO và người khiếm thị.
-   */
   alt: string;
+  heroCrop?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -380,14 +382,6 @@ export interface Post {
     };
     [k: string]: unknown;
   };
-  meta?: {
-    title?: string | null;
-    description?: string | null;
-    /**
-     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
-     */
-    image?: (number | null) | Media;
-  };
   category: number | PostCategory;
   /**
    * Để trống sẽ tự tạo từ tiêu đề, không dấu, cách nhau bằng dấu gạch ngang.
@@ -396,10 +390,18 @@ export interface Post {
   publishedAt?: string | null;
   author?: (number | null) | User;
   /**
-   * Để trống sẽ tự lấy bài cùng danh mục.
+   * Chọn gì hiện nấy (tối đa 4). Để trống sẽ tự lấy 4 bài cùng danh mục.
    */
   related?: (number | Post)[] | null;
   searchText?: string | null;
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Media;
+  };
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -476,6 +478,10 @@ export interface Page {
     };
     [k: string]: unknown;
   };
+  /**
+   * Để trống sẽ tự tạo từ tiêu đề, không dấu, cách nhau bằng dấu gạch ngang.
+   */
+  slug?: string | null;
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -484,10 +490,6 @@ export interface Page {
      */
     image?: (number | null) | Media;
   };
-  /**
-   * Để trống sẽ tự tạo từ tiêu đề, không dấu, cách nhau bằng dấu gạch ngang.
-   */
-  slug?: string | null;
   updatedAt: string;
   createdAt: string;
   _status?: ('draft' | 'published') | null;
@@ -648,6 +650,11 @@ export interface ProductsSelect<T extends boolean = true> {
         id?: T;
       };
   price?: T;
+  category?: T;
+  slug?: T;
+  featured?: T;
+  related?: T;
+  searchText?: T;
   meta?:
     | T
     | {
@@ -655,11 +662,6 @@ export interface ProductsSelect<T extends boolean = true> {
         description?: T;
         image?: T;
       };
-  category?: T;
-  slug?: T;
-  featured?: T;
-  related?: T;
-  searchText?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -687,6 +689,12 @@ export interface PostsSelect<T extends boolean = true> {
   cover?: T;
   excerpt?: T;
   content?: T;
+  category?: T;
+  slug?: T;
+  publishedAt?: T;
+  author?: T;
+  related?: T;
+  searchText?: T;
   meta?:
     | T
     | {
@@ -694,12 +702,6 @@ export interface PostsSelect<T extends boolean = true> {
         description?: T;
         image?: T;
       };
-  category?: T;
-  slug?: T;
-  publishedAt?: T;
-  author?: T;
-  related?: T;
-  searchText?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -724,6 +726,7 @@ export interface PagesSelect<T extends boolean = true> {
   cover?: T;
   intro?: T;
   content?: T;
+  slug?: T;
   meta?:
     | T
     | {
@@ -731,7 +734,6 @@ export interface PagesSelect<T extends boolean = true> {
         description?: T;
         image?: T;
       };
-  slug?: T;
   updatedAt?: T;
   createdAt?: T;
   _status?: T;
@@ -742,6 +744,7 @@ export interface PagesSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  heroCrop?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -1153,6 +1156,22 @@ export interface SiteSetting {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "visitor-stats".
+ */
+export interface VisitorStat {
+  id: number;
+  showInFooter?: boolean | null;
+  /**
+   * Có thể sửa để đặt số khởi điểm.
+   */
+  total?: number | null;
+  today?: number | null;
+  todayDate?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "home_select".
  */
 export interface HomeSelect<T extends boolean = true> {
@@ -1376,6 +1395,19 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   ga4Id?: T;
   searchConsoleToken?: T;
   pixelId?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "visitor-stats_select".
+ */
+export interface VisitorStatsSelect<T extends boolean = true> {
+  showInFooter?: T;
+  total?: T;
+  today?: T;
+  todayDate?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

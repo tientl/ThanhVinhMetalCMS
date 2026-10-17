@@ -2,7 +2,6 @@ import type { CollectionConfig } from 'payload'
 
 import { isAdmin, isAdminOrEditor, publishedOrLoggedIn } from '@/access'
 import { fullRichText } from '@/fields/richText'
-import { seoTab } from '@/fields/seo'
 import { slugField } from '@/fields/slug'
 import { revalidateCollection, revalidateCollectionDelete } from '@/hooks/revalidate'
 import { blockNoopRestore, restoreVersionEndpoint, VERSIONS_LIST_VIEW } from '@/hooks/versions'
@@ -42,7 +41,6 @@ export const Pages: CollectionConfig<'pages'> = {
             { name: 'content', type: 'richText', label: 'Nội dung', editor: fullRichText, required: true },
           ],
         },
-        seoTab(),
       ],
     },
     slugField('title'),
