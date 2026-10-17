@@ -11,6 +11,7 @@ Mỗi lần sửa code thì thêm một mục vào đầu file, commit cùng v�
 **Vì sao:** ảnh slide tải lên tỉ lệ bất kỳ bị slider cắt không kiểm soát; nút "Tự động tạo" ở tab SEO trả 403 vì plugin SEO chỉ cấp quyền cho collection khai báo trong `collections`, mà ô SEO được thêm tay; hai ô "Gửi từ trang" và "IP" gây thắc mắc cho nhân viên.
 
 **Cách làm:**
+- `ImageFrameField` (thay `SliderCropField`): một component khung kéo dùng chung, `clientProps.mode` = `hero` (slide, cắt cứng 2:1) hoặc `focal` (Bộ sưu tập, Giới thiệu, Giải pháp, Ứng dụng: lưu tâm khung làm điểm lấy nét qua `PATCH /api/media/:id`, vì khung các khối này đổi tỉ lệ theo màn hình nên không cắt cứng).
 - Media: cỡ `hero` cắt sẵn 2400×1200 và `og` 1200×630 quanh điểm lấy nét, cho phép phóng to ảnh nhỏ (`withoutEnlargement: false`). `SliderCropField` (field ui trong mỗi slide của global Home, đọc ảnh cùng hàng) kéo khung 2:1 bằng `react-image-crop`, gọi `POST /api/media/:id/hero-crop` → `src/lib/heroCrop.ts` (sharp) ghi file hero **tên mới mỗi lần** (tránh cache trình duyệt/Next/Nginx), xóa file cũ, lưu `heroCrop` + `focalX/Y`. Thư mục ảnh dùng chung `src/lib/mediaDir.ts`.
 - `Img`: `object-position` theo điểm lấy nét chỉ cho cỡ chưa cắt (`wide`, gốc); cỡ đã cắt quanh điểm đó thì giữ 50%/50%.
 - Slider desktop cao `min(50vw, 90svh ÷ --zoom)`, min 560px; `--zoom` vì html phóng 110%.
@@ -18,6 +19,7 @@ Mỗi lần sửa code thì thêm một mục vào đầu file, commit cùng v�
 - Tiêu đề tab và `og:site_name` lấy từ ô "Tên thương hiệu" (`getBrand()` trong `src/lib/metadata.ts`, `buildMetadata` thành async, trả `title.absolute` để layout không nối tên lần hai). Trang chủ dùng nguyên văn "Tiêu đề trang chủ" nếu có. Ba trang có `metadata` tĩnh chuyển sang `generateMetadata`.
 - Quote-requests: ẩn `source` và `ip` (`admin.hidden`), vẫn lưu. `QuoteForm` ghi trang sản phẩm xuất phát qua tham số `from` (trang sản phẩm gửi kèm), không có thì ghi đường dẫn + `?sp=`.
 - Nội dung rich text: nút "Mối quan hệ" render thành thẻ liên kết (`RichText.tsx`), trước đó in "unknown node"; giới hạn Relationship/Upload tới collection công khai. `getPage` depth 2 để có ảnh của bản ghi được chèn.
+- Video YouTube trong nội dung: từ 2 khối video đứng liền nhau (không có chữ xen giữa) được `groupYouTube()` trong `RichText.tsx` gom thành khối `youtubeGrid` lưới `auto-fit` (mỗi ô tối thiểu 420px, tự lấp hết chiều rộng); một video đứng riêng vẫn toàn chiều rộng. Trang tĩnh bỏ giới hạn cột (`.prose-wide`): lưới video rộng hết khung, riêng chữ/tiêu đề/bảng giữ tối đa 1100px; bài viết giữ 860px.
 
 ### Giao diện: footer có bản đồ, bộ đếm truy cập, nút chia sẻ, màn chào trang chủ, logo ngang
 
@@ -27,6 +29,7 @@ Mỗi lần sửa code thì thêm một mục vào đầu file, commit cùng v�
 - `IntroSplash` ở trang chủ: nền tối, logo + vạch accent + tên thương hiệu 1,5 giây rồi tan; hiệu ứng và đồng hồ chỉ bắt đầu khi logo đã tải (tải lại trang không bị "nhanh quá"); hiện mỗi lần mở trang chủ; tắt khi `prefers-reduced-motion`.
 - Logo: header/footer/thẻ liên hệ cao cố định, rộng theo tỉ lệ (logo tròn hay ngang đều đúng). Ba bản logo ngang "VINH METAL" ở `public/logo-ngang-*.png` và `docs/design/images/`.
 - `next.config.ts`: rewrite `afterFiles` `/media/:path*` → `/api/media/file/:path*` để ảnh tải lên sau khi build vẫn phục vụ được khi chạy `pnpm start` (trên VPS Nginx phục vụ `/media/` trước).
+- Mega menu desktop: "Đoạn giới thiệu" trước chỉ hiện ở kiểu bố cục 2 thẻ ảnh (và menu điện thoại); giờ hiện ở cả kiểu cột liên kết (Sản phẩm) và kiểu tải tài liệu (Catalogue), phía trên nội dung (`HeaderClient.tsx`).
 - Menu: bỏ mục "Năng lực" (trùng "Về Vinh Metal"); thử tăng cỡ chữ menu rồi hoàn lại theo yêu cầu.
 
 ### Sửa lỗi
@@ -35,6 +38,7 @@ Mỗi lần sửa code thì thêm một mục vào đầu file, commit cùng v�
 - Hook làm mới cache ném lỗi khi chạy ngoài Next (seed, `payload run`): bọc `revalidatePath` trong try/catch (`src/hooks/revalidate.ts`). Media chỉ làm mới cache khi `update`.
 - Sản phẩm liên quan: chọn gì hiện nấy, để trống mới tự lấy cùng danh mục (trước bù thêm cho đủ 4).
 - Endpoint cắt ảnh dùng `isAdminOrEditor` thay vì so chuỗi role.
+- Ẩn nút "Kích cỡ xem trước" ở trang ảnh (`.file-field__previewSizes` trong custom.scss): các cỡ ảnh tự tạo là chuyện kỹ thuật, nhân viên thấy ảnh bị cắt lại thắc mắc. Payload không có tùy chọn tắt nên ẩn bằng CSS.
 
 **File chính:** `src/collections/Media.ts`, `QuoteRequests.ts`, `src/globals/Home.ts`, `VisitorStats.ts` (mới), `src/lib/{heroCrop,mediaDir,visitors,metadata,data}.ts`, `src/components/admin/SliderCropField.tsx` (mới), `src/components/layout/{Footer,VisitorCounter,IntroSplash,HeaderClient}.tsx`, `src/components/ui/{ShareBar,RichText,Img}.tsx`, `src/components/home/{HeroSlider,ContactSection}.tsx`, `src/components/forms/QuoteForm.tsx`, `src/app/(frontend)/api/visit/route.ts` (mới), `src/plugins/index.ts`, `next.config.ts`, `custom.scss`, `globals.css`.
 

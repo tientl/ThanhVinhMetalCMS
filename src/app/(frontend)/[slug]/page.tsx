@@ -32,7 +32,7 @@ export default async function StaticPage({ params }: Props) {
     <>
       <PageHero title={page.title} intro={page.intro} image={page.cover} crumbs={[{ label: page.title }]} />
       <section className="section-x py-12 md:py-20">
-        <div className="max-w-[860px]">
+        <div className="prose-wide">
           <RichText data={page.content} />
         </div>
       </section>

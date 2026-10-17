@@ -373,6 +373,11 @@ html {
 }
 
 
+/* Trang tĩnh: nội dung rộng hết khung (lưới video lấp đầy), riêng chữ giữ bề rộng dễ đọc */
+.prose-wide .prose-lux > :where(p, h1, h2, h3, h4, ul, ol, blockquote, table, figure:not(.not-prose), a) {
+  max-width: 1100px;
+}
+
 /* ---------- Màn chào trang chủ (IntroSplash) ---------- */
 .intro-splash {
   position: fixed;

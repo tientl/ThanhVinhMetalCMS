@@ -219,6 +219,10 @@ const MegaPanel = ({ id, label, mega, onClose }: { id: string; label: string; me
         </button>
       </div>
 
+      {/* Đoạn giới thiệu hiện ở mọi kiểu bố cục; kiểu có 2 thẻ ảnh tự đặt nó trong cột trái nên bỏ qua ở đây */}
+      {mega.intro && (hasDownloads || (hasColumns && cards.length <= 1)) && (
+        <p className="m-0 mb-8 max-w-[720px] text-[17px] font-light leading-[1.75] text-muted">{mega.intro}</p>
+      )}
       {hasDownloads ? (
         <div className="grid grid-cols-2 items-start gap-14">
           <div className="flex flex-col">

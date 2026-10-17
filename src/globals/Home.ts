@@ -27,7 +27,7 @@ export const Home: GlobalConfig = {
                 {
                   name: 'sliderCrop',
                   type: 'ui',
-                  admin: { components: { Field: '@/components/admin/SliderCropField#SliderCropField' } },
+                  admin: { components: { Field: { path: '@/components/admin/ImageFrameField#ImageFrameField', clientProps: { aspect: 2, mode: 'hero' } } } },
                 },
                 { name: 'title', type: 'text', label: 'Tiêu đề', required: true },
                 { name: 'description', type: 'textarea', label: 'Mô tả' },
@@ -54,6 +54,11 @@ export const Home: GlobalConfig = {
               maxRows: 2,
               fields: [
                 { name: 'image', type: 'upload', relationTo: 'media', label: 'Ảnh', required: true },
+                {
+                  name: 'imageFrame',
+                  type: 'ui',
+                  admin: { components: { Field: { path: '@/components/admin/ImageFrameField#ImageFrameField', clientProps: { aspect: 1, mode: 'focal' } } } },
+                },
                 { name: 'tag', type: 'text', label: 'Nhãn nhỏ', admin: { description: 'Ví dụ: INOX, THÉP' } },
                 { name: 'title', type: 'text', label: 'Tiêu đề', required: true },
                 { name: 'description', type: 'textarea', label: 'Mô tả' },
@@ -90,6 +95,11 @@ export const Home: GlobalConfig = {
                 },
                 { name: 'image', type: 'upload', relationTo: 'media', label: 'Ảnh' },
                 {
+                  name: 'imageFrame',
+                  type: 'ui',
+                  admin: { components: { Field: { path: '@/components/admin/ImageFrameField#ImageFrameField', clientProps: { aspect: 1.4, mode: 'focal' } } } },
+                },
+                {
                   type: 'row',
                   fields: [
                     { name: 'badgeTitle', type: 'text', label: 'Ô nổi bật: tiêu đề', defaultValue: 'Cắt, chấn, hàn, sơn' },
@@ -113,6 +123,11 @@ export const Home: GlobalConfig = {
               maxRows: 2,
               fields: [
                 { name: 'image', type: 'upload', relationTo: 'media', label: 'Ảnh', required: true },
+                {
+                  name: 'imageFrame',
+                  type: 'ui',
+                  admin: { components: { Field: { path: '@/components/admin/ImageFrameField#ImageFrameField', clientProps: { aspect: 1.3333333333333333, mode: 'focal' } } } },
+                },
                 { name: 'title', type: 'text', label: 'Tiêu đề', required: true },
                 { name: 'subtitle', type: 'text', label: 'Mô tả ngắn' },
                 { name: 'href', type: 'text', label: 'Dẫn tới', required: true },
@@ -141,6 +156,11 @@ export const Home: GlobalConfig = {
                 },
                 { name: 'description', type: 'textarea', label: 'Mô tả' },
                 { name: 'image', type: 'upload', relationTo: 'media', label: 'Ảnh', required: true },
+                {
+                  name: 'imageFrame',
+                  type: 'ui',
+                  admin: { components: { Field: { path: '@/components/admin/ImageFrameField#ImageFrameField', clientProps: { aspect: 1.6, mode: 'focal' } } } },
+                },
                 {
                   name: 'products',
                   type: 'relationship',
