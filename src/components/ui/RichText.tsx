@@ -10,6 +10,7 @@ import { isMedia, type MediaRef } from '@/lib/media'
 import type { Page, Post, PostCategory, Product, ProductCategory } from '@/payload-types'
 
 type YouTubeFields = { blockType: 'youtube'; url: string; caption?: string | null }
+type YouTubeGridFields = { blockType: 'youtubeGrid'; items: YouTubeFields[] }
 
 /** Nút "Mối quan hệ" trong trình soạn thảo: liên kết tới một bản ghi, đã được nạp sẵn khi depth >= 1. */
 type RelationshipNode =
@@ -50,7 +51,7 @@ const relationshipCard = (node: RelationshipNode): { href: string; kind: string;
   }
 }
 
-const converters: JSXConvertersFunction<SerializedBlockNode<YouTubeFields>> = ({ defaultConverters }) => ({
+const converters: JSXConvertersFunction<SerializedBlockNode<YouTubeFields> | SerializedBlockNode<YouTubeGridFields>> = ({ defaultConverters }) => ({
   ...defaultConverters,
   relationship: ({ node }) => {
     const card = relationshipCard(node as unknown as RelationshipNode)
@@ -70,30 +71,73 @@ const converters: JSXConvertersFunction<SerializedBlockNode<YouTubeFields>> = ({
     )
   },
   blocks: {
-    youtube: ({ node }) => {
-      const fields = node.fields
-      const id = youtubeId(fields.url)
-      if (!id) return null
+    youtube: ({ node }) => <YouTubeEmbed fields={node.fields as YouTubeFields} className="my-8" />,
+    // Nhiều video liền nhau: xếp 2 cột (do groupYouTube() gom lại trước khi render)
+    youtubeGrid: ({ node }) => {
+      const items = (node.fields as unknown as YouTubeGridFields).items
       return (
-        <figure className="my-8">
-          <div className="relative aspect-video w-full overflow-hidden bg-deep">
-            <iframe
-              src={`https://www.youtube-nocookie.com/embed/${id}`}
-              title={fields.caption || 'Video YouTube'}
-              className="absolute inset-0 h-full w-full border-0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              loading="lazy"
-            />
-          </div>
-          {fields.caption && <figcaption className="mt-2 text-sm text-muted-2">{fields.caption}</figcaption>}
-        </figure>
+        <div className="not-prose my-8 grid gap-6 grid-cols-[repeat(auto-fit,minmax(min(100%,420px),1fr))]">
+          {items.map((f, i) => (
+            <YouTubeEmbed key={i} fields={f} />
+          ))}
+        </div>
       )
     },
   },
 })
 
+const YouTubeEmbed = ({ fields, className = '' }: { fields: YouTubeFields; className?: string }) => {
+  const id = youtubeId(fields.url)
+  if (!id) return null
+  return (
+    <figure className={className}>
+      <div className="relative aspect-video w-full overflow-hidden bg-deep">
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${id}`}
+          title={fields.caption || 'Video YouTube'}
+          className="absolute inset-0 h-full w-full border-0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          loading="lazy"
+        />
+      </div>
+      {fields.caption && <figcaption className="mt-2 text-sm text-muted-2">{fields.caption}</figcaption>}
+    </figure>
+  )
+}
+
+type AnyNode = { type: string; fields?: { blockType?: string }; children?: AnyNode[] }
+
+/**
+ * Gom các khối "Video YouTube" đứng liền nhau (không có đoạn chữ xen giữa, kể cả đoạn trống)
+ * thành một khối lưới để hiện 2 cột. Một video đứng riêng vẫn hiện toàn chiều rộng.
+ */
+const groupYouTube = (data: SerializedEditorState): SerializedEditorState => {
+  const root = data.root as unknown as AnyNode
+  if (!root?.children) return data
+  const isYT = (n: AnyNode) => n.type === 'block' && n.fields?.blockType === 'youtube'
+  const isEmptyParagraph = (n: AnyNode) => n.type === 'paragraph' && !(n.children && n.children.length)
+  const out: AnyNode[] = []
+  let run: AnyNode[] = []
+  const flush = () => {
+    if (run.length >= 2) {
+      out.push({ type: 'block', version: 2, format: '', fields: { blockType: 'youtubeGrid', items: run.map((n) => n.fields) } } as unknown as AnyNode)
+    } else out.push(...run)
+    run = []
+  }
+  for (const n of root.children) {
+    if (isYT(n)) run.push(n)
+    else if (run.length && isEmptyParagraph(n)) continue
+    else {
+      flush()
+      out.push(n)
+    }
+  }
+  flush()
+  return { ...data, root: { ...data.root, children: out as never } }
+}
+
 export const RichText = ({ data, className }: { data: SerializedEditorState | null | undefined; className?: string }) => {
   if (!data) return null
-  return <LexicalRichText data={data} converters={converters} className={`prose-lux ${className ?? ''}`} />
+  return <LexicalRichText data={groupYouTube(data)} converters={converters} className={`prose-lux ${className ?? ''}`} />
 }

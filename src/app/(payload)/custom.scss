@@ -948,3 +948,8 @@ html[data-theme='dark'] {
 .doc-tabs:has(.doc-tabs__tabs > :only-child) {
   display: none;
 }
+
+/* Nút "Kích cỡ xem trước" ở trang ảnh: liệt kê các cỡ ảnh Payload tự tạo, chỉ gây rối cho nhân viên nên ẩn */
+.file-field__previewSizes {
+  display: none;
+}
