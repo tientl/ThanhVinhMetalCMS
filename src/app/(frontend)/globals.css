@@ -18,10 +18,17 @@
   --color-accent-text: #ff6a45;
   --color-accent-ghost: #ffb4a2;
 
-  --font-sans: var(--font-be-vietnam), system-ui, sans-serif;
-  --font-serif: var(--font-playfair), Georgia, serif;
+  --font-sans: var(--font-inter-tight), system-ui, sans-serif;
+  /* Menu (menu ngang, mega menu, menu điện thoại) giữ font cũ Be Vietnam Pro theo yêu cầu (27/10/2026), class font-menu */
+  --font-menu: var(--font-be-vietnam), system-ui, sans-serif;
+  /* Chỉ dùng một font không chân (27/10/2026): tắt font-serif mặc định của Tailwind, lỡ dùng cũng không ra chữ có chân */
+  --font-serif: initial;
 
   --ease-lux: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  /* Bo góc (27/10/2026): rounded-btn cho nút, rounded-card cho ảnh sản phẩm. Đổi độ bo ở đây. */
+  --radius-btn: 0.5rem;
+  --radius-card: 0.75rem;
 
   --breakpoint-xs: 30rem;
   /*
@@ -122,10 +129,13 @@ img {
 /* Ba class dưới hay chứa chữ khách nhập (tên, tóm tắt, danh mục). Chuỗi liền rất dài (vd. "testtest…", link)
    được ngắt giữa chữ khi không vừa dòng, thay vì tràn khung và làm cả trang cuộn ngang. Chữ thường vẫn
    xuống dòng ở khoảng trắng như cũ. */
-.h-serif {
-  @apply font-serif font-medium uppercase leading-[1.12];
+.h-display {
+  /* Không ép font: lấy font của vùng chứa (mặc định Inter Tight; trong menu là font-menu) */
+  @apply font-semibold uppercase leading-[1.12];
   letter-spacing: 1.5px;
   overflow-wrap: anywhere;
+  /* Phải xuống dòng thì chia đều các dòng, không để một chữ lẻ rớt xuống dòng dưới (font không chân rộng hơn Playfair cũ) */
+  text-wrap: balance;
 }
 .label-sm {
   @apply text-[11px] font-semibold uppercase text-accent-text;
@@ -143,7 +153,7 @@ img {
 
 /* ---------- Nút ---------- */
 .btn-ghost {
-  @apply inline-flex h-[52px] items-center justify-center border border-accent px-[30px] text-[12.5px] font-medium uppercase text-accent-ghost no-underline;
+  @apply inline-flex h-[52px] items-center justify-center rounded-btn border border-accent px-[30px] text-[12.5px] font-medium uppercase text-accent-ghost no-underline;
   letter-spacing: 2px;
   transition:
     background 0.25s,
@@ -154,7 +164,7 @@ img {
   @apply bg-accent text-bg;
 }
 .btn-solid {
-  @apply inline-flex h-[54px] items-center justify-center border-0 bg-accent px-9 text-[12.5px] font-semibold uppercase text-bg no-underline;
+  @apply inline-flex h-[54px] items-center justify-center rounded-btn border-0 bg-accent px-9 text-[12.5px] font-semibold uppercase text-bg no-underline;
   letter-spacing: 2px;
   transition: filter 0.2s;
 }
@@ -167,7 +177,7 @@ img {
   cursor: not-allowed;
 }
 .chip {
-  @apply inline-flex h-10 items-center border border-accent px-[18px] text-[12.5px] font-medium text-accent-ghost no-underline;
+  @apply inline-flex h-10 items-center rounded-btn border border-accent px-[18px] text-[12.5px] font-medium text-accent-ghost no-underline;
   letter-spacing: 2px;
   transition:
     background 0.25s,
@@ -328,7 +338,7 @@ img {
 
 /* ---------- Form ---------- */
 .field {
-  @apply h-[50px] w-full border border-line-2 bg-bg-alt px-3.5 text-[15px] text-ink outline-none;
+  @apply h-[50px] w-full rounded-btn border border-line-2 bg-bg-alt px-3.5 text-[15px] text-ink outline-none;
   transition: border-color 0.2s;
 }
 .field:focus {
@@ -358,13 +368,14 @@ textarea.field {
 .prose-lux h2,
 .prose-lux h3,
 .prose-lux h4 {
-  @apply font-serif font-medium;
+  @apply font-semibold;
   letter-spacing: 1px;
 }
 /* Ảnh trong nội dung: cỡ thật, tối đa bằng khung. Khung giờ rộng hết trang (26/10/2026), ép 100% thì ảnh nhỏ bị phóng mờ */
 .prose-lux img {
   max-width: 100%;
   height: auto;
+  border-radius: var(--radius-card);
 }
 /* Link hay chuỗi liền dài trong nội dung: ngắt giữa chữ thay vì tràn. Không áp cho bảng (cột bảng tính theo chữ dài nhất). */
 .prose-lux > :where(p, ul, ol, h2, h3, h4, blockquote) {

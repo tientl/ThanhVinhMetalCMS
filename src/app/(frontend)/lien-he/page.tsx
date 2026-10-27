@@ -27,7 +27,6 @@ export default async function ContactPage({ searchParams }: Props) {
         settings={settings}
         heading="Liên hệ và yêu cầu báo giá"
         intro={home.contactIntro}
-        newsletterNote={home.newsletterNote}
         product={sp}
         sourcePage={from}
         as="h1"

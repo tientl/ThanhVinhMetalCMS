@@ -4,6 +4,126 @@ Mỗi lần sửa code thì thêm một mục vào đầu file, commit cùng v�
 
 ---
 
+## 27/10/2026 · một font không chân
+
+### Giao diện chỉ dùng một font không chân (Inter Tight)
+
+**Vì sao:** yêu cầu chỉ dùng một font, loại không chân. Trước đó tiêu đề dùng Playfair Display (có chân), chữ thường dùng Be Vietnam Pro. Sau đó khách muốn kiểu chữ của web Modern Village: đó là **Forma DJR Micro**, font thương mại mvillage đã mua giấy phép (`mvillage-web/public/fonts`), không chép sang dự án khác. Đã so sánh 8 font Google có tiếng Việt cùng dáng grotesque; chọn **Inter Tight** (gần Forma nhất về tỉ lệ, khoảng cách chữ khi đậm).
+
+**Cách làm:**
+- `src/app/(frontend)/layout.tsx`: bỏ nạp Playfair Display, nạp Inter Tight (font biến thiên, biến `--font-inter-tight`); `globals.css` `--font-sans` trỏ sang nó. Admin giữ Be Vietnam Pro (`custom.scss`).
+- **Menu giữ font cũ** theo yêu cầu: Be Vietnam Pro vẫn nạp (biến `--font-be-vietnam`), token `--font-menu` trong `globals.css`, class `font-menu` gắn ở gốc menu ngang (hai `<nav>`), mega menu (`MegaPanel`) và menu điện thoại (`MobileDrawer`) trong `HeaderClient.tsx`. Mọi chữ bên trong, kể cả tiêu đề thẻ ảnh `.h-display` trong mega menu, theo font đó vì `.h-display` không tự đặt font mà kế thừa. Ô tìm kiếm mở từ header vẫn Inter Tight.
+- `globals.css`: class `.h-serif` đổi tên thành **`.h-display`** (17 chỗ trong 12 file), Inter Tight **600** thay cho Playfair 500 (chữ không chân ở 500 trông nhạt hơn); tiêu đề trong nội dung bài (`.prose-lux h2–h4`) cũng 600. Token `--font-serif: initial` để Tailwind không tạo `font-serif`, lỡ dùng cũng không ra chữ có chân.
+- Tiêu đề trang bài viết (`bai-viet/[slug]/page.tsx`) và thẻ bài viết (`PostCard.tsx`): bỏ `font-serif`, đậm 600.
+- Font không chân in hoa rộng hơn Playfair nên nhiều tiêu đề rớt một chữ xuống dòng ("Tìm hiểu sản phẩm theo danh mục" → "MỤC" một mình). `SectionHeading.tsx`: giới hạn 720px chỉ còn ở đoạn mô tả, tiêu đề dùng hết bề ngang; nút bên phải (khối tin tức) bọc `shrink-0`. `.h-display` thêm `text-wrap: balance`: phải xuống dòng thì chia đều (đo ở 1440px và 390px: dòng cuối "Khám phá ứng dụng cho công trình" 146 → 422px, "Liên hệ với chúng tôi" trên điện thoại 56 → 186px).
+
+**Kiểm tra:** trên dev, trang chủ, chi tiết sản phẩm, danh sách và chi tiết bài viết ở 1440px và 390px: tiêu đề, chữ thường là Inter Tight 600/300–500; chụp màn hình xem tay. Menu đo `getComputedStyle().fontFamily` ở 390px (mục menu điện thoại, link mega trong đó), 1920px và 2400px (mục menu ngang, chữ mega, tiêu đề thẻ ảnh mega "Giải pháp"): Be Vietnam Pro; tiêu đề trang và ô tìm kiếm: Inter Tight. `pnpm lint`, `tsc` sạch.
+
+**Lưu ý:** tiêu đề mới dùng `.h-display`; đừng thêm `font-sans` vào `.h-display`, làm vậy thì tiêu đề trong mega menu đổi sang Inter Tight. Giao diện mẫu `docs/design/mau-3-trang-chu.html` vẫn là Playfair, đó là bản duyệt cũ, không phải nguồn chuẩn cho font nữa (DESIGN.md mục Chữ ghi rõ).
+
+---
+
+## 27/10/2026 · bo góc ảnh sản phẩm và nút
+
+### Bo góc ảnh sản phẩm và nút bấm
+
+**Vì sao:** yêu cầu bo tròn góc ảnh sản phẩm và nút (Mẫu 3 gốc góc vuông).
+
+**Cách làm:**
+- 2 token trong `@theme` (`src/app/(frontend)/globals.css`): `--radius-btn: 0.5rem` (8px, class `rounded-btn`) và `--radius-card: 0.75rem` (12px, class `rounded-card`). Muốn đổi độ bo chỉ sửa ở đây.
+- Nút: `.btn-ghost`, `.btn-solid`, `.chip` trong globals.css; chip lọc `CategoryChips.tsx`, `PostListing.tsx`; `Pagination.tsx`; `ShareBar.tsx`; nút mạng xã hội `ContactSection.tsx`; nút Đóng 2 mega menu `HeaderClient.tsx`; nút Đóng, trước, sau của `Lightbox.tsx`; nút phóng to trên ảnh `ProductGallery.tsx`.
+- Ảnh: `ProductCard.tsx`, ảnh chính và ảnh thu nhỏ `ProductGallery.tsx`, thẻ danh mục `CategoriesGrid.tsx` (rounded-card); ảnh 72px tab Ứng dụng `Applications.tsx` (rounded-btn).
+- Ảnh bài viết: thẻ `PostCard.tsx` (trang chủ, danh sách, bài liên quan, tìm kiếm) rounded-card; trong nội dung (`RichText.tsx`, dùng cho cả trang tĩnh): ảnh `.prose-lux img` (globals.css) và khung video YouTube rounded-card, thẻ liên kết "Mối quan hệ" và ảnh nhỏ của nó rounded-btn.
+- Khối Giới thiệu (`About.tsx`): ảnh bọc trong lớp `absolute inset-0 overflow-hidden rounded-card` (không cắt ở khung ngoài vì ô accent lệch ra ngoài ảnh `lg:-left-10`), ô "CẮT, CHẤN, HÀN, SƠN" `rounded-btn`.
+- Khung ảnh tab Ứng dụng (`Applications.tsx`) `rounded-card`; khung vốn `overflow-hidden`, chấm và nhãn đều nằm trong.
+- Khối Liên hệ: ô nhập `.field` (globals.css) `rounded-btn`, nút "Chọn tệp" trong `QuoteForm.tsx` `rounded-md`, ô thông tin công ty `ContactSection.tsx` `rounded-card`.
+- Không đổi: khung ảnh lớn trang chủ (slider, bộ sưu tập, giải pháp), ảnh bìa mờ đầu trang bài viết, thanh đáy điện thoại. Khung viền vàng trong ảnh chi tiết (`.frame::after`, lùi 18px) vẫn vuông vì lùi vào sâu hơn độ bo.
+
+**Kiểm tra:** đo `border-radius` trên dev: ảnh thẻ, ảnh chính, thẻ danh mục 12px; chip, nút Gọi/Zalo/Báo giá, nút chia sẻ 8px; chụp trang danh sách và chi tiết ở 1440px và 390px. `pnpm lint` sạch, `tsc` sạch.
+
+**Lưu ý:** nút mới viết thêm thì gắn `rounded-btn` (hoặc dùng `.btn-*`), ảnh sản phẩm mới gắn `rounded-card` cùng `overflow-hidden` để ảnh bên trong bị cắt theo góc.
+
+---
+
+## 27/10/2026 · bỏ đăng ký bản tin
+
+### Bỏ tính năng đăng ký bản tin
+
+**Vì sao:** website chỉ lưu email mà không gửi gì (gửi bản tin nằm ở giai đoạn 2, cần email theo tên miền, dịch vụ gửi hàng loạt và người viết nội dung; khách chưa có). Ô đăng ký hứa "nhận thông tin mẫu mới và ưu đãi" mà không ai gửi, lại giữ email khách mà không dùng. Khách của xưởng liên hệ chủ yếu qua điện thoại, Zalo và form báo giá. Ô này thuộc hạng mục 5 đã ký, đã ghi chú trong `docs/SCOPE.md`, **cần khách xác nhận**.
+
+**Cách làm:**
+- Xoá `src/collections/Subscribers.ts`, `src/app/(frontend)/api/subscribe/route.ts`, `src/components/forms/NewsletterForm.tsx`; bỏ khỏi `payload.config.ts`.
+- Khối liên hệ (`ContactSection.tsx`, trang chủ, trang Liên hệ): bỏ ô đăng ký và prop `newsletterNote`. Global Home: bỏ ô "Ghi chú ô bản tin" (`newsletterNote`). Seed bỏ theo.
+- Admin: bỏ ô "Đăng ký bản tin" trên Bảng điều khiển (còn 3 ô, lưới `.dash-stats` đổi sang `auto-fit`), mục trong menu, huy hiệu "+n hôm nay" và kiểu `.nav-badge--soft`, toast "đăng ký bản tin mới". `LiveCounts` (`src/lib/liveEvents.ts`) chỉ còn số yêu cầu báo giá theo trạng thái.
+- `pnpm generate:types`.
+
+**Database:** bỏ bảng `subscribers` và cột `newsletter_note` của Home.
+- Dev: `pnpm dev` tự đẩy schema. Bảng còn dữ liệu thì Payload hỏi xác nhận xoá trong terminal.
+- VPS (`pnpm start` không tự đẩy schema): chạy `pnpm dev` một lần trên môi trường đó, hoặc tạo migration. **Trước khi deploy, nếu trên VPS đã có email thật trong "Đăng ký bản tin" thì xuất ra giữ lại**, vì bảng sẽ bị xoá.
+
+**Kiểm tra:**
+- Bỏ 11 test int (7 test `POST /api/subscribe`, 2 test quyền, 2 test realtime) và test e2e "đăng ký bản tin hiện ngay trên bảng điều khiển". Test SSE đổi sang kiểm `newQuotes`.
+- Test mới `contact.spec.ts` "khối liên hệ không còn ô đăng ký, API cũ trả 404".
+- `pnpm lint` sạch. `tsc` sạch khi bỏ qua `.next/types` cũ: file sinh từ bản build 14/10 còn trỏ tới route đã xoá, tự hết khi build lại hoặc chạy `pnpm dev`; CI không có thư mục này.
+
+**Lưu ý:** muốn làm lại bản tin ở giai đoạn 2 thì lấy lại 3 file trên từ git (commit trước thay đổi này) và đọc mục "Gửi bản tin" trong `docs/SCOPE.md`.
+
+---
+
+## 27/10/2026 · thanh chia sẻ dạng icon
+
+### Thanh chia sẻ: icon thay chữ, bỏ "Sao chép link", nút Facebook không còn mở 2 cửa sổ
+
+**Vì sao:** muốn thanh chia sẻ ở trang sản phẩm và bài viết gọn hơn: nút dạng icon, bỏ nút sao chép link. Khi sửa thì phát hiện bấm Facebook mở **2 cửa sổ** (cửa sổ nhỏ và thêm một tab): `window.open(..., 'noopener')` theo chuẩn luôn trả `null`, nên `preventDefault()` không bao giờ chạy và link `target="_blank"` mở thêm tab.
+
+**Cách làm:**
+- `src/components/ui/ShareBar.tsx`: nút vuông 36px chỉ có icon. Có `aria-label` cho trình đọc màn hình và `title` để rê chuột thấy chữ; khung ngoài có `role="group"` để nhãn "Chia sẻ" có tác dụng. Bỏ nút sao chép link cùng state `copied`.
+- Facebook: `window.open` không kèm `noopener`, có cửa sổ thì đặt `w.opener = null` (trang Facebook không với ngược được trang mình) rồi `preventDefault()`. Trình duyệt chặn popup thì vẫn rơi về tab mới như cũ.
+- `src/components/ui/Icons.tsx`: thêm `IconFacebook`, `IconShare`, nét theo bộ Lucide (giấy phép ISC), cùng kiểu stroke với các icon khác.
+
+**Kiểm tra:**
+- Test mới `tests/e2e/products.spec.ts` "nút chia sẻ Facebook dạng icon mở đúng một cửa sổ nhỏ": không còn nút sao chép; bấm Facebook mở đúng 1 cửa sổ, `window.opener` trong đó là `null`, trang sản phẩm giữ nguyên. Request sang Facebook bị chặn trong test.
+- Đo tay: cửa sổ 640×560. Ở 390px (giả lập Web Share) có 2 icon.
+
+**Lưu ý:** icon chia sẻ qua ứng dụng (Zalo, Messenger…) chỉ hiện khi trình duyệt có Web Share: điện thoại, Chrome trên Windows/macOS; Chrome trên Linux không có.
+
+---
+
+## 27/10/2026 · nhánh `fix/mobile-menu-hotspot-header`
+
+### Mobile: nút cuối menu bị thanh đáy che, nhãn hotspot bị cắt, tràn ngang ở 320px
+
+**Vì sao:** QA báo 3 lỗi trên điện thoại.
+1. Cuộn hết menu ngăn kéo, nút "Yêu cầu báo giá" bị thanh Gọi/Zalo/Báo giá che 38px, bấm vào trúng thanh.
+2. Nhãn hotspot "Ốp mặt tiền" ở khối Ứng dụng bị cắt ở mép phải ảnh. Đo thêm thấy "Mặt bích" và "Tấm ốp mặt tiền" cũng bị.
+3. Màn 320px trang chủ và trang liên hệ cuộn ngang được (`scrollWidth` 345).
+
+**Cách làm:**
+- **Menu ngăn kéo** (`HeaderClient.tsx`, `MobileDrawer`): thêm `pb-16` (bỏ từ `md`), để nút cuối cuộn lên trên `MobileBar`. Thanh này cao khoảng 57px, cùng `z-30` và đứng sau trong DOM nên vẽ đè lên menu. Thanh vẫn hiện khi mở menu, để khách vẫn gọi hoặc nhắn Zalo được.
+- **Hotspot** (`Applications.tsx`), bổ sung cho bản sửa nhãn của đợt 15 bên dưới (lật nhãn, xuống dòng; đã có trong `main`):
+  - Dưới `sm` (khung ảnh hẹp), nhãn không nằm ngang cạnh chấm mà nằm dưới hoặc trên chấm, canh từ tâm chấm. `placeLabels()` đo nhãn, thử mọi tổ hợp trên/dưới, rồi chọn tổ hợp không đè nhãn khác, không che chấm khác, không tràn khung. Chỉ lật nhãn sang trái thì ở 386px "Ốp mặt tiền" vẫn đè "Vách hoa văn" (đúng trường hợp "hai chấm gần nhau" ghi ở mục đợt 15).
+  - Nhãn giờ là con của chấm 22px, nên giới hạn bề ngang tính theo `cqw` của lớp chấm (`@container`) thay cho % của cụm chấm + nhãn. Vẫn chừa 8px tới mép khung như đợt 15.
+  - Nhãn có thuộc tính `data-spot-label` cho `placeLabels()` và test. Test của đợt 15 (`.dot-pulse + span`) vẫn khớp vì nhãn đứng ngay sau chấm.
+- **Tràn ngang ở 320px** có 2 nguyên nhân:
+  - Ô thông tin trong khối liên hệ (`ContactSection.tsx`), là thủ phạm chính, có ở cả trang chủ lẫn trang liên hệ: logo ngang và tên công ty trên cùng một hàng rộng 277px, cộng padding 48px. Đã thêm `flex-wrap` và cho logo `max-w-[min(220px,100%)]`.
+  - Header: dưới `lg`, cột logo đổi thành `minmax(0,auto)` và link logo có `min-w-0`, để logo co lại (120px ở 320px, 160px ở 360px) thay vì đẩy cụm nút phải ra ngoài. Màn 360px trước đây cũng tràn khoảng 12px.
+
+**Kiểm tra:**
+- 3 test mới trong `tests/e2e/responsive.spec.ts`:
+  - Nút cuối menu bấm được ở 386×760.
+  - Nhãn hotspot không bị cắt, không đè nhau ở 320px và 386px, cả 4 tab.
+- Test của đợt 15 `admin.spec.ts` "điểm chấm sát mép ở tab Ứng dụng" (chấm 3%, 97%, nhãn dài) chạy lại với bản gộp.
+  - Màn 320px không tràn ngang ở `/`, `/lien-he`, `/san-pham`.
+- Chạy với code chưa sửa: test menu và test tràn ngang báo lỗi đúng.
+- Quét 320–1600px không còn tràn ngang. Desktop thu menu về hamburger như trước (so với `HeaderClient` cũ ở 1366, 1440, 1600px).
+
+**Lưu ý:**
+- Từ `lg`, header giữ cột `auto` và link logo `lg:min-w-auto`. Phép đo thu menu về hamburger dựa vào việc header tràn thật. Nếu cho logo co ở desktop, menu ngang sẽ hiện ra đè lên logo thay vì thu lại (đã gặp khi thử, ở 1440px).
+- Đổi chiều cao `MobileBar` thì sửa `pb-16` của ngăn kéo theo.
+- `placeLabels()` tìm nhãn qua thuộc tính `data-spot-label`, test e2e cũng dựa vào thuộc tính này. Đừng bỏ.
+
+---
+
 ## 27/10/2026 · nhánh `test` (đợt 16)
 
 ### Ảnh chia sẻ dự phòng `/og-default.jpg` bị thiếu

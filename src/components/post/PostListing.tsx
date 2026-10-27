@@ -12,7 +12,7 @@ type Props = { category?: PostCategory | null; page: number }
 export const PostListing = async ({ category, page }: Props) => {
   const [categories, result] = await Promise.all([getPostCategories(), getPosts({ category: category?.id, page })])
   const basePath = category ? `/bai-viet/danh-muc/${category.slug}` : '/bai-viet'
-  const chip = 'inline-flex h-10 items-center border px-4 text-[12px] font-medium uppercase no-underline transition-colors'
+  const chip = 'inline-flex h-10 items-center rounded-btn border px-4 text-[12px] font-medium uppercase no-underline transition-colors'
 
   return (
     <>

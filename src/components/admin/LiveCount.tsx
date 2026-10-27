@@ -26,10 +26,9 @@ const listeners = new Set<(c: LiveCounts) => void>()
 /** Thông báo khi số tăng so với lần trước. */
 const TOASTS: Array<{ metric: Metric; text: (n: number) => string }> = [
   { metric: 'newQuotes', text: (n) => (n === 1 ? 'Có 1 yêu cầu báo giá mới' : `Có ${n} yêu cầu báo giá mới`) },
-  { metric: 'subscribers', text: (n) => (n === 1 ? 'Có 1 đăng ký bản tin mới' : `Có ${n} đăng ký bản tin mới`) },
 ]
 
-const KEYS: Metric[] = [...QUOTE_STATUSES.map((s) => s.metric), 'subscribers', 'subscribersToday']
+const KEYS: Metric[] = QUOTE_STATUSES.map((s) => s.metric)
 
 const isCounts = (v: unknown): v is LiveCounts =>
   !!v && typeof v === 'object' && KEYS.every((k) => typeof (v as Record<string, unknown>)[k] === 'number')
@@ -104,14 +103,12 @@ export const useLiveCounts = (initial: LiveCounts) => {
 const NOTES: Partial<Record<Metric, (n: number) => string>> = {
   newQuotes: (n) => (n > 0 ? `Hôm nay có ${n} yêu cầu báo giá mới cần xử lý.` : 'Không có yêu cầu báo giá mới.'),
   callbackQuotes: (n) => (n > 0 ? `${n} cần liên hệ lại` : ''),
-  subscribersToday: (n) => (n > 0 ? `+${n} hôm nay` : ''),
 }
 
 /** Huy hiệu trên menu: chú thích khi rê chuột và kiểu màu. "Mới" giữ nền cam đặc như trước. */
 const BADGES: Partial<Record<Metric, { title: string; className?: string }>> = {
   newQuotes: { title: 'Yêu cầu báo giá đang ở trạng thái Mới' },
   callbackQuotes: { title: 'Yêu cầu báo giá cần liên hệ lại', className: 'nav-badge--callback' },
-  subscribersToday: { title: 'Đăng ký bản tin mới trong hôm nay', className: 'nav-badge--soft' },
 }
 
 type Props = { initial: LiveCounts; metric: Metric; variant: 'badge' | 'value' | 'note' }
@@ -136,10 +133,9 @@ export const LiveCount = ({ initial, metric, variant }: Props) => {
 const LIST_REFRESH: Array<{ metric: Metric; path: string }> = [
   // Đổi trạng thái nào (kể cả do nhân viên khác) cũng làm mới danh sách yêu cầu báo giá
   ...QUOTE_STATUSES.map((s) => ({ metric: s.metric, path: '/admin/collections/quote-requests' })),
-  { metric: 'subscribers', path: '/admin/collections/subscribers' },
 ]
 
-/** Đang mở danh sách Yêu cầu báo giá hoặc Đăng ký bản tin thì làm mới danh sách khi có thay đổi. Gắn một lần ở menu. */
+/** Đang mở danh sách Yêu cầu báo giá thì làm mới danh sách khi có thay đổi. Gắn một lần ở menu. */
 export const LiveListRefresh = ({ initial }: { initial: LiveCounts }) => {
   const counts = useLiveCounts(initial)
   const pathname = usePathname()

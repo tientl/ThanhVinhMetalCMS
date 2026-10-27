@@ -91,4 +91,55 @@ test.describe('Giao diện trên điện thoại', () => {
     const zoom = await page.evaluate(() => getComputedStyle(document.documentElement).zoom)
     expect(zoom).toBe('1')
   })
+
+  test('nút "Yêu cầu báo giá" cuối menu không bị thanh Gọi/Zalo/Báo giá che', async ({ page }) => {
+    // Màn 386×760 menu dài hơn màn hình: cuộn hết cỡ thì nút cuối từng nằm dưới thanh đáy, bấm vào trúng thanh.
+    await page.setViewportSize({ width: 386, height: 760 })
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Mở menu' }).click()
+    const drawer = page.getByRole('dialog', { name: 'Menu' })
+    await drawer.evaluate((el) => el.scrollTo(0, el.scrollHeight))
+    // click() chỉ bấm khi chính nút nhận được sự kiện, bị phần tử khác che là test lỗi
+    await drawer.getByRole('link', { name: 'Yêu cầu báo giá' }).click({ timeout: 5_000 })
+    await expect(page).toHaveURL(/\/lien-he$/)
+  })
+
+  test('nhãn hotspot khối ứng dụng không bị cắt, không đè nhau ở màn hẹp', async ({ page }) => {
+    for (const width of [320, 386]) {
+      await page.setViewportSize({ width, height: 800 })
+      await page.goto('/')
+      const tabs = page.locator('#ung-dung [role="tab"]')
+      for (let t = 0; t < (await tabs.count()); t++) {
+        await tabs.nth(t).click()
+        const frame = page.locator('#app-panel > div').first()
+        // data-spot-label: nhãn hotspot (Applications.tsx); phải tìm thấy nhãn, kẻo test qua mà không kiểm gì
+        expect(await frame.locator('[data-spot-label]').count(), `màn ${width}px, tab ${t + 1} không thấy nhãn hotspot`).toBeGreaterThan(0)
+        const problems = await frame.evaluate((frame) => {
+          const f = frame.getBoundingClientRect()
+          const labels = [...frame.querySelectorAll<HTMLElement>('[data-spot-label]')].map((s) => ({ text: s.textContent, r: s.getBoundingClientRect() }))
+          const hit = (a: DOMRect, b: DOMRect) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
+          const out: string[] = []
+          labels.forEach(({ text, r }, i) => {
+            if (r.left < f.left - 0.5 || r.right > f.right + 0.5 || r.top < f.top - 0.5 || r.bottom > f.bottom + 0.5) out.push(`"${text}" bị cắt`)
+            labels.slice(i + 1).forEach((o) => hit(r, o.r) && out.push(`"${text}" đè "${o.text}"`))
+          })
+          return out
+        })
+        expect(problems, `màn ${width}px, tab ${t + 1}`).toEqual([])
+      }
+    }
+  })
+
+  test('màn 320px không tràn ngang (header, khối liên hệ)', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 })
+    for (const path of ['/', '/lien-he', '/san-pham']) {
+      await page.goto(path)
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      )
+      expect(overflow, `trang ${path} bị tràn ngang ở 320px`).toBeLessThanOrEqual(1)
+      const searchRight = await page.getByRole('button', { name: 'Tìm kiếm' }).evaluate((el) => el.getBoundingClientRect().right)
+      expect(searchRight, `nút tìm kiếm ra ngoài màn hình ở ${path}`).toBeLessThanOrEqual(320)
+    }
+  })
 })

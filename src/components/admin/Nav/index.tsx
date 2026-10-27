@@ -11,7 +11,6 @@ import { NavClient, type NavGroupData } from './NavClient'
 const GROUP_ORDER = ['Liên hệ', 'Sản phẩm', 'Bài viết', 'Nội dung', 'Cài đặt']
 const ENTITY_ORDER = [
   'quote-requests',
-  'subscribers',
   'products',
   'product-categories',
   'posts',
@@ -31,7 +30,7 @@ const rank = (list: string[], key: string) => {
 
 type Props = ServerProps & { visibleEntities?: VisibleEntities }
 
-/** Menu bên trái tùy chỉnh: thương hiệu, nhóm theo thứ tự cố định, huy hiệu realtime (yêu cầu báo giá mới, đăng ký bản tin hôm nay). */
+/** Menu bên trái tùy chỉnh: thương hiệu, nhóm theo thứ tự cố định, huy hiệu realtime (yêu cầu báo giá Mới, Cần liên hệ lại). */
 export const AdminNav = async ({ i18n, payload, permissions, visibleEntities }: Props) => {
   if (!payload?.config || !permissions) return null
   const { collections, globals } = payload.config
@@ -51,11 +50,11 @@ export const AdminNav = async ({ i18n, payload, permissions, visibleEntities }: 
     i18n,
   )
 
-  // Số ban đầu cho huy hiệu realtime (yêu cầu báo giá Mới, đăng ký bản tin hôm nay)
-  const canSeeLive = Boolean(permissions.collections?.['quote-requests']?.read || permissions.collections?.subscribers?.read)
+  // Số ban đầu cho huy hiệu realtime (yêu cầu báo giá Mới, Cần liên hệ lại)
+  const canSeeLive = Boolean(permissions.collections?.['quote-requests']?.read)
   const live: LiveCounts = canSeeLive
     ? await getLiveCounts(payload)
-    : { newQuotes: 0, callbackQuotes: 0, contactedQuotes: 0, doneQuotes: 0, subscribers: 0, subscribersToday: 0 }
+    : { newQuotes: 0, callbackQuotes: 0, contactedQuotes: 0, doneQuotes: 0 }
 
   const groups: NavGroupData[] = raw
     .map((g) => ({

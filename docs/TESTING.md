@@ -5,8 +5,8 @@ Bộ test phủ cả backend (Payload, phân quyền, API) và giao diện (tran
 | Nhóm | Công cụ | Chạy gì | Số test |
 |---|---|---|---|
 | unit | Vitest | Hàm thuần: bỏ dấu, slug, định dạng, ảnh, màu, rate limit, so sánh phiên bản, vùng ảnh muốn giữ | 77 |
-| int | Vitest + Payload Local API | Collection, phân quyền, `src/lib/data.ts`, 4 API route, kênh realtime, lịch sử phiên bản, bản nháp không lên web, khôi phục bản nháp, quyền Nhân viên, chặn lưu đè bản cũ | 136 |
-| e2e | Playwright (Chromium) | Trang thật trong trình duyệt, cả desktop và điện thoại, quyền Nhân viên, ô slug trong admin, chữ dài không tràn, slider dừng khi rê chuột, vùng ảnh muốn giữ, mở trang ở hai tab, nhãn điểm chấm không bị cắt, ảnh chia sẻ mở được | 120 |
+| int | Vitest + Payload Local API | Collection, phân quyền, `src/lib/data.ts`, 4 API route, kênh realtime, lịch sử phiên bản, bản nháp không lên web, khôi phục bản nháp, quyền Nhân viên, chặn lưu đè bản cũ | 125 |
+| e2e | Playwright (Chromium) | Trang thật trong trình duyệt, cả desktop và điện thoại, quyền Nhân viên, ô slug trong admin, chữ dài không tràn, slider dừng khi rê chuột, vùng ảnh muốn giữ, mở trang ở hai tab, nhãn điểm chấm không bị cắt và không đè nhau, ảnh chia sẻ mở được, menu mobile không bị thanh đáy che, màn 320px không tràn ngang, nút chia sẻ Facebook mở một cửa sổ | 123 |
 
 ## Chạy
 
@@ -70,7 +70,7 @@ Playwright tự chạy `pnpm build && pnpm start`. Ở máy local nếu đã có
 
 ### Rate limit
 
-`/api/quote` và `/api/subscribe` chặn sau 5 lần mỗi IP mỗi giờ, tính trong bộ nhớ tiến trình. Test nào gửi form thì gọi `useOwnRateLimitBucket()` (gửi qua page) hoặc `randomIp()` (gửi thẳng bằng fixture `request`) trong `tests/e2e/rate-limit.ts` để gắn một IP giả riêng qua `X-Forwarded-For`, nhờ vậy chạy lại hay retry đều không bị chặn. Nhóm int cũng đổi IP theo từng test vì lý do tương tự.
+`/api/quote` chặn sau 5 lần mỗi IP mỗi giờ, tính trong bộ nhớ tiến trình. Test nào gửi form thì gọi `useOwnRateLimitBucket()` (gửi qua page) hoặc `randomIp()` (gửi thẳng bằng fixture `request`) trong `tests/e2e/rate-limit.ts` để gắn một IP giả riêng qua `X-Forwarded-For`, nhờ vậy chạy lại hay retry đều không bị chặn. Nhóm int cũng đổi IP theo từng test vì lý do tương tự.
 
 ## Viết thêm test
 

@@ -16,7 +16,7 @@ export const Pagination = ({ page, totalPages, basePath }: Props) => {
     items.push(p)
   })
 
-  const cls = 'inline-flex h-11 min-w-11 items-center justify-center border px-3 text-[12.5px] font-medium no-underline transition-colors'
+  const cls = 'inline-flex h-11 min-w-11 items-center justify-center rounded-btn border px-3 text-[12.5px] font-medium no-underline transition-colors'
 
   return (
     <nav aria-label="Phân trang" className="flex flex-wrap items-center justify-center gap-2" style={{ letterSpacing: 1.5 }}>

@@ -33,7 +33,7 @@ export const ImageCard = ({ href, image, frame, title, subtitle, tag, height = '
     <span className={`absolute inset-0 ${strong ? 'overlay-up-strong' : 'overlay-up'}`} />
     <span className={`absolute flex flex-col gap-2 ${strong ? 'left-8 right-8 bottom-10 gap-3.5 md:left-12 md:right-12 md:bottom-12' : 'left-8 right-8 bottom-[30px]'}`}>
       {tag && <span className="label-sm">{tag}</span>}
-      <span className="h-serif" style={{ fontSize: titleSize, letterSpacing: 1.2 }}>
+      <span className="h-display" style={{ fontSize: titleSize, letterSpacing: 1.2 }}>
         {title}
       </span>
       {subtitle && <span className="max-w-[480px] text-[15px] font-light leading-[1.65] text-soft wrap-anywhere md:text-base">{subtitle}</span>}

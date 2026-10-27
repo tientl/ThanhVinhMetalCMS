@@ -58,11 +58,11 @@ export const HeroSlider = ({ slides }: { slides: Slide[] }) => {
         className="absolute bottom-28 left-5 right-5 flex flex-col gap-5 text-white sm:left-8 md:left-12 md:bottom-24 lg:left-16 lg:w-[780px] lg:right-auto"
       >
         {index === 0 ? (
-          <h1 className="fade-up h-serif text-[34px] text-white sm:text-[44px] lg:text-[58px]" style={{ letterSpacing: 2 }}>
+          <h1 className="fade-up h-display text-[34px] text-white sm:text-[44px] lg:text-[58px]" style={{ letterSpacing: 2 }}>
             {slides[index].title}
           </h1>
         ) : (
-          <h2 className="fade-up h-serif text-[34px] text-white sm:text-[44px] lg:text-[58px]" style={{ letterSpacing: 2 }}>
+          <h2 className="fade-up h-display text-[34px] text-white sm:text-[44px] lg:text-[58px]" style={{ letterSpacing: 2 }}>
             {slides[index].title}
           </h2>
         )}

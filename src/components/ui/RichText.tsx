@@ -57,9 +57,9 @@ const converters: JSXConvertersFunction<SerializedBlockNode<YouTubeFields> | Ser
     const card = relationshipCard(node as unknown as RelationshipNode)
     if (!card) return null
     return (
-      <Link href={card.href} className="not-prose my-6 flex items-center gap-4 border border-line bg-surface p-3 no-underline transition-colors hover:border-accent">
+      <Link href={card.href} className="not-prose my-6 flex items-center gap-4 rounded-btn border border-line bg-surface p-3 no-underline transition-colors hover:border-accent">
         {isMedia(card.image) && (
-          <span className="relative block h-16 w-24 shrink-0 overflow-hidden bg-deep">
+          <span className="relative block h-16 w-24 shrink-0 overflow-hidden rounded-btn bg-deep">
             <Img media={card.image} size="thumb" sizes="96px" />
           </span>
         )}
@@ -91,7 +91,7 @@ const YouTubeEmbed = ({ fields, className = '' }: { fields: YouTubeFields; class
   if (!id) return null
   return (
     <figure className={className}>
-      <div className="relative aspect-video w-full overflow-hidden bg-deep">
+      <div className="relative aspect-video w-full overflow-hidden rounded-card bg-deep">
         <iframe
           src={`https://www.youtube-nocookie.com/embed/${id}`}
           title={fields.caption || 'Video YouTube'}

@@ -57,7 +57,7 @@ export const Lightbox = ({ images, start, label, onClose }: Props) => {
 
   const stop = (e: React.SyntheticEvent) => e.stopPropagation()
   const navBtn =
-    'absolute top-1/2 z-[1] flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center border-[1.5px] border-white/60 bg-[rgba(8,10,13,0.6)] text-white hover:border-accent md:h-14 md:w-14'
+    'absolute top-1/2 z-[1] flex h-12 w-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-btn border-[1.5px] border-white/60 bg-[rgba(8,10,13,0.6)] text-white hover:border-accent md:h-14 md:w-14'
 
   return createPortal(
     <div
@@ -85,7 +85,7 @@ export const Lightbox = ({ images, start, label, onClose }: Props) => {
             stop(e)
             onClose(index)
           }}
-          className="flex h-11 cursor-pointer items-center gap-2 border border-white/40 bg-transparent px-4 text-[13px] font-semibold text-white hover:border-accent"
+          className="flex h-11 cursor-pointer items-center gap-2 rounded-btn border border-white/40 bg-transparent px-4 text-[13px] font-semibold text-white hover:border-accent"
         >
           <IconClose size={18} /> Đóng
         </button>

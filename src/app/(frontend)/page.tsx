@@ -46,7 +46,7 @@ export default async function HomePage() {
       <Applications heading={home.applicationsHeading} intro={home.applicationsIntro} items={home.applications ?? []} />
       <CategoriesGrid heading={home.categoriesHeading} items={categories} />
       <NewsGrid heading={home.newsHeading} intro={home.newsIntro} posts={posts.docs} />
-      <ContactSection settings={settings} heading={home.contactHeading} intro={home.contactIntro} newsletterNote={home.newsletterNote} />
+      <ContactSection settings={settings} heading={home.contactHeading} intro={home.contactIntro} />
     </>
   )
 }

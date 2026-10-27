@@ -9,10 +9,8 @@ import { getLiveCounts, liveEvents, NOTIFY_DELAY_MS } from '@/lib/liveEvents'
 import { as, asGuest, asRoot, getTestPayload, getUser } from './helpers'
 
 let payload: Payload
-let n = 0
 // Tiền tố không chứa "zz": api.test.ts dọn bằng like 'Zz%' / 'zz-%' (Payload so khớp kiểu chứa, không phân biệt hoa thường).
 const PREFIX = 'Livetest'
-const email = () => `livetest-${Date.now()}-${n++}@example.org`
 
 /** Đếm số lần kênh realtime phát trong lúc chạy `fn` (tin báo đi trễ NOTIFY_DELAY_MS để chờ commit). */
 const countEvents = async (fn: () => Promise<unknown>) => {
@@ -36,29 +34,10 @@ const authHeaders = async () => {
 
 beforeAll(async () => {
   payload = await getTestPayload()
-  await payload.delete({ collection: 'subscribers', where: { email: { like: 'livetest-%' } }, ...asRoot })
   await payload.delete({ collection: 'quote-requests', where: { name: { like: `${PREFIX}%` } }, ...asRoot })
 })
 
 describe('kênh realtime cho trang quản trị', () => {
-  it('đăng ký bản tin mới làm tăng tổng và số hôm nay', async () => {
-    const before = await getLiveCounts(payload)
-    await payload.create({ collection: 'subscribers', data: { email: email() }, ...asRoot })
-    const after = await getLiveCounts(payload)
-    expect(after.subscribers).toBe(before.subscribers + 1)
-    expect(after.subscribersToday).toBe(before.subscribersToday + 1)
-  })
-
-  it('thêm và xóa đăng ký bản tin đều phát sự kiện', async () => {
-    let id = 0
-    expect(
-      await countEvents(async () => {
-        id = (await payload.create({ collection: 'subscribers', data: { email: email() }, ...asRoot })).id
-      }),
-    ).toBe(1)
-    expect(await countEvents(() => payload.delete({ collection: 'subscribers', id, ...asRoot }))).toBe(1)
-  })
-
   it('yêu cầu báo giá mới vẫn phát sự kiện và làm tăng số Mới', async () => {
     const before = await getLiveCounts(payload)
     const hits = await countEvents(() =>
@@ -119,7 +98,7 @@ describe('GET /api/live-counts', () => {
     const { value } = await reader.read()
     const text = new TextDecoder().decode(value)
     expect(text).toMatch(/^data: /)
-    expect(JSON.parse(text.replace(/^data: /, '').trim())).toHaveProperty('subscribersToday')
+    expect(JSON.parse(text.replace(/^data: /, '').trim())).toHaveProperty('newQuotes')
     await reader.cancel()
   })
 })

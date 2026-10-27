@@ -17,7 +17,6 @@ export type NavGroupData = {
 const BADGES: Record<string, (keyof LiveCounts)[]> = {
   // Cam: yêu cầu Mới. Vàng: yêu cầu Cần liên hệ lại.
   'quote-requests': ['newQuotes', 'callbackQuotes'],
-  subscribers: ['subscribersToday'],
 }
 
 const baseClass = 'nav'
