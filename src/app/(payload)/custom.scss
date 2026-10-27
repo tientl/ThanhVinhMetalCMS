@@ -104,13 +104,6 @@ html {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  /* Số mang tính thông tin (đăng ký bản tin hôm nay), không cần xử lý: viền thay vì nền đặc */
-  &--soft {
-    background: transparent;
-    color: var(--tv-accent);
-    box-shadow: inset 0 0 0 1px var(--tv-accent);
-  }
 }
 
 .nav-logout {
@@ -162,13 +155,10 @@ html {
 
 .dash-stats {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* 3 ô (báo giá mới, sản phẩm, bài viết): đủ chỗ thì một hàng, hẹp thì tự xuống dòng */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
   margin-bottom: 1.25rem;
-
-  @media (max-width: 1024px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 .dash-stat {

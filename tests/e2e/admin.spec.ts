@@ -275,23 +275,6 @@ test.describe('Trang quản trị, đã đăng nhập', () => {
     await expect(page.locator('#field-name')).toHaveValue(name)
   })
 
-  test('đăng ký bản tin mới hiện ngay trên bảng điều khiển, không cần tải lại', async ({ page, request }) => {
-    await page.goto('/admin')
-    const stat = page.locator('.dash-stat', { hasText: 'Đăng ký bản tin' }).locator('.dash-stat__value')
-    const before = Number(await stat.textContent())
-
-    const res = await request.post('/api/subscribe', {
-      data: { email: `zz-e2e-${Date.now()}@example.com` },
-      headers: { 'x-forwarded-for': randomIp() },
-    })
-    expect(res.ok()).toBe(true)
-
-    // Test khác chạy song song cũng có thể tạo đăng ký, nên chỉ đòi số tăng lên, không đòi đúng +1
-    await expect.poll(async () => Number(await stat.textContent())).toBeGreaterThan(before)
-    await expect(page.locator('#nav-subscribers .nav-badge')).toBeVisible()
-    await expect(page.getByText(/đăng ký bản tin mới/).first()).toBeVisible()
-  })
-
   test('cài đặt chung mở được', async ({ page }) => {
     await page.goto('/admin/globals/site-settings')
     await expect(page.locator('form').first()).toBeVisible()

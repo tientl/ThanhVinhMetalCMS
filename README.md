@@ -35,7 +35,7 @@ Tài khoản mẫu: `admin@thanhvinhmetal.vn` / `ThanhVinh@2026`. Đổi mật k
 ```
 src/
   payload.config.ts      cấu hình Payload (admin tiếng Việt, logo, email SMTP)
-  collections/           products, product-categories, posts, post-categories, pages, media, quote-requests, quote-files, subscribers, users
+  collections/           products, product-categories, posts, post-categories, pages, media, quote-requests, quote-files, users
   globals/               home, navigation, site-settings
   access/                phân quyền admin / editor
   fields/                slug không dấu, searchText, SEO tab, richText
@@ -43,7 +43,7 @@ src/
   seed/                  dữ liệu mẫu
   lib/data.ts            hàm lấy dữ liệu cho giao diện (getHome, getProducts, search...)
   app/(frontend)/        trang người dùng: /, /san-pham, /san-pham/danh-muc/[slug], /san-pham/[slug], /bai-viet..., /lien-he, /tim-kiem, /[slug]
-  app/(frontend)/api/    quote (form báo giá), subscribe (bản tin), search, live-counts (số realtime cho admin)
+  app/(frontend)/api/    quote (form báo giá), search, live-counts (số realtime cho admin)
   app/(payload)/         admin và REST API của Payload
   components/            layout (header, footer, nút nổi), home (8 khối), ui, forms
 deploy/                  nginx.conf, ecosystem PM2, backup.sh, deploy.sh

@@ -101,7 +101,7 @@ describe('sản phẩm', () => {
   })
 })
 
-describe('yêu cầu báo giá và bản tin', () => {
+describe('yêu cầu báo giá', () => {
   it('khách không tạo trực tiếp được yêu cầu báo giá', async () => {
     await expect(
       payload.create({
@@ -112,22 +112,8 @@ describe('yêu cầu báo giá và bản tin', () => {
     ).rejects.toThrow()
   })
 
-  it('khách không tạo trực tiếp được người đăng ký bản tin', async () => {
-    await expect(
-      payload.create({
-        collection: 'subscribers',
-        data: { email: 'khach@example.com' } as never,
-        ...asGuest,
-      }),
-    ).rejects.toThrow()
-  })
-
   it('khách không đọc được yêu cầu báo giá', async () => {
     await expect(payload.find({ collection: 'quote-requests', ...asGuest })).rejects.toThrow()
-  })
-
-  it('khách không đọc được danh sách đăng ký bản tin', async () => {
-    await expect(payload.find({ collection: 'subscribers', ...asGuest })).rejects.toThrow()
   })
 
   it('nhân viên đọc được yêu cầu báo giá', async () => {

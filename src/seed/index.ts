@@ -18,7 +18,6 @@ const reset = async (payload: Payload) => {
   for (const collection of [
     'quote-requests',
     'quote-files',
-    'subscribers',
     'products',
     'product-categories',
     'posts',
@@ -309,7 +308,6 @@ const run = async () => {
       newsCount: 4,
       contactHeading: 'Liên hệ với chúng tôi',
       contactIntro: 'Không tìm thấy sản phẩm bạn cần? Hãy để lại lời nhắn hoặc gửi bản vẽ, Vinh Metal sẽ liên hệ lại.',
-      newsletterNote: 'Nhận thông tin mẫu hoa văn mới và chương trình ưu đãi.',
       metaTitle: 'Thành Vinh Metal – Cắt laser CNC, gia công kim loại tấm tại Bình Dương',
       metaDescription: 'Cắt laser CNC, chấn gấp, hàn và sơn tĩnh điện theo bản vẽ. Vách hoa văn, tấm đục lỗ, vỏ tủ điện, mặt bích, bánh răng. Xưởng tại Thuận An, Bình Dương.',
       metaImage: media.slideHoaVan,

@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Be_Vietnam_Pro, Playfair_Display } from 'next/font/google'
+import { Be_Vietnam_Pro, Inter_Tight } from 'next/font/google'
 import Script from 'next/script'
 import React from 'react'
 
@@ -16,17 +16,18 @@ import { getServerSideURL } from '@/utilities/getURL'
 
 import './globals.css'
 
+// Font duy nhất của giao diện (27/10/2026). Font biến thiên: một file cho mọi độ đậm 300–700 đang dùng.
+const interTight = Inter_Tight({
+  subsets: ['vietnamese', 'latin'],
+  variable: '--font-inter-tight',
+  display: 'swap',
+})
+
+// Riêng menu (menu ngang, mega menu, menu điện thoại) giữ font cũ theo yêu cầu: class font-menu trong HeaderClient
 const beVietnam = Be_Vietnam_Pro({
   subsets: ['vietnamese', 'latin'],
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-be-vietnam',
-  display: 'swap',
-})
-
-const playfair = Playfair_Display({
-  subsets: ['vietnamese', 'latin'],
-  weight: ['500', '600'],
-  variable: '--font-playfair',
   display: 'swap',
 })
 
@@ -46,7 +47,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html
       lang="vi"
       suppressHydrationWarning
-      className={`${beVietnam.variable} ${playfair.variable}`}
+      className={`${interTight.variable} ${beVietnam.variable}`}
       style={accentVars(settings.accentColor) as React.CSSProperties}
     >
       <head>

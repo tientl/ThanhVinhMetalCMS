@@ -4,7 +4,7 @@ import React from 'react'
 import type { ProductCategory } from '@/payload-types'
 
 export const CategoryChips = ({ categories, active }: { categories: ProductCategory[]; active?: string }) => {
-  const base = 'inline-flex h-10 items-center border px-4 text-[12px] font-medium uppercase no-underline transition-colors'
+  const base = 'inline-flex h-10 items-center rounded-btn border px-4 text-[12px] font-medium uppercase no-underline transition-colors'
   return (
     <nav aria-label="Danh mục sản phẩm" className="flex flex-wrap gap-2.5" style={{ letterSpacing: 1.6 }}>
       <Link href="/san-pham" className={`${base} ${!active ? 'border-accent bg-accent text-bg' : 'border-line-2 text-ink hover:border-accent'}`}>

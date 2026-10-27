@@ -102,7 +102,7 @@ export const QuoteForm = ({ product, sourcePage }: { product?: string; sourcePag
           Bản vẽ đính kèm (DXF, DWG, PDF, ảnh, tối đa 10 MB)
         </label>
         <label className="field flex cursor-pointer items-center gap-3 text-muted-2">
-          <span className="shrink-0 border border-line-2 px-3 py-1 text-[12px] font-semibold uppercase text-ink" style={{ letterSpacing: 1.5 }}>
+          <span className="shrink-0 rounded-md border border-line-2 px-3 py-1 text-[12px] font-semibold uppercase text-ink" style={{ letterSpacing: 1.5 }}>
             Chọn tệp
           </span>
           <span className="truncate text-sm">{fileName || 'Chưa chọn tệp'}</span>

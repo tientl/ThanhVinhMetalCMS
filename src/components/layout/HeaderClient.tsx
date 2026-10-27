@@ -131,9 +131,11 @@ export const HeaderClient = ({ navigation, settings }: Props) => {
           color: isOpen ? 'var(--color-ink)' : 'var(--header-ink)',
         }}
       >
-        <header ref={headerRef} className="section-x grid h-[var(--header-h)] grid-cols-[1fr_auto_1fr] items-center gap-4 lg:gap-7 lg:px-10">
+        {/* Dưới lg cột logo minmax(0,auto): màn hẹp (320px) thì logo co lại thay vì đẩy cụm nút phải ra ngoài màn hình.
+            Từ lg giữ auto: phép đo thu menu (scrollWidth > clientWidth) cần header tràn thật, không để logo co thay. */}
+        <header ref={headerRef} className="section-x grid h-[var(--header-h)] grid-cols-[1fr_minmax(0,auto)_1fr] items-center gap-4 lg:grid-cols-[1fr_auto_1fr] lg:gap-7 lg:px-10">
           {/* Trái */}
-          <nav aria-label="Menu chính" className={`${desktopNav} items-center gap-5 justify-self-start`}>
+          <nav aria-label="Menu chính" className={`${desktopNav} items-center gap-5 justify-self-start font-menu`}>
             <Link href="/" aria-label="Trang chủ" className="navl flex text-current">
               <IconHome />
             </Link>
@@ -153,7 +155,7 @@ export const HeaderClient = ({ navigation, settings }: Props) => {
           </button>
 
           {/* Logo giữa */}
-          <Link href="/" aria-label={`${settings.brandName}, về trang chủ`} className="flex items-center justify-center justify-self-center">
+          <Link href="/" aria-label={`${settings.brandName}, về trang chủ`} className="flex min-w-0 max-w-full items-center justify-center justify-self-center lg:min-w-auto lg:max-w-none">
             {/* Cao cố định, rộng theo tỉ lệ ảnh: logo tròn hay logo ngang đều hiển thị đúng */}
             <Image
               src={mediaUrl(settings.logo) || '/logo.png'}
@@ -161,13 +163,13 @@ export const HeaderClient = ({ navigation, settings }: Props) => {
               width={logoDims.width}
               height={logoDims.height}
               priority
-              className="h-[48px] w-auto max-w-[180px] object-contain lg:h-[60px] lg:max-w-[240px]"
+              className="h-[48px] w-auto max-w-[min(180px,100%)] object-contain lg:h-[60px] lg:max-w-[240px]"
             />
           </Link>
 
           {/* Phải */}
           <div className="flex items-center gap-4 justify-self-end lg:gap-5">
-            <nav aria-label="Menu chính, phần phải" className={`${desktopNav} items-center gap-5`}>
+            <nav aria-label="Menu chính, phần phải" className={`${desktopNav} items-center gap-5 font-menu`}>
               {right.map(renderItem)}
             </nav>
             <button
@@ -208,13 +210,13 @@ const MegaPanel = ({ id, label, mega, onClose }: { id: string; label: string; me
   return (
     <div
       id={id}
-      className="mega-drop section-x fixed inset-x-0 top-[var(--header-h)] z-30 hidden max-h-[calc(100vh_/_var(--zoom)_-_var(--header-h))] flex-col gap-6 overflow-y-auto border-t border-line bg-surface pb-12 pt-10 shadow-[0_24px_40px_rgba(15,19,23,0.16)] lg:flex"
+      className="mega-drop section-x fixed inset-x-0 top-[var(--header-h)] z-30 hidden font-menu max-h-[calc(100vh_/_var(--zoom)_-_var(--header-h))] flex-col gap-6 overflow-y-auto border-t border-line bg-surface pb-12 pt-10 shadow-[0_24px_40px_rgba(15,19,23,0.16)] lg:flex"
     >
       <div className="flex items-center justify-between">
         <span className="text-[13px] font-bold uppercase text-muted-3" style={{ letterSpacing: 1 }}>
           {label}
         </span>
-        <button type="button" onClick={onClose} className="h-10 cursor-pointer border border-line-2 bg-transparent px-3.5 text-[13px] font-semibold text-ink">
+        <button type="button" onClick={onClose} className="h-10 cursor-pointer rounded-btn border border-line-2 bg-transparent px-3.5 text-[13px] font-semibold text-ink">
           Đóng
         </button>
       </div>
@@ -286,7 +288,7 @@ const MegaCards = ({ cards, height, wrap = true }: { cards: Mega['cards']; heigh
       <Img media={c.image} size="card" sizes="25vw" />
       <span className="overlay-up absolute inset-0" />
       <span className="absolute inset-x-8 bottom-[30px] flex flex-col gap-2">
-        <span className="h-serif text-[24px]" style={{ letterSpacing: 1.2 }}>
+        <span className="h-display text-[24px]" style={{ letterSpacing: 1.2 }}>
           {c.title}
         </span>
         {c.subtitle && <span className="text-[15px] font-light text-soft">{c.subtitle}</span>}
@@ -320,7 +322,7 @@ const SearchOverlay = ({ suggestions, onClose }: { suggestions: NonNullable<Navi
         <span className="text-[13px] font-bold uppercase text-muted" style={{ letterSpacing: 1 }}>
           Tìm kiếm
         </span>
-        <button type="button" onClick={onClose} className="h-10 cursor-pointer border border-line-2 bg-transparent px-3.5 text-[13px] font-semibold text-ink">
+        <button type="button" onClick={onClose} className="h-10 cursor-pointer rounded-btn border border-line-2 bg-transparent px-3.5 text-[13px] font-semibold text-ink">
           Đóng
         </button>
       </div>
@@ -358,7 +360,9 @@ const SearchOverlay = ({ suggestions, onClose }: { suggestions: NonNullable<Navi
 const MobileDrawer = ({ items, onClose, className }: { items: Item[]; onClose: () => void; className: string }) => {
   const [expanded, setExpanded] = useState<string>('')
   return (
-    <div className={`fixed inset-x-0 bottom-0 top-[var(--header-h)] z-30 overflow-y-auto bg-bg ${className}`} role="dialog" aria-label="Menu">
+    // pb-16: chừa chỗ cho thanh Gọi/Zalo/Báo giá (MobileBar, cao ~57px, cũng z-30 và đứng sau trong DOM)
+    // để nút cuối menu cuộn lên trên thanh; từ md thanh ẩn nên bỏ khoảng này
+    <div className={`fixed inset-x-0 bottom-0 top-[var(--header-h)] z-30 overflow-y-auto bg-bg pb-16 font-menu md:pb-0 ${className}`} role="dialog" aria-label="Menu">
       <nav className="flex flex-col">
         <Link href="/" onClick={onClose} className="border-b border-line px-5 py-4 text-[13px] font-medium uppercase text-ink no-underline" style={{ letterSpacing: 1.6 }}>
           Trang chủ

@@ -11,7 +11,7 @@ export const ProductGallery = ({ images, name }: { images: NonNullable<Product['
   const [active, setActive] = useState(0)
   const [viewing, setViewing] = useState<number | null>(null)
   const list = images.filter((i) => i.image)
-  if (!list.length) return <div className="aspect-[4/3] bg-surface" />
+  if (!list.length) return <div className="aspect-[4/3] rounded-card bg-surface" />
   const activeIndex = Math.min(active, list.length - 1)
   const current = list[activeIndex]
 
@@ -22,12 +22,12 @@ export const ProductGallery = ({ images, name }: { images: NonNullable<Product['
         type="button"
         aria-label={`Xem ảnh lớn: ${name}`}
         onClick={() => setViewing(activeIndex)}
-        className="frame tab-fade group relative block aspect-[4/3] w-full cursor-zoom-in overflow-hidden border-0 bg-surface p-0"
+        className="frame tab-fade group relative block aspect-[4/3] w-full cursor-zoom-in overflow-hidden rounded-card border-0 bg-surface p-0"
       >
         <Img media={current.image} size="wide" alt={name} sizes="(min-width: 1024px) 55vw, 100vw" priority />
         <span
           aria-hidden="true"
-          className="absolute bottom-7 right-7 flex h-10 w-10 items-center justify-center bg-[rgba(8,10,13,0.7)] text-white opacity-80 transition-opacity group-hover:opacity-100"
+          className="absolute bottom-7 right-7 flex h-10 w-10 items-center justify-center rounded-btn bg-[rgba(8,10,13,0.7)] text-white opacity-80 transition-opacity group-hover:opacity-100"
         >
           <IconExpand size={18} />
         </span>
@@ -45,7 +45,7 @@ export const ProductGallery = ({ images, name }: { images: NonNullable<Product['
                 setActive(i)
                 setViewing(i)
               }}
-              className="relative aspect-square cursor-zoom-in overflow-hidden border bg-surface p-0"
+              className="relative aspect-square cursor-zoom-in overflow-hidden rounded-btn border bg-surface p-0"
               style={{ borderColor: i === active ? 'var(--color-accent)' : 'var(--color-line)' }}
             >
               <Img media={img.image} size="thumb" alt="" sizes="160px" />

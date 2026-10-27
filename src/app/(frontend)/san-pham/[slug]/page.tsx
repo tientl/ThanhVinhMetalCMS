@@ -66,7 +66,7 @@ export default async function ProductPage({ params }: Props) {
 
         <div className="flex flex-col gap-6">
           {category && <span className="label-sm">{category.name}</span>}
-          <h1 className="h-serif text-[28px] md:text-[36px]">{product.name}</h1>
+          <h1 className="h-display text-[28px] md:text-[36px]">{product.name}</h1>
           {product.summary && <p className="lead m-0">{product.summary}</p>}
 
           <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 border-t border-line pt-5 text-[15px] wrap-anywhere">
@@ -108,7 +108,7 @@ export default async function ProductPage({ params }: Props) {
         <section className="section-x pb-16 md:pb-24">
           {/* Như trang tĩnh: khung rộng hết (lưới video lấp đầy), riêng chữ, bảng tối đa 1100px (.prose-wide) */}
           <div className="prose-wide">
-            <h2 className="h-serif mb-6 text-[24px] md:text-[28px]">Mô tả chi tiết</h2>
+            <h2 className="h-display mb-6 text-[24px] md:text-[28px]">Mô tả chi tiết</h2>
             <RichText data={product.description} />
           </div>
         </section>

@@ -18,6 +18,8 @@ Bàn giao sau 20–25 ngày làm việc kể từ khi nhận cọc và đủ n�
 
 Đã gồm: giao diện điện thoại, hiệu ứng (chuyển ảnh mờ dần, phóng ảnh khi rê chuột, hiện dần khi cuộn), header đổi trạng thái khi mở menu.
 
+**Thay đổi so với bản ký:** ngày 27/10/2026 bỏ ô đăng ký bản tin ở hạng mục 5 (khách chưa có kế hoạch gửi bản tin, không giữ email mà không dùng). Cần khách xác nhận.
+
 ## Ngoài gói – giai đoạn 2, KHÔNG làm trong gói này
 - Khách tự kéo đặt điểm chấm trên ảnh trong admin (hiện điểm chấm đặt cố định).
 - Trang Dự án theo loại công trình.
@@ -26,7 +28,7 @@ Bàn giao sau 20–25 ngày làm việc kể từ khi nhận cọc và đủ n�
 - Thư viện ảnh, video.
 - Bản tiếng Anh (nút VI/EN trên header chỉ là giao diện).
 - Nhập nội dung thật: khách tự nhập, dev chỉ hỗ trợ dữ liệu mẫu.
-- Gửi bản tin qua email cho người đăng ký (tự động khi xuất bản bài, hoặc Quản trị bấm gửi), kèm link hủy đăng ký; hoặc nút xuất danh sách email (CSV) để gửi qua Mailchimp, Brevo. Gói hiện tại chỉ lưu email vào admin (mục 5). Cần khách có email công ty và SMTP trước (ghi nhận 26/10/2026).
+- Bản tin qua email: làm lại ô đăng ký (đã bỏ 27/10/2026) và gửi thư cho người đăng ký (tự động khi xuất bản bài, hoặc Quản trị bấm gửi), kèm link hủy đăng ký; hoặc nút xuất danh sách email (CSV) để gửi qua Mailchimp, Brevo. Gói hiện tại chỉ lưu email vào admin (mục 5). Cần khách có email công ty và SMTP trước (ghi nhận 26/10/2026).
 
 ## Khách phải cung cấp
 Ảnh xưởng và sản phẩm (ưu tiên nền tối), danh mục và sản phẩm thật, email công ty, địa chỉ mới, link Fanpage, nội dung giới thiệu và chính sách, tên miền và VPS đứng tên khách.

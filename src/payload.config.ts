@@ -15,7 +15,6 @@ import { ProductCategories } from './collections/ProductCategories'
 import { Products } from './collections/Products'
 import { QuoteFiles } from './collections/QuoteFiles'
 import { QuoteRequests } from './collections/QuoteRequests'
-import { Subscribers } from './collections/Subscribers'
 import { Users } from './collections/Users'
 import { Home } from './globals/Home'
 import { Navigation } from './globals/Navigation'
@@ -65,7 +64,6 @@ export default buildConfig({
   }),
   collections: [
     QuoteRequests,
-    Subscribers,
     Products,
     ProductCategories,
     Posts,

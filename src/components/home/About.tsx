@@ -11,7 +11,7 @@ export const About = ({ about }: { about: Home['about'] }) => {
       <div className="flex flex-col gap-5" data-reveal>
         {about.slogan && <span className="text-base font-medium text-muted">{about.slogan}</span>}
         {about.foundedYear && <span className="label-sm">Thành lập năm {about.foundedYear}</span>}
-        <h2 className="h-serif text-[30px] md:text-[40px]">{about.heading || 'Giới thiệu'}</h2>
+        <h2 className="h-display text-[30px] md:text-[40px]">{about.heading || 'Giới thiệu'}</h2>
         {(about.paragraphs ?? []).map((p, i) => (
           <p key={p.id ?? i} className="lead m-0">
             {p.text}
@@ -22,10 +22,13 @@ export const About = ({ about }: { about: Home['about'] }) => {
         </Link>
       </div>
       <div className="relative h-[360px] md:h-[480px] lg:h-[560px]" data-reveal>
-        <FramedImage media={about.image} frame={about.imageFrame} sizes="(min-width: 1024px) 55vw, 100vw" />
+        {/* Ảnh bo góc trong lớp riêng: ô accent lệch ra ngoài ảnh (lg:-left-10), cắt ở khung ngoài thì mất ô đó */}
+        <div className="absolute inset-0 overflow-hidden rounded-card">
+          <FramedImage media={about.image} frame={about.imageFrame} sizes="(min-width: 1024px) 55vw, 100vw" />
+        </div>
         {about.badgeTitle && (
-          <span className="absolute bottom-6 left-0 flex flex-col gap-1.5 bg-accent px-6 py-5 text-bg md:bottom-10 lg:-left-10 lg:px-[30px] lg:py-[26px]">
-            <span className="h-serif text-[20px] md:text-[26px]">{about.badgeTitle}</span>
+          <span className="absolute bottom-6 left-0 flex flex-col gap-1.5 rounded-btn bg-accent px-6 py-5 text-bg md:bottom-10 lg:-left-10 lg:px-[30px] lg:py-[26px]">
+            <span className="h-display text-[20px] md:text-[26px]">{about.badgeTitle}</span>
             {about.badgeSub && <span className="text-sm">{about.badgeSub}</span>}
           </span>
         )}

@@ -46,7 +46,7 @@ export default async function PostPage({ params }: Props) {
           <div className="flex flex-col gap-5 py-16 md:py-24">
             <Breadcrumb items={[{ label: 'Bài viết', href: '/bai-viet' }, ...(category ? [{ label: category.name, href: `/bai-viet/danh-muc/${category.slug}` }] : []), { label: post.title }]} />
             {category && <span className="label-sm">{category.name}</span>}
-            <h1 className="font-serif text-[30px] font-medium leading-[1.2] wrap-anywhere md:text-[44px]">{post.title}</h1>
+            <h1 className="text-[30px] font-semibold leading-[1.2] wrap-anywhere md:text-[44px]">{post.title}</h1>
             {/* Chỉ ngày đăng, không hiện tên tài khoản người viết (tên nội bộ trong admin) */}
             {post.publishedAt && (
               <p className="m-0 text-sm text-muted-2">

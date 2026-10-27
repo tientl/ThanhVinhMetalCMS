@@ -221,7 +221,6 @@ export const Home: GlobalConfig = {
           fields: [
             limit({ name: 'contactHeading', type: 'text', label: 'Tiêu đề', defaultValue: 'Liên hệ với chúng tôi' }, MAX.heading),
             { name: 'contactIntro', type: 'textarea', label: 'Mô tả' },
-            limit({ name: 'newsletterNote', type: 'text', label: 'Ghi chú ô bản tin', defaultValue: 'Nhận thông tin mẫu hoa văn mới và chương trình ưu đãi.' }, MAX.line),
           ],
         },
         {

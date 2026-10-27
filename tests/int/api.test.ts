@@ -4,7 +4,6 @@ import type { Payload } from 'payload'
 
 import { POST as quotePost } from '@/app/(frontend)/api/quote/route'
 import { GET as searchGet } from '@/app/(frontend)/api/search/route'
-import { POST as subscribePost } from '@/app/(frontend)/api/subscribe/route'
 import { QUOTE_FILE_MAX_BYTES } from '@/lib/quoteFiles'
 
 import { minimalDxf, minimalPdf } from './fixtures'
@@ -27,13 +26,6 @@ const quoteRequest = (fields: Record<string, string | File>, ip = nextIp()) => {
   })
 }
 
-const subscribeRequest = (body: unknown, ip = nextIp()) =>
-  new Request('http://localhost:3000/api/subscribe', {
-    method: 'POST',
-    body: typeof body === 'string' ? body : JSON.stringify(body),
-    headers: { 'content-type': 'application/json', 'x-forwarded-for': ip },
-  })
-
 const countQuotes = async (name: string) => {
   const res = await payload.find({ collection: 'quote-requests', where: { name: { equals: name } }, ...asRoot })
   return res.totalDocs
@@ -43,7 +35,6 @@ beforeAll(async () => {
   payload = await getTestPayload()
   // Dọn dấu vết của lần chạy trước để test lặp lại được trên cùng database.
   await payload.delete({ collection: 'quote-requests', where: { name: { like: 'Zz%' } }, ...asRoot })
-  await payload.delete({ collection: 'subscribers', where: { email: { like: 'zz-%' } }, ...asRoot })
 })
 
 describe('POST /api/quote', () => {
@@ -184,71 +175,6 @@ describe('POST /api/quote', () => {
     const blocked = await quotePost(quoteRequest({ name: 'Zz Khách Spam 5', phone: '0900000010' }, ip))
     expect(blocked.status).toBe(429)
     expect(await countQuotes('Zz Khách Spam 5')).toBe(0)
-  })
-})
-
-describe('POST /api/subscribe', () => {
-  it('lưu email đăng ký mới', async () => {
-    const email = 'zz-moi@example.com'
-    const res = await subscribePost(subscribeRequest({ email, source: '/' }))
-    expect(res.status).toBe(200)
-    await expect(res.json()).resolves.toMatchObject({ ok: true })
-
-    const found = await payload.find({ collection: 'subscribers', where: { email: { equals: email } }, ...asRoot })
-    expect(found.totalDocs).toBe(1)
-    expect(found.docs[0]!.source).toBe('/')
-  })
-
-  it('chuẩn hóa email về chữ thường và bỏ khoảng trắng', async () => {
-    const res = await subscribePost(subscribeRequest({ email: '  Zz-HOA@Example.COM  ' }))
-    expect(res.status).toBe(200)
-    const found = await payload.find({
-      collection: 'subscribers',
-      where: { email: { equals: 'zz-hoa@example.com' } },
-      ...asRoot,
-    })
-    expect(found.totalDocs).toBe(1)
-  })
-
-  it('đăng ký lại cùng email không tạo bản ghi thứ hai', async () => {
-    const email = 'zz-trung@example.com'
-    await subscribePost(subscribeRequest({ email }))
-    const res = await subscribePost(subscribeRequest({ email }))
-    expect(res.status).toBe(200)
-    await expect(res.json()).resolves.toMatchObject({ ok: true, message: expect.stringContaining('đã đăng ký') })
-
-    const found = await payload.find({ collection: 'subscribers', where: { email: { equals: email } }, ...asRoot })
-    expect(found.totalDocs).toBe(1)
-  })
-
-  it('từ chối email sai định dạng', async () => {
-    for (const email of ['sai', 'a@b', '', 'a@@b.com']) {
-      const res = await subscribePost(subscribeRequest({ email }))
-      expect(res.status).toBe(400)
-    }
-  })
-
-  it('bẫy bot: có field website thì báo thành công nhưng không lưu', async () => {
-    const email = 'zz-bot@example.com'
-    const res = await subscribePost(subscribeRequest({ email, website: 'spam' }))
-    expect(res.status).toBe(200)
-    const found = await payload.find({ collection: 'subscribers', where: { email: { equals: email } }, ...asRoot })
-    expect(found.totalDocs).toBe(0)
-  })
-
-  it('từ chối body không phải JSON', async () => {
-    const res = await subscribePost(subscribeRequest('{khong-phai-json'))
-    expect(res.status).toBe(400)
-  })
-
-  it('chặn sau 5 lần gửi trong một giờ từ cùng IP', async () => {
-    const ip = nextIp()
-    for (let i = 0; i < 5; i++) {
-      const res = await subscribePost(subscribeRequest({ email: `zz-spam-${i}@example.com` }, ip))
-      expect(res.status).toBe(200)
-    }
-    const blocked = await subscribePost(subscribeRequest({ email: 'zz-spam-5@example.com' }, ip))
-    expect(blocked.status).toBe(429)
   })
 })
 

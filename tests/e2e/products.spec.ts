@@ -20,6 +20,27 @@ test.describe('Sản phẩm', () => {
     await expect(page.locator('main img').first()).toBeVisible()
   })
 
+  /** ShareBar.tsx: window.open với 'noopener' luôn trả null, link mở thêm một tab nữa (sửa 27/10/2026). */
+  test('nút chia sẻ Facebook dạng icon mở đúng một cửa sổ nhỏ, không mở thêm tab', async ({ page, context }) => {
+    // Không gửi request thật sang Facebook
+    await context.route(/facebook\.com/, (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '' }))
+    await page.goto('/san-pham')
+    await page.locator('a[href^="/san-pham/"]:not([href*="/danh-muc/"])').first().click()
+
+    const share = page.getByRole('group', { name: 'Chia sẻ' })
+    await expect(share.getByRole('button', { name: /sao chép/i })).toHaveCount(0)
+    const opened: import('@playwright/test').Page[] = []
+    context.on('page', (p) => opened.push(p))
+    await share.getByRole('link', { name: 'Chia sẻ lên Facebook' }).click()
+
+    await expect.poll(() => opened.length).toBe(1)
+    // Chờ thêm: lỗi cũ mở tab thứ hai ngay sau cửa sổ nhỏ
+    await page.waitForTimeout(800)
+    expect(opened).toHaveLength(1)
+    expect(await opened[0]!.evaluate(() => window.opener)).toBeNull()
+    await expect(page).toHaveURL(/\/san-pham\//)
+  })
+
   test('trang chi tiết có nút yêu cầu báo giá', async ({ page }) => {
     await page.goto('/san-pham')
     await page.locator('a[href^="/san-pham/"]:not([href*="/danh-muc/"])').first().click()

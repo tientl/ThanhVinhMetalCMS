@@ -15,12 +15,12 @@ export const ProductCard = ({ product }: { product: Product }) => {
       className="zoom group flex flex-col gap-4 text-ink no-underline"
       data-reveal
     >
-      <span className="relative block aspect-[4/3] overflow-hidden bg-surface">
+      <span className="relative block aspect-[4/3] overflow-hidden rounded-card bg-surface">
         <Img media={cover} size="card" sizes="(min-width: 1024px) 30vw, (min-width: 640px) 45vw, 100vw" />
       </span>
       <span className="flex flex-col gap-1.5">
         {category && <span className="label-sm">{category.name}</span>}
-        <span className="h-serif line-clamp-3 text-[18px] md:text-[19px]" style={{ letterSpacing: 1.2 }}>
+        <span className="h-display line-clamp-3 text-[18px] md:text-[19px]" style={{ letterSpacing: 1.2 }}>
           {product.name}
         </span>
         {product.summary && <span className="line-clamp-2 text-[14px] font-light leading-relaxed text-muted wrap-anywhere">{product.summary}</span>}

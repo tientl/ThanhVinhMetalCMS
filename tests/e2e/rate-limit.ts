@@ -1,7 +1,7 @@
 import type { Page, TestInfo } from '@playwright/test'
 
 /**
- * API báo giá và bản tin giới hạn 5 lần mỗi IP mỗi giờ. Server test chạy liên tục
+ * API báo giá giới hạn 5 lần mỗi IP mỗi giờ. Server test chạy liên tục
  * nên các lần chạy lại sẽ đụng trần. Mỗi test gắn một IP giả riêng qua
  * X-Forwarded-For (đúng header mà clientIp() đọc) để không chặn lẫn nhau.
  */

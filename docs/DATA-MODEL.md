@@ -7,7 +7,7 @@ Giới hạn độ dài (26/10/2026): tiêu đề, tên, nhãn, câu ngắn khá
 ## Collections
 
 ### users
-Auth. `role: 'admin' | 'editor'`. Editor (Nhân viên): thêm, sửa products, posts, pages và được chọn lưu nháp hoặc xuất bản; tải lên, sửa media; sửa global home; sửa thông tin, tệp đính kèm và `status` của quote-requests; subscribers chỉ đọc; product-categories, post-categories thêm, sửa được; không xóa gì; không sửa navigation, site-settings, visitor-stats, users khác (các mục này ẩn khỏi menu của editor). `source` và `ip` của yêu cầu báo giá là dữ liệu hệ thống, không ai sửa được. Xem lịch sử thay đổi quyền ở `docs/CHANGELOG.md`.
+Auth. `role: 'admin' | 'editor'`. Editor (Nhân viên): thêm, sửa products, posts, pages và được chọn lưu nháp hoặc xuất bản; tải lên, sửa media; sửa global home; sửa thông tin, tệp đính kèm và `status` của quote-requests; product-categories, post-categories thêm, sửa được; không xóa gì; không sửa navigation, site-settings, visitor-stats, users khác (các mục này ẩn khỏi menu của editor). `source` và `ip` của yêu cầu báo giá là dữ liệu hệ thống, không ai sửa được. Xem lịch sử thay đổi quyền ở `docs/CHANGELOG.md`.
 
 ### media
 Upload. `alt` bắt buộc. Sizes: `thumb` 300×300 cover, `card` 800×600 cover, `wide` rộng 1600 giữ tỉ lệ, `hero` 2400×1200 **cắt 2:1** cho slider (từ 13/10), `og` 1200×630 cắt. Cần ảnh không cắt (xem phóng to) thì dùng ảnh gốc: `size="original"` ở `Img`, `mediaUrl`. `mediaUrl()` gắn `?v=<updatedAt>`: thay tệp hay chọn lại vùng ảnh thì tên tệp các cỡ giữ nguyên, có `?v` thì bộ đệm ảnh của Next (4 giờ) và trình duyệt mới lấy bản mới (26/10/2026). Lưu `/media` trên VPS, nằm trong backup. Ảnh chia sẻ (og:image) của trang lấy cỡ `og`; trang không có ảnh riêng (danh sách sản phẩm, bài viết, Liên hệ, danh mục bài viết, trang tĩnh không có ảnh bìa, Trang chủ để trống "Ảnh chia sẻ") dùng `public/og-default.jpg` (1200×630: nền tối, logo ngang trắng, dòng dịch vụ và hotline; `buildMetadata` trong `src/lib/metadata.ts`).
@@ -29,11 +29,6 @@ Trang tĩnh: `title`, `slug`, `content` (richText), `seo`. Mẫu: gioi-thieu, ch
 
 ### quote-requests
 Từ form: `name`, `phone`, `email`, `company`, `message`, `attachment` (upload riêng, chỉ dxf/dwg/pdf/jpg/png ≤10 MB), `status: new | callback | contacted | done` (Mới, Cần liên hệ lại, Đã liên hệ, Hoàn tất; khai báo ở `src/lib/quoteStatus.ts`, `callback` thêm ngày 12/10/2026), `source` (trang gửi, gồm cả `?sp=<tên sản phẩm>` khi gửi từ nút báo giá của sản phẩm), `ip` (chỉ để truy vết spam). Access: public không tạo/đọc collection; admin/editor đọc, sửa các ô hiển thị và tải tệp mới để thay `attachment`. `source` và `ip` không sửa được. Hook afterChange: gửi email SMTP cho Mr Vinh khi khách gửi mới, báo realtime cho admin (`notifyLiveChange`). Bật `versions` (tối đa 50, không nháp): tab "Danh sách phiên bản" để xem, so sánh, khôi phục (11/10/2026). Yêu cầu chưa có phiên bản thì lần sửa đầu tự lưu bản gốc (hook `saveBaselineVersion`). `status` không được để trống (validate, không NOT NULL) (12/10/2026). Không cho khôi phục phiên bản giống hệt nội dung hiện tại (hook `beforeOperation` `blockNoopRestore`).
-
-### subscribers
-`email` unique, `createdAt`. Public create, chặn trùng, giới hạn 5 lần/IP/giờ. Hook afterChange/afterDelete báo realtime cho admin (huy hiệu số đăng ký hôm nay, 11/10/2026).
-
-## Globals
 
 ### site-settings
 `companyName`, `brandName`, `logo`, `taxCode`, `hotline`, `zalo`, `email`, `address`, `workingHours`, `facebook`, `youtube`, `tiktok`, `mapEmbed`, `ga4Id`, `pixelId`.

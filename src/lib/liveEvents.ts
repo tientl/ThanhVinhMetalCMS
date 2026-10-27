@@ -2,11 +2,10 @@ import { EventEmitter } from 'node:events'
 
 import type { Payload } from 'payload'
 
-import { startOfDayVN } from './format'
 import { QUOTE_STATUSES, type QuoteStatusMetric } from './quoteStatus'
 
 /**
- * Kênh báo thay đổi cho trang quản trị trong cùng tiến trình Node: yêu cầu báo giá và đăng ký bản tin.
+ * Kênh báo thay đổi cho trang quản trị trong cùng tiến trình Node: yêu cầu báo giá.
  * Hook của collection phát, route SSE /api/live-counts lắng nghe rồi đẩy số mới xuống các tab admin.
  * Gắn lên globalThis để dev hot reload không tạo nhiều bản. Chỉ đúng khi chạy 1 tiến trình.
  */
@@ -35,32 +34,16 @@ export type LiveCounts = {
   callbackQuotes: number
   contactedQuotes: number
   doneQuotes: number
-  /** Tổng số email đăng ký bản tin. */
-  subscribers: number
-  /** Email đăng ký bản tin từ 0 giờ hôm nay (giờ Việt Nam). */
-  subscribersToday: number
 }
 
-export const LIVE_COUNT_KEYS: (keyof LiveCounts)[] = [
-  ...QUOTE_STATUSES.map((s) => s.metric),
-  'subscribers',
-  'subscribersToday',
-]
+export const LIVE_COUNT_KEYS: (keyof LiveCounts)[] = QUOTE_STATUSES.map((s) => s.metric)
 
 export const getLiveCounts = async (payload: Payload): Promise<LiveCounts> => {
-  const [quotes, subscribers, subscribersToday] = await Promise.all([
-    Promise.all(
-      QUOTE_STATUSES.map(async (s) => {
-        const { totalDocs } = await payload.count({ collection: 'quote-requests', where: { status: { equals: s.value } } })
-        return [s.metric, totalDocs] as const
-      }),
-    ),
-    payload.count({ collection: 'subscribers' }),
-    payload.count({ collection: 'subscribers', where: { createdAt: { greater_than_equal: startOfDayVN().toISOString() } } }),
-  ])
-  return {
-    ...(Object.fromEntries(quotes) as Record<QuoteStatusMetric, number>),
-    subscribers: subscribers.totalDocs,
-    subscribersToday: subscribersToday.totalDocs,
-  }
+  const quotes = await Promise.all(
+    QUOTE_STATUSES.map(async (s) => {
+      const { totalDocs } = await payload.count({ collection: 'quote-requests', where: { status: { equals: s.value } } })
+      return [s.metric, totalDocs] as const
+    }),
+  )
+  return Object.fromEntries(quotes) as Record<QuoteStatusMetric, number>
 }

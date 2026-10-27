@@ -79,19 +79,14 @@ test.describe('Trang liên hệ và form báo giá', () => {
   })
 })
 
-test.describe('Đăng ký bản tin', () => {
-  test.beforeEach(async ({ page }, testInfo) => {
-    await useOwnRateLimitBucket(page, testInfo)
-  })
-
-  test('đăng ký email mới báo thành công', async ({ page }) => {
-    await page.goto('/')
-    const email = page.locator('#nl-email').first()
-    await email.scrollIntoViewIfNeeded()
-    await email.fill(`e2e-${Date.now()}@example.com`)
-    await page.locator('form').filter({ has: page.locator('#nl-email') }).getByRole('button').click()
-
-    await expect(page.locator('[role="status"]').first()).toContainText(/đăng ký|cảm ơn/i)
+/** Tính năng đăng ký bản tin đã bỏ ngày 27/10/2026 (xem docs/CHANGELOG.md). */
+test.describe('Đăng ký bản tin đã bỏ', () => {
+  test('khối liên hệ không còn ô đăng ký, API cũ trả 404', async ({ page, request }) => {
+    await page.goto('/lien-he')
+    await expect(page.locator('#q-name')).toBeVisible()
+    await expect(page.locator('#nl-email')).toHaveCount(0)
+    const res = await request.post('/api/subscribe', { data: { email: 'zz-da-bo@example.com' } })
+    expect(res.status()).toBe(404)
   })
 })
 

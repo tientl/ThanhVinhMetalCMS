@@ -8,7 +8,7 @@ import { getServerSideURL } from '@/utilities/getURL'
 
 import { LiveCount } from './LiveCount'
 
-/** Đầu bảng điều khiển: lời chào, 4 ô thống kê, nút thao tác nhanh. Số báo giá và bản tin cập nhật realtime. */
+/** Đầu bảng điều khiển: lời chào, 3 ô thống kê, nút thao tác nhanh. Số yêu cầu báo giá cập nhật realtime. */
 export const DashboardHeader = async ({ payload, user }: ServerProps) => {
   const [live, products, posts] = await Promise.all([
     getLiveCounts(payload),
@@ -32,12 +32,6 @@ export const DashboardHeader = async ({ payload, user }: ServerProps) => {
     },
     { value: products.totalDocs, label: 'Sản phẩm đang hiển thị', href: '/admin/collections/products' },
     { value: posts.totalDocs, label: 'Bài viết đã đăng', href: '/admin/collections/posts' },
-    {
-      value: <LiveCount initial={live} metric="subscribers" variant="value" />,
-      label: 'Đăng ký bản tin',
-      href: '/admin/collections/subscribers',
-      sub: <LiveCount initial={live} metric="subscribersToday" variant="note" />,
-    },
   ]
 
   return (

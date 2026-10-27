@@ -100,3 +100,17 @@ export const IconExpand = ({ size = 20, ...p }: P) => (
     <path d="M21 3l-7 7M3 21l7-7" />
   </svg>
 )
+/** Nét theo bộ Lucide (giấy phép ISC), cùng kiểu với các icon khác */
+export const IconFacebook = ({ size = 18, ...p }: P) => (
+  <svg {...base(size, p)}>
+    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+  </svg>
+)
+export const IconShare = ({ size = 18, ...p }: P) => (
+  <svg {...base(size, p)}>
+    <circle cx="18" cy="5" r="3" />
+    <circle cx="6" cy="12" r="3" />
+    <circle cx="18" cy="19" r="3" />
+    <path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" />
+  </svg>
+)

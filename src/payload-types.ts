@@ -68,7 +68,6 @@ export interface Config {
   blocks: {};
   collections: {
     'quote-requests': QuoteRequest;
-    subscribers: Subscriber;
     products: Product;
     'product-categories': ProductCategory;
     posts: Post;
@@ -85,7 +84,6 @@ export interface Config {
   collectionsJoins: {};
   collectionsSelect: {
     'quote-requests': QuoteRequestsSelect<false> | QuoteRequestsSelect<true>;
-    subscribers: SubscribersSelect<false> | SubscribersSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     'product-categories': ProductCategoriesSelect<false> | ProductCategoriesSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
@@ -185,17 +183,6 @@ export interface QuoteFile {
   filesize?: number | null;
   width?: number | null;
   height?: number | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "subscribers".
- */
-export interface Subscriber {
-  id: number;
-  email: string;
-  source?: string | null;
-  updatedAt: string;
-  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -524,10 +511,6 @@ export interface PayloadLockedDocument {
         value: number | QuoteRequest;
       } | null)
     | ({
-        relationTo: 'subscribers';
-        value: number | Subscriber;
-      } | null)
-    | ({
         relationTo: 'products';
         value: number | Product;
       } | null)
@@ -615,16 +598,6 @@ export interface QuoteRequestsSelect<T extends boolean = true> {
   status?: T;
   source?: T;
   ip?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "subscribers_select".
- */
-export interface SubscribersSelect<T extends boolean = true> {
-  email?: T;
-  source?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1018,7 +991,6 @@ export interface Home {
   newsCount?: number | null;
   contactHeading?: string | null;
   contactIntro?: string | null;
-  newsletterNote?: string | null;
   metaTitle?: string | null;
   metaDescription?: string | null;
   metaImage?: (number | null) | Media;
@@ -1293,7 +1265,6 @@ export interface HomeSelect<T extends boolean = true> {
   newsCount?: T;
   contactHeading?: T;
   contactIntro?: T;
-  newsletterNote?: T;
   metaTitle?: T;
   metaDescription?: T;
   metaImage?: T;

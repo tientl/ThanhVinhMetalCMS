@@ -25,7 +25,7 @@ export const PageHero = ({ title, intro, label, image, crumbs }: Props) => (
     <div className="section-x relative flex flex-col gap-5 py-16 md:py-24">
       <Breadcrumb items={crumbs} />
       {label && <span className="label-sm">{label}</span>}
-      <h1 className="h-serif max-w-[900px] text-[32px] md:text-[48px]">{title}</h1>
+      <h1 className="h-display max-w-[900px] text-[32px] md:text-[48px]">{title}</h1>
       {intro && <p className="lead max-w-[720px]">{intro}</p>}
     </div>
   </section>

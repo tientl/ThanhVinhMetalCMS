@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 const HEARTBEAT_MS = 25_000
 
 /**
- * Số liệu realtime cho trang quản trị: yêu cầu báo giá "Mới", đăng ký bản tin (tổng và hôm nay).
+ * Số liệu realtime cho trang quản trị: số yêu cầu báo giá theo từng trạng thái.
  * `?stream=1`: SSE, đẩy số mới ngay khi có thay đổi. Không có tham số: trả JSON một lần, dùng cho thăm dò dự phòng.
  * Chỉ admin/editor đã đăng nhập (cookie payload-token) mới gọi được.
  */
