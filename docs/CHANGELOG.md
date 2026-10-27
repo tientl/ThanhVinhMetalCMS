@@ -4,6 +4,538 @@ Mỗi lần sửa code thì thêm một mục vào đầu file, commit cùng v�
 
 ---
 
+## 27/10/2026 · nhánh `test` (đợt 16)
+
+### Ảnh chia sẻ dự phòng `/og-default.jpg` bị thiếu
+
+- **Vì sao:** khi soát mục kiểm thử "SEO Trang chủ", `buildMetadata` (`src/lib/metadata.ts`) dùng `/og-default.jpg` cho trang không có ảnh riêng, nhưng file chưa từng có trong `public/` (trả 404). Chia sẻ các trang danh sách sản phẩm, danh sách bài viết, Liên hệ, danh mục bài viết, trang tĩnh không có ảnh bìa, và Trang chủ khi bỏ trống "Ảnh chia sẻ" lên Facebook, Zalo đều ra ảnh hỏng.
+- **Làm gì:** thêm `public/og-default.jpg`, 1200×630, 44 KB, theo Mẫu 3. Nền tối `#07080a` có quầng sáng nhẹ, khung mảnh màu accent, logo ngang bản trắng (`public/logo-ngang-trang.png`), vạch đỏ, dòng "Cắt laser CNC · Chấn gấp · Hàn · Sơn tĩnh điện" và "Thuận An, Bình Dương · Hotline/Zalo 0946.272.467". Dựng một lần bằng sharp (chữ SVG font Segoe UI), không phải code chạy trong app.
+- **File:** `public/og-default.jpg` (mới), `tests/e2e/home.spec.ts`, `docs/DATA-MODEL.md`, `docs/TESTING.md`, `README.md`.
+
+**Kiểm tra:**
+- Dev: `/og-default.jpg` trả 200 `image/jpeg`; `og:image` của `/lien-he`, `/san-pham`, `/bai-viet` trỏ tới file này. Trang chủ đang có "Ảnh chia sẻ" nên dùng cỡ `og` 1200×630 của ảnh đó (200).
+- `tests/e2e/home.spec.ts` 'ảnh chia sẻ (og:image) của trang chủ và các trang không có ảnh riêng đều mở được': với `/`, `/lien-he`, `/san-pham`, `/bai-viet`, tải link `og:image` phải được 200 và là ảnh. Qua, kèm test tiêu đề/mô tả trang chủ.
+
+**Lưu ý:**
+- Đổi số hotline, dịch vụ hay logo thì dựng lại ảnh này (khổ 1200×630, chữ to, nằm giữa để Zalo, Facebook cắt vuông vẫn thấy logo).
+- Facebook, Zalo lưu tạm ảnh xem trước. Đổi ảnh xong muốn thấy ngay thì dùng Facebook Sharing Debugger (nút "Scrape Again"); chỉ làm được khi web đã có tên miền thật.
+
+---
+
+## 27/10/2026 · nhánh `test` (đợt 15)
+
+### Nhãn điểm chấm ở tab Ứng dụng không còn bị khung ảnh cắt
+
+- **Vì sao:** nhãn luôn nằm bên phải chấm và không xuống dòng (`whitespace-nowrap`). Chấm gần mép phải thì nhãn lọt ra ngoài khung ảnh (`overflow: hidden`) và bị cắt mất chữ.
+- **Làm gì:**
+  - `src/components/home/Applications.tsx`: chấm có `x > 50` thì nhãn lật sang trái (`flex-row-reverse`).
+  - Cụm chấm + nhãn có `width: max-content` và `max-width` bằng phần còn lại của khung theo hướng nhãn, cách mép 8px. Nhãn dài thì xuống dòng (`wrap-anywhere`), không tràn.
+  - Dịch dọc `-50%` thay cho `-11px`, để tâm chấm luôn ở đúng (x, y) kể cả khi nhãn hai dòng.
+  - Khung đặt chấm trong admin (`HotspotPicker`, `custom.scss`): tâm vòng số nằm đúng điểm đặt (trước đây cả cụm số + nhãn + ✕ được canh giữa tại điểm, vòng số lệch trái so với web). Chấm ở nửa phải cũng lật nhãn sang trái (`.hotspot-picker__dot--flip`).
+- **File:** `src/components/home/Applications.tsx`, `src/components/admin/HotspotPicker.tsx`, `src/app/(payload)/custom.scss`, `tests/e2e/admin.spec.ts`, `docs/DESIGN.md`, `docs/TESTING.md`, `README.md`.
+
+**Kiểm tra:**
+- Dữ liệu dev (5 chấm, 3 chấm ở nửa phải): đo bằng trình duyệt ở 1920px và 390px, không nhãn nào lọt ra ngoài khung. Đã chụp màn hình xem tay.
+- `tests/e2e/admin.spec.ts` 'điểm chấm sát mép ở tab Ứng dụng…': đặt chấm ở x = 97% và 3% với nhãn dài. Ở 1280px và 390px, mọi nhãn nằm trọn trong khung, chấm vẫn ở đúng 97%.
+- Ba test e2e ghi global `home` (vùng ảnh, hai tab, điểm chấm) gom vào nhóm 'Trang chủ: các test sửa dữ liệu', chạy lần lượt. CI chạy 2 worker song song; lần lưu của test này làm form đang mở của test kia thành bản cũ và bị `rejectStaleSave` chặn ngẫu nhiên. Nhóm này cùng test Menu: 5/5. Lint, typecheck sạch.
+
+**Lưu ý:**
+- Hai chấm đặt sát nhau thì nhãn chấm này vẫn có thể đè lên chấm kia (dữ liệu dev có hai chấm "(sửa nà)" gần như trùng chỗ, thấy rõ trên điện thoại vì khung nhỏ). Đây là chuyện đặt chấm, cần giãn chấm ra trong admin.
+
+---
+
+## 27/10/2026 · nhánh `test` (đợt 14)
+
+### Mở Trang chủ ở hai tab: tab cũ không còn lưu đè thay đổi của tab kia
+
+- **Vì sao:** mở Trang chủ ở tab trình duyệt 1, rồi mở thêm tab 2 sửa mục Giới thiệu và lưu. Quay lại tab 1 sửa Bộ sưu tập rồi lưu thì Giới thiệu bị trả về bản cũ. Form admin gửi **cả trang**; tab 1 vẫn giữ Giới thiệu từ lúc mở. Payload chỉ khóa tài liệu khi **người khác** đang mở, cùng tài khoản mở hai tab thì không báo gì. Đã tái hiện trên server test: tab B không hiện cảnh báo khóa, lần lưu của tab A đè tiêu đề Giới thiệu về bản cũ.
+- **Làm gì:**
+  - `rejectStaleSave` (`src/hooks/staleSave.ts`, mới), hook `beforeValidate` của Trang chủ, Menu, Thông tin công ty. Form admin luôn gửi kèm `updatedAt` của bản đang mở, và nhận giá trị mới sau mỗi lần lưu. Giá trị gửi lên cũ hơn bản trong DB thì từ chối 409 với thông báo: "Trang chủ đã được lưu ở tab hoặc máy khác lúc HH:MM:SS, sau khi bạn mở trang này. Đã dừng lưu… Chép lại phần vừa sửa, tải lại trang (F5) rồi sửa và lưu lại." Gọi API không kèm `updatedAt` (seed, script, test) thì không bị kiểm.
+  - `StaleDocWatcher` (`src/components/admin/StaleDocWatcher.tsx`, mới), gắn ở `beforeDocumentControls` của 3 global.
+    - Khi tab được xem lại (focus, visibilitychange) và mỗi 60 giây, so `updatedAt` của form với server. Server mới hơn thì hiện cảnh báo "Trang này vừa được lưu ở tab hoặc máy khác lúc …" kèm nút **Tải lại**, để biết trước khi sửa tiếp trên bản cũ.
+    - Lưu xong hoặc tải lại thì cảnh báo tự tắt.
+  - Menu: adapter Postgres của Payload bỏ qua ghi dòng chính khi chỉ có mảng thay đổi (`@payloadcms/drizzle` upsertRow: "Exclude timestamp-only updates"). Menu chỉ gồm mảng nên `updatedAt` không bao giờ đổi, không so được. Thêm ô ẩn `revision` (`src/fields/revision.ts`), tăng 1 mỗi lần lưu, để dòng chính luôn được ghi.
+  - `timeVN()` trong `src/lib/format.ts` (giờ theo múi giờ Việt Nam), dùng chung cho server và admin.
+- **File:** `src/hooks/staleSave.ts` (mới), `src/components/admin/StaleDocWatcher.tsx` (mới), `src/fields/revision.ts` (mới), `src/globals/{Home,Navigation,SiteSettings}.ts`, `src/lib/format.ts`, `src/payload-types.ts`, `importMap.js`, `tests/int/collections.test.ts`, `tests/e2e/admin.spec.ts`, `docs/DATA-MODEL.md`, `docs/TESTING.md`, `README.md`, `CLAUDE.md`.
+
+**Kiểm tra:**
+- `tests/int/collections.test.ts` 'không lưu đè bản cũ khi mở cùng trang ở hai tab':
+  - Tab 2 lưu với `updatedAt` lúc mở; tab 1 lưu sau với cùng `updatedAt` thì bị 409, đúng thông báo, giá trị của tab 2 giữ nguyên.
+  - Gửi `updatedAt` mới nhất, hay không gửi, thì lưu được.
+  - Menu và Thông tin công ty cũng bị chặn như vậy. Menu chỉ qua được sau khi có ô `revision`.
+- `tests/e2e/admin.spec.ts` 'mở Trang chủ ở hai tab…' (hai trang cùng phiên đăng nhập):
+  - B sửa Giới thiệu rồi lưu. Quay lại A thì thấy cảnh báo. A sửa Bộ sưu tập rồi lưu thì bị chặn, API vẫn giữ Giới thiệu của B, Bộ sưu tập chưa đổi.
+  - Bấm "Tải lại", sửa lại, lưu thì được, cả hai thay đổi đều còn.
+- 'Menu lưu hai lần liên tiếp trong cùng tab…': cả hai lần đều lưu, không bị báo là bản cũ, `updatedAt` có đổi.
+- Unit 77/77, int 136/136, e2e toàn bộ 118/118. Lint, typecheck sạch.
+
+**Lưu ý:**
+- Đổi schema: thêm cột `navigation.revision`. DB dev tự thêm khi chạy `pnpm dev`; VPS cần push hoặc migration (KNOWN-ISSUES #4).
+- Chỉ áp cho 3 global. Sản phẩm, bài viết, trang tĩnh mở ở hai tab vẫn có thể đè nhau; các collection này có bản nháp và phiên bản (khôi phục lại được), nên chưa làm. Muốn áp thì làm hook tương tự cho collection, lưu ý `updatedAt` của bản nháp nằm ở bảng phiên bản.
+- Global nào chỉ gồm mảng, nhóm hay quan hệ thì thêm `revisionField`, không thì `updatedAt` không đổi và việc chặn không hoạt động.
+
+---
+
+## 27/10/2026 · nhánh `test` (đợt 13)
+
+### "Vùng ảnh muốn giữ" ở trang chủ: web phóng đúng vùng đã chọn
+
+- **Vì sao:** ở ô Bộ sưu tập, kéo khung tới phần muốn giữ, bấm "Lưu vùng ảnh", nhưng web gần như không đổi. Hai lỗi chồng lên nhau:
+  1. Chế độ `focal` chỉ lưu **tâm** khung làm `focalX/Y` của ảnh, bỏ qua cỡ khung. Web luôn phủ kín ô bằng cả ảnh rồi căn theo điểm đó, nên chọn vùng nhỏ cũng không phóng to, chỉ dịch vài chục px. Thêm nữa, điểm lấy nét nằm trên ảnh dùng chung, ảnh dùng ở chỗ khác cũng bị đổi theo.
+  2. Ảnh trong khung chọn bị kéo đủ 720px ngang, chặn cao 520px rồi `object-fit: contain`. Ảnh vuông hay ảnh dọc có viền đen hai bên, react-image-crop tính % theo cả viền đen, nên vùng lưu lệch so với ảnh. Khung vuông mở lại thành 4:3.
+- **Làm gì:**
+  - Ô `imageFrame` của 4 khối (Bộ sưu tập, Giới thiệu, Giải pháp, Ứng dụng) đổi từ field `ui` sang field `json` (helper `imageFrame(aspect)` trong `src/globals/Home.ts`). Lưu `{x, y, width, height, media}` theo % ảnh gốc cho riêng ô đó; `media` để khi đổi ảnh khác thì vùng cũ tự bỏ qua.
+  - `ImageFrameField` tách 2 chế độ. `hero` (slide) giữ nguyên: bấm "Lưu khung slider", server cắt ảnh. `focal`: thả chuột là ghi vùng vào ô, bấm **Lưu ở đầu trang** như các ô khác (bỏ nút "Lưu vùng ảnh", không gọi `PATCH /api/media` nữa). Có dòng trạng thái "Đã chọn vùng." / "Chưa chọn vùng…" và nút "Dùng cả ảnh" để bỏ vùng. Chưa chọn thì khung hiện quanh điểm lấy nét, gần đúng phần web đang hiện. Khung mặc định tính đúng cho mọi tỉ lệ ảnh (`cropAt`); trước đây `makeAspectCrop` 100% có thể vượt khỏi ảnh.
+  - CSS khung chọn (`custom.scss`, `.slider-crop__editor`): ảnh `width/height: auto` với `max-width: 100%`, `max-height: 520px`, ReactCrop ôm sát ảnh. Không còn viền đen, % của khung là % của ảnh.
+  - Web: `FramedImage` (`src/components/ui/FramedImage.tsx`, mới) thay `Img` trong `ImageCard` (Bộ sưu tập, Giải pháp), Giới thiệu, Ứng dụng.
+    - Có vùng: ảnh gốc đặt trong lớp `container-type: size`, cỡ và vị trí tính bằng CSS `cqw/cqh` (`frameBoxStyle()` trong `src/lib/frame.ts`, mới).
+    - Rộng ảnh = max(phủ kín ô, min(vùng vừa khít bề ngang, vùng vừa khít bề dọc)); tâm vùng về giữa ô, chặn ở mép ảnh. Vùng luôn hiện trọn và to nhất có thể ở mọi cỡ màn hình, không cần JS.
+    - `sizes` nhân theo mức phóng (`scaleSizes`, tối đa 4 lần) để ảnh đủ nét.
+    - Chưa có vùng: y như cũ (cỡ `wide`, căn theo điểm lấy nét).
+  - `HotspotPicker` (tab Ứng dụng): khung đặt chấm đổi từ 4:3 sang 16:10 (tỉ lệ ô trên máy tính). Ảnh hiện như web: phóng theo vùng nếu có, không thì phủ kín và căn theo điểm lấy nét (trước dùng cỡ `card` cắt 4:3). Chấm vẫn lưu theo % khung như cũ.
+- **File:** `src/lib/frame.ts` (mới), `src/components/ui/FramedImage.tsx` (mới), `src/components/ui/ImageCard.tsx`, `src/components/home/{Collections,Solutions,About,Applications}.tsx`, `src/components/admin/ImageFrameField.tsx`, `src/components/admin/HotspotPicker.tsx`, `src/globals/Home.ts`, `src/payload-types.ts`, `src/app/(payload)/custom.scss`, `tests/unit/frame.test.ts` (mới), `tests/e2e/admin.spec.ts`, `docs/DATA-MODEL.md`, `docs/DESIGN.md`, `docs/TESTING.md`, `README.md`, `CLAUDE.md`.
+
+**Kiểm tra:**
+- `tests/unit/frame.test.ts` (9 test): tính thử biểu thức CSS của `frameBoxStyle` với ô dọc, ô ngang, vùng sát mép, vùng to. Vùng hiện trọn, lấp đầy một chiều, nằm giữa; ảnh luôn phủ kín ô. Cùng `parseFrame` (sai dạng, ảnh khác, kéo về trong mép) và `scaleSizes`.
+- `tests/e2e/admin.spec.ts` 'vùng ảnh muốn giữ ở Bộ sưu tập…':
+  - Ảnh trong cả hai khung đúng tỉ lệ gốc (ô 2 là ảnh 4:3 từng bị viền đen), khung vuông.
+  - Kéo góc cho nhỏ lại thì hiện "Đã chọn vùng.". Bấm Lưu thì API trả `imageFrame` đúng id ảnh, vuông theo pixel ảnh.
+  - Mở trang chủ: ảnh phủ kín ô, vùng nằm trọn trong ô và lấp đầy một chiều. Xong trả dữ liệu cũ.
+  - Đã chụp màn hình xem tay cả khung trong admin lẫn ô trên trang chủ.
+- Bấm vào khung mà không kéo thì không ghi gì: react-image-crop gọi `onComplete` cả khi chỉ bấm; vùng không đổi thì bỏ qua, trang không bị tính là có thay đổi. Test e2e trên có bước này.
+- Unit 77/77, int 134/134, e2e toàn bộ 115/116. Test hỏng là 'hộp "Chọn từ thư viện"…' (chờ trang sửa sản phẩm load quá 45 giây khi máy thiếu RAM); chạy lại riêng thì qua. Lint, typecheck sạch.
+
+**Lưu ý:**
+- Đổi schema: thêm cột jsonb `home_collections.image_frame`, `home.about_image_frame`, `home_solutions.image_frame`, `home_applications.image_frame`. DB dev đã tự thêm khi chạy `pnpm dev`; VPS cần push hoặc migration (KNOWN-ISSUES #4).
+- Vùng chọn cũ không chuyển sang: trước đây chỉ có điểm lấy nét trên ảnh, vẫn dùng khi ô chưa chọn vùng. Muốn phóng thì vào từng ô kéo khung lại rồi Lưu.
+- Cần trình duyệt hỗ trợ container query units (Chrome 105, Safari 16, Firefox 110 trở lên).
+- react-image-crop 10.1.8: phần tử góc kéo rộng 0, ô bấm được là `::after` 10×10 đúng góc khung. Test kéo góc phải bấm vào góc khung, không bấm tâm phần tử góc.
+
+---
+
+## 27/10/2026 · nhánh `test` (đợt 12)
+
+### Slider trang chủ dừng khi rê chuột lên nút
+
+- **Vì sao:** đổi "Nút dẫn tới" của slide 4 sang `/bai-viet` nhưng bấm nút trên web vẫn ra `/san-pham`. Dữ liệu không sai: DB, HTML và nút của slide 4 trong trình duyệt đều đúng `/bai-viet`. Lỗi là slider tự chuyển mỗi 5,5 giây kể cả khi con trỏ đang nằm trên nút. Slide 4 là slide cuối nên slide kế tiếp là slide 1, nút của slide 1 trỏ `/san-pham`. Đang đọc hay đang đưa chuột tới thì nút dưới con trỏ đã đổi thành nút slide 1.
+- **Làm gì:** `src/components/home/HeroSlider.tsx` bỏ `setInterval`, chuyển slide bằng `onAnimationEnd` của thanh tiến trình (`.slide-fill`, 5.5s trong globals.css).
+  - Rê chuột lên khối chữ (tiêu đề, mô tả, nút) hoặc Tab tới nút (`:focus-visible`) thì đặt `animation-play-state: paused`. Thanh đứng lại và slide không đổi; rời ra thì chạy tiếp từ chỗ dừng.
+  - Bấm nút bằng chuột thì không tính là dừng, nên bấm mũi tên hay thanh xong slider vẫn tự chạy.
+  - `prefers-reduced-motion` tắt animation nên không tự chuyển nữa (trước đây vẫn nhảy, chỉ bỏ hiệu ứng mờ). Mũi tên và thanh vẫn bấm được.
+- **File:** `src/components/home/HeroSlider.tsx`, `tests/e2e/home.spec.ts`, `docs/DESIGN.md`, `docs/TESTING.md`, `README.md`.
+
+**Kiểm tra:**
+- Trên dev, trình duyệt thật: rê chuột lên nút slide 4, giữ 8 giây thì vẫn slide 4. Bấm thì ra đúng link slide 4. Không rê chuột thì sau 5,5 giây sang slide kế. Bấm mũi tên xong vẫn tự chạy. Tab tới nút đứng 7 giây không đổi, Tab ra thì chạy tiếp.
+- `tests/e2e/home.spec.ts` 'rê chuột lên nút slide thì slider dừng…': giữ chuột 7 giây vẫn slide 2, link không đổi; rời chuột thì sang slide khác; quay lại slide 2, giữ chuột 6 giây rồi bấm thì URL đúng link slide 2. Cả file 11/11. Lint, typecheck sạch.
+
+**Lưu ý:**
+- Thời gian mỗi slide nằm ở `.slide-fill` trong globals.css, không còn hằng số trong component. Đổi animation đó là đổi nhịp slider. Bỏ thanh tiến trình thì phải có cách tự chuyển khác.
+- Test e2e rê chuột lên phần tử ở trang chủ phải tắt `scroll-behavior: smooth` trước (xem TESTING.md).
+
+---
+
+## 26/10/2026 · nhánh `test` (đợt 11)
+
+### Khung chọn "Mối quan hệ" bỏ bản nháp; dán ảnh vào nội dung là chèn luôn
+
+**Bản nháp vẫn chọn được trong "Mối quan hệ"**
+- **Vì sao:** khung chọn khi chèn "Mối quan hệ" liệt kê cả sản phẩm, bài viết chưa xuất bản hoặc đã "Ẩn tài liệu". Web không lộ (đợt 8) nhưng chọn được là vô lý.
+- **Không làm cách khác được:** Lexical `RelationshipFeature` không có tùy chọn lọc; các lệnh mở khung chọn không được export; `admin.baseFilter` của collection thì áp cả danh sách thường (Quản trị cần thấy bản nháp ở đó) và không biết đang ở khung chọn hay không.
+- **Làm gì:** mọi khung chọn tải danh sách qua server function `render-list` kèm `drawerSlug`, còn danh sách thường thì không. `publishedOnlyInDrawers()` (`src/lib/drawerFilter.ts`, mới) thêm `_status = published` vào truy vấn khi `render-list` có `drawerSlug` và là sản phẩm, bài viết, trang tĩnh. Gắn trong `serverFunction` của `src/app/(payload)/layout.tsx`.
+- Bản đang bán mà có bản nháp mới chưa xuất bản vẫn hiện (bản chính vẫn published). Danh mục, ảnh không bị ảnh hưởng.
+
+**Dán ảnh bắt bấm Lưu**
+- **Vì sao:** dán ảnh vào nội dung thì Payload luôn mở khung "Tệp để tải lên" bắt điền alt rồi bấm Lưu.
+- **Làm gì:** tính năng Lexical `PasteImageFeature` (`src/fields/richText.ts`, client ở `src/components/admin/PasteImageFeature.tsx`, gắn cho cả ô bài viết, trang tĩnh lẫn mô tả sản phẩm). Bắt lệnh dán ở mức `COMMAND_PRIORITY_HIGH` (của Payload là LOW). Khi bộ nhớ tạm **chỉ có ảnh** (chụp màn hình, "Sao chép hình ảnh"): tải lên `POST /api/media` với alt `Ảnh trong "<tiêu đề bài>"` (không có tiêu đề thì theo tên tệp), rồi chèn khối ảnh (`type: 'upload'`, version 3) vào chỗ con trỏ. Có thông báo "Đang tải ảnh lên…" → "Đã chèn ảnh" hoặc lỗi.
+- Dán nội dung lẫn chữ và ảnh (từ Word, trang web) hay kéo-thả tệp thì vẫn theo cách cũ của Payload.
+
+**File:** `src/lib/drawerFilter.ts` (mới), `src/app/(payload)/layout.tsx`, `src/components/admin/PasteImageFeature.tsx` (mới), `src/fields/richText.ts`, `importMap.js`, `tests/e2e/admin.spec.ts`, `CLAUDE.md`, `docs/TESTING.md`, `README.md`.
+
+**Kiểm tra:**
+- `tests/e2e/admin.spec.ts` 'khung chọn "Mối quan hệ" không liệt kê sản phẩm nháp…': tạo sản phẩm nháp qua API; trong khung chọn tìm tên nó thì 0 dòng, tìm tên sản phẩm đã xuất bản thì có.
+- 'dán ảnh vào nội dung…': phát sự kiện dán một ảnh PNG; thấy "Đã chèn ảnh", không có khung bulk upload, khối ảnh hiện tên tệp, ảnh trong thư viện có alt `Ảnh trong "Bài thử dán ảnh"`; xong thì xóa ảnh.
+- Toàn bộ project admin + editor 43/43 (gồm "Chọn từ thư viện" ảnh vẫn chọn được). Lint, typecheck sạch.
+
+**Lưu ý:**
+- `src/app/(payload)/layout.tsx` là file Payload sinh ra; nâng cấp Payload mà bị ghi đè thì gắn lại `publishedOnlyInDrawers`. Test e2e trên sẽ báo nếu quên.
+- Alt tự đặt chỉ là tạm; muốn mô tả chuẩn SEO thì sửa ở "Ảnh và tệp".
+
+---
+
+## 26/10/2026 · nhánh `test` (đợt 10)
+
+### "Liên quan": chọn bao nhiêu hiện bấy nhiêu; bản tin ghi vào giai đoạn 2
+
+**Bài viết liên quan chỉ hiện 3**
+- **Vì sao:** chọn 6 bài liên quan nhưng web chỉ hiện 3. Ba chỗ lệch nhau: trang gọi `getRelatedPosts(post)` mặc định 3, mô tả ô ghi "tối đa 4", ô không chặn số lượng. Sản phẩm cũng vậy: mô tả "tối đa 4", không chặn, chọn 6 chỉ hiện 4.
+- **Làm gì:** `src/lib/related.ts` (mới) khai `RELATED`: bài viết chọn tay tối đa 6 (2 hàng × 3), để trống tự lấy 3; sản phẩm chọn tay tối đa 8 (2 hàng × 4), để trống tự lấy 4. Dùng chung cho `maxRows`, mô tả ô `related` (Posts, Products) và mặc định của `getRelatedPosts`, `getRelatedProducts` (thêm tham số `pickedLimit` cho số chọn tay, `limit` vẫn là số tự lấy). Tách file riêng vì collection import `data.ts` sẽ thành vòng import.
+- **Kiểm tra:** `tests/int/data.test.ts` "bài viết liên quan chọn tay…": chọn 6 thì `getRelatedPosts` trả đủ 6 đúng thứ tự; chọn 7 bị từ chối; để trống trả ≤ 3. data.test 32/32. Lint, typecheck sạch.
+
+**Bản tin không tự gửi email khi xuất bản bài**
+- Đúng phạm vi gói: SCOPE mục 5 chỉ có "đăng ký bản tin lưu vào admin", chưa từng có phần gửi. Hiện cũng chưa gửi được vì khách chưa có email công ty, SMTP chưa cấu hình.
+- Đã ghi vào "Ngoài gói – giai đoạn 2" trong `docs/SCOPE.md`: gửi bản tin (tự động khi xuất bản hoặc bấm gửi) kèm link hủy đăng ký, hoặc nút xuất CSV để gửi qua Mailchimp/Brevo.
+
+**File:** `src/lib/related.ts` (mới), `src/lib/data.ts`, `src/collections/{Posts,Products}.ts`, `src/payload-types.ts`, `tests/int/data.test.ts`, `docs/{SCOPE,DATA-MODEL,TESTING}.md`, `README.md`.
+
+---
+
+## 26/10/2026 · nhánh `test` (đợt 9)
+
+### Chèn "Mối quan hệ": bấm tên sản phẩm trong khung chọn bị chuyển trang thay vì chèn
+
+**Vì sao:** chèn "Mối quan hệ" trong ô soạn thảo, khung chọn hiện danh sách sản phẩm. Bấm tên một sản phẩm thì hiện hộp "Thay đổi chưa được lưu", chọn nút nào cũng không chèn được. Nguyên nhân: ô tên tự làm `DocLinkCell` (12/10, để bấm tên mở trang sửa vì cột "Ảnh" đứng trước) luôn là link thật. Ô mặc định của Payload trong khung chọn thì đổi thành nút gọi `onSelect` (`RenderDefaultCell` + `useListDrawerContext`). Ô tự làm bỏ qua cơ chế đó, nên bấm vào là trình duyệt chuyển sang trang sửa sản phẩm.
+
+**Làm gì:** `DocLinkCell` chuyển thành client component. Trong khung chọn (`useListDrawerContext` có `drawerSlug`, `onSelect`) thì ô tên là nút **chọn** mục; ngoài danh sách thường vẫn là link mở trang sửa (đường dẫn admin lấy từ `useConfig`). CSS `.doc-link-cell--select` cho nút trông như chữ link. Áp cho sản phẩm và danh mục sản phẩm (2 nơi dùng `linkedNameCell`). Ảnh nhỏ trong khung chọn vẫn không mở trình xem ảnh (`AdminImageViewer` đã bỏ qua `.list-drawer`).
+
+**File:** `src/components/admin/DocLinkCell.tsx`, `src/app/(payload)/custom.scss`, `tests/e2e/admin.spec.ts`, `CLAUDE.md`, `docs/TESTING.md`, `README.md`.
+
+**Kiểm tra:** `tests/e2e/admin.spec.ts` 'chèn "Mối quan hệ"…': mở tạo bài viết, gõ `/quan` + Enter, bấm tên sản phẩm đầu trong khung chọn; khung đóng, không hiện "Thay đổi chưa được lưu", vẫn ở `/posts/create`, tên sản phẩm hiện trong ô soạn thảo. Toàn bộ project admin + editor 41/41 (gồm "danh sách sản phẩm hiện dữ liệu", "mở được một sản phẩm để sửa": ô tên ở danh sách thường vẫn là link). products.spec + responsive 30/30. Lint, typecheck sạch.
+
+**Lưu ý:** ô Cell tự làm cho cột tên mà muốn chạy được trong khung chọn thì phải tự xử lý `useListDrawerContext().onSelect`; Payload chỉ làm việc này cho ô mặc định. Gõ chữ có dấu trong test Playwright dễ thành ký tự tổ hợp, nên lọc menu `/` bằng chữ không dấu.
+
+---
+
+## 26/10/2026 · nhánh `test` (đợt 8)
+
+### Kiểm chứng: "Mối quan hệ" trỏ tới bản nháp không lộ ra web
+
+**Vì sao:** mục kiểm thử "Chèn Mối quan hệ… không để lộ nội dung nháp cho khách". Ghi chú 25/10 (đợt 3) còn để "chưa kiểm tra".
+
+**Kết quả:** không cần sửa code. Ô soạn thảo vẫn cho chọn bản nháp (Lexical `RelationshipFeature` không có lọc), nhưng trang đọc nội dung dưới quyền khách (`AS_GUEST`, depth 2), nên bản nháp không được nạp, chỉ còn id. `RichText.tsx` chỉ vẽ thẻ khi đã nạp đủ (`relationshipCard` trả `null` với id), nên khách không thấy thẻ cũng không thấy nội dung nháp. Xuất bản bản đó thì thẻ tự hiện.
+
+**Thẻ hiện gì:** sản phẩm (ảnh đầu, tên, `/san-pham/<slug>`), bài viết (ảnh bìa, tiêu đề, `/bai-viet/<slug>`), trang tĩnh (ảnh bìa, tiêu đề, `/<slug>`), danh mục sản phẩm (ảnh, tên, `/san-pham/danh-muc/<slug>`), danh mục bài viết (tên, `/bai-viet/danh-muc/<slug>`).
+
+**File:** `tests/int/data.test.ts` (test mới: trang có 2 "Mối quan hệ", tới sản phẩm đã xuất bản và sản phẩm nháp; `getPage` trả bản đã xuất bản là object có tên, slug; bản nháp không phải object), `docs/TESTING.md`, `README.md`. data.test 31/31, lint, typecheck sạch.
+
+---
+
+## 26/10/2026 · nhánh `test` (đợt 7)
+
+### Bài viết không hiện tên tài khoản người viết
+
+**Vì sao:** dưới tiêu đề bài hiện "26/10/2026 · Nhân viên" (hoặc "· Quản trị"). Đó là tên tài khoản nội bộ trong admin, không phải tên tác giả: trông thiếu chuyên nghiệp và lộ cách đặt tên tài khoản. Website doanh nghiệp thường chỉ hiện ngày đăng.
+
+**Làm gì:** trang chi tiết bài viết chỉ hiện ngày đăng. `getPost()` bỏ truy vấn phụ vào bảng tài khoản (trước tra riêng tên vì khách không đọc được `users`). Ô `author` vẫn tự gán để biết ai đăng trong admin.
+
+**File:** `src/app/(frontend)/bai-viet/[slug]/page.tsx`, `src/lib/data.ts`, `tests/int/data.test.ts`, `docs/DATA-MODEL.md`.
+
+**Kiểm tra:** `tests/int/data.test.ts` thay test "vẫn hiện tên người viết" bằng "không lộ tài khoản người viết ra web" (`author` chỉ là id); 30/30. Trang "test bài viết" trên dev server không còn chữ "Nhân viên", "Quản trị". Lint, typecheck sạch.
+
+**Lưu ý:** muốn hiện tác giả thật về sau thì nên thêm ô "Tác giả hiển thị" (chữ tự nhập) ở bài viết thay vì dùng tên tài khoản.
+
+---
+
+## 26/10/2026 · nhánh `test` (đợt 6)
+
+### Nội dung bài viết, trang tĩnh, mô tả sản phẩm: giãn hết khung (khách chọn)
+
+**Vì sao:** khách hỏi vì sao phải giữ cột 860px. Lý do là độ dài dòng: 860px ≈ 100 ký tự/dòng, giãn hết ≈ 140 ký tự/dòng ở 1440px và ≈ 190 ở 1920px; khuyến nghị đọc là 50–90, nên bài dài sẽ mỏi mắt hơn. Mình đã trình bày đánh đổi và 3 phương án; khách chọn **giãn hết khung, áp chung bài viết, trang tĩnh, mô tả sản phẩm**. Thay cho cách đặt cột 860px giữa trang ở đợt 5.
+
+**Làm gì:**
+- Bài viết: bỏ `max-w-[860px] mx-auto` ở đầu bài và nội dung; nội dung dùng `.prose-wide` như trang tĩnh, mô tả sản phẩm. Đầu bài thẳng mép trái với nội dung.
+- `globals.css`: bỏ giới hạn 1100px cho chữ trong `.prose-wide` (để lại ghi chú chỗ đặt nếu muốn giới hạn lại).
+- `.prose-lux img`: đổi từ ép rộng 100% sang `max-width: 100%; height: auto`. Khung giờ rộng ~1600px, ép 100% thì ảnh nhỏ (ảnh dán 500px) bị phóng mờ; giờ ảnh hiện cỡ thật, lớn thì vừa khung.
+- Video YouTube: khung rộng hơn nên 2 video liền nhau tự xếp 2 cột (lưới `auto-fit` 420px có sẵn).
+
+**File:** `src/app/(frontend)/bai-viet/[slug]/page.tsx`, `src/app/(frontend)/globals.css`, `tests/e2e/products.spec.ts`, `docs/DESIGN.md`.
+
+**Kiểm tra:** lint, typecheck sạch. Chụp trên dev server ở 1920px: bài "test bài viết" và trang "Giới thiệu" có đoạn chữ rộng 1779px, video xếp 2 cột. Test e2e đổi theo: "nội dung bài viết rộng hết khung…" (cột bằng phần nội dung của section, đoạn chữ `max-width: none`, tiêu đề thẳng hàng) và "mô tả chi tiết rộng hết khung như trang tĩnh, kể cả đoạn chữ". E2E chạy bù ngày 26/10 (đợt 9): products.spec + responsive 30/30.
+
+**Lưu ý:** muốn giới hạn lại bề rộng chữ (vd. 1100px) chỉ cần thêm `max-width` cho `.prose-wide .prose-lux > :where(p, h2, h3, h4, ul, ol, blockquote)` trong globals.css.
+
+---
+
+## 26/10/2026 · nhánh `test` (đợt 5)
+
+### Trang chi tiết bài viết: cột đọc đặt giữa trang
+
+**Vì sao:** nội dung bài viết là cột 860px dính lề trái (đầu bài thì cột 1000px, cũng dính trái), màn rộng bỏ trống cả nửa phải, trông lệch một bên.
+
+**Làm gì:** giữ bề rộng đọc 860px (~100 ký tự/dòng, đã đánh giá ở mục 25/10 đợt 2) nhưng đặt giữa trang (`mx-auto`). Đầu bài (breadcrumb, danh mục, tiêu đề, ngày) dùng cùng cột 860px nên tiêu đề, đoạn mở đầu, nội dung, video, bảng thẳng một mép trái. Ảnh bìa nền và "Bài viết liên quan" vẫn rộng hết khung. Thêm class `article-column` cho cột nội dung (test dùng).
+
+**File:** `src/app/(frontend)/bai-viet/[slug]/page.tsx`, `tests/e2e/products.spec.ts`, `docs/{DESIGN,TESTING}.md`, `README.md`.
+
+**Kiểm tra:** `tests/e2e/products.spec.ts` "nội dung bài viết là cột đọc đặt giữa trang…": ở 1440px khoảng trống trái và phải của cột lệch nhau không quá 2px, tiêu đề thẳng hàng với cột. Các test bài viết trên desktop và điện thoại 5/5. Chụp bài "test bài viết" trên dev server ở 1920px: đầu bài và nội dung cân giữa. Lint, typecheck sạch.
+
+---
+
+## 26/10/2026 · nhánh `test` (đợt 4)
+
+### Giới hạn độ dài tiêu đề, tên, nhãn + bộ đếm ký tự trong admin
+
+**Vì sao:** tiêu đề bài viết không giới hạn: một bài thử có tiêu đề 20.700 ký tự phủ kín cả trang chi tiết. Rà lại thì gần như mọi ô tiêu đề, tên, nhãn (sản phẩm, danh mục, trang tĩnh, khối trang chủ, menu, thông tin công ty) đều không giới hạn; chỉ "Tóm tắt" có 300.
+
+**Làm gì:**
+- `src/fields/limits.ts` (mới): `limit(field, max)` đặt `maxLength`, gắn bộ đếm ký tự, gắn hook `enforceMaxLength`. `MAX` là bảng mức dùng chung.
+- `src/components/admin/CharCountDescription.tsx` (mới): dưới ô hiện dòng mô tả sẵn có (nếu có) và "45/80 ký tự"; vượt thì đỏ, ghi "dài hơn N ký tự".
+- Hook `enforceMaxLength` (`beforeChange` của ô): Payload chỉ kiểm `maxLength` khi xuất bản, còn lúc lưu nháp thì bỏ qua mọi `validate`. Đã thử: nháp tên 81 ký tự vẫn lưu được. Hook vẫn chạy khi lưu nháp nên chặn được, báo cùng câu "Giá trị phải ngắn hơn hoặc bằng … ký tự" kèm nhãn ô ("không hợp lệ: Tên sản phẩm").
+- Thẻ sản phẩm, thẻ bài viết: tên/tiêu đề tối đa 3 dòng (`line-clamp-3`) để lưới thẻ đều. Trang chi tiết vẫn hiện đủ.
+
+| Ô | Mức |
+|---|---|
+| Tên sản phẩm | 80 |
+| Tiêu đề bài viết | 100 |
+| Tiêu đề trang tĩnh | 80 |
+| Tên danh mục sản phẩm, bài viết | 50 |
+| Tóm tắt sản phẩm, bài viết; đoạn mở đầu trang tĩnh | 300 |
+| Vật liệu, giá trị thông số | 120 |
+| Tên thông số | 40 |
+| Giá | 60 |
+| Trang chủ: tiêu đề slide, tiêu đề khối (Giới thiệu, Giải pháp, Ứng dụng, Danh mục, Tin, Liên hệ), tiêu đề tab ứng dụng | 70 |
+| Trang chủ: tiêu đề ô bộ sưu tập, ô giải pháp | 50 |
+| Trang chủ: chữ trên nút, nhãn nhỏ, tên tab | 30 |
+| Trang chủ: câu khẩu hiệu, mô tả ngắn ô giải pháp, ghi chú ô bản tin | 120 |
+| Trang chủ: ô nổi bật (tiêu đề / dòng phụ), nhãn điểm chấm | 40 / 60, 40 |
+| Trang chủ SEO: tiêu đề / mô tả | 70 / 160 |
+| Menu: nhãn mục menu chính | 30 |
+| Menu: nhãn liên kết (gợi ý tìm kiếm, chân trang, cột mega menu) | 50 |
+| Menu: tiêu đề cột / tiêu đề ô ảnh / mô tả ô ảnh | 40 / 50 / 120 |
+| Menu: tên tài liệu / ghi chú | 80 / 30 |
+| Thông tin công ty: tên thương hiệu / tên pháp nhân / câu khẩu hiệu | 60 / 120 / 120 |
+
+Đã đo dữ liệu thật trong DB dev trước khi chọn mức: mọi giá trị đều nằm trong mức (dài nhất: tiêu đề SEO trang chủ 70/70, tiêu đề bài mẫu 79/100). Chỉ có bài thử 20.700 ký tự là vượt. Bài đó vẫn hiện như cũ cho tới khi được sửa; lần lưu tới sẽ bị yêu cầu rút ngắn.
+
+**File:** `src/fields/limits.ts` (mới), `src/components/admin/CharCountDescription.tsx` (mới), `src/collections/{Products,Posts,Pages,ProductCategories,PostCategories}.ts`, `src/globals/{Home,Navigation,SiteSettings}.ts`, `src/components/ui/{ProductCard,PostCard}.tsx`, `src/app/(payload)/custom.scss` (khối "Bộ đếm ký tự"), `importMap.js`, `tests/int/collections.test.ts`, `tests/e2e/{admin,products}.spec.ts`, `CLAUDE.md`, `docs/{DATA-MODEL,TESTING}.md`, `README.md`.
+
+**Kiểm tra:**
+- `tests/int/collections.test.ts` "giới hạn độ dài…":
+  - Tên sản phẩm đúng 80 lưu được, 81 bị từ chối ở ô `name`; lưu nháp 81 cũng bị chặn.
+  - Tiêu đề bài viết 101, tên danh mục 51, tên thương hiệu 61 bị từ chối đúng ô.
+  - Dữ liệu mẫu đều trong mức.
+- `tests/e2e/admin.spec.ts` "ô tên sản phẩm có bộ đếm ký tự…": gõ hiện "4/80 ký tự"; 81 ký tự thì đỏ "dài hơn 1 ký tự"; bấm Lưu bản nháp thì báo "không hợp lệ: Tên sản phẩm", không tạo sản phẩm. Đã chụp nền tối.
+- `products.spec.ts` 20/20 (test chữ dài rút tên còn 79 ký tự). unit 68/68, int 132/132, lint, typecheck sạch.
+
+**Lưu ý:**
+- Thêm ô chữ khách nhập mới: bọc `limit({...}, MAX.xxx)`. Đổi mức thì sửa `MAX`, nhưng nhớ đo dữ liệu thật trước khi hạ.
+- Ô `textarea` mô tả dài (mô tả slide, đoạn văn giới thiệu, mô tả khối) chưa giới hạn vì xuống dòng thoải mái.
+
+---
+
+## 26/10/2026 · nhánh `test` (đợt 3)
+
+### Xóa danh mục đang dùng: trang sản phẩm lỗi 500; giờ không cho xóa
+
+**Vì sao:** Quản trị xóa danh mục "Test" khi sản phẩm "test sản phẩm 234567" (đang xuất bản) còn gắn vào. Postgres để `category_id` thành trống, sản phẩm mất danh mục (ô bắt buộc) mà vẫn đang bán. Mở trang chi tiết thì lỗi 500 `TypeError`: code viết `typeof product.category === 'object' ? product.category.name : …`, mà `typeof null` cũng là `'object'`. Khung lỗi đỏ còn hiện thêm "Encountered a script tag…" ở `layout.tsx`: đó là hệ quả (React dựng lại layout phía trình duyệt khi trang sập), hết sập là hết.
+
+**Làm gì:**
+- Đọc dữ liệu an toàn với `null`:
+  - `JsonLd.tsx`: đây là chỗ gây lỗi 500.
+  - `src/lib/data.ts` thêm `relationId()`. `getRelatedProducts` và `getRelatedPosts` không có danh mục thì trả rỗng thay vì đọc `.id` của null; `getRelatedPosts` cũng bỏ phần tử `null` trong danh sách đã chọn.
+- Chặn tận gốc: `src/hooks/categories.ts` → `blockDeleteWhileUsed()` gắn `beforeDelete` cho Danh mục sản phẩm và Danh mục bài viết. Còn sản phẩm / bài viết (kể cả bản nháp) dùng danh mục thì không xóa được, báo: `Không xóa được danh mục "Test": còn 3 sản phẩm đang dùng ("A", "B", "C", … và 2 sản phẩm khác). Chuyển các sản phẩm này sang danh mục khác rồi xóa lại.` Danh mục trống xóa bình thường.
+
+**File:** `src/components/layout/JsonLd.tsx`, `src/lib/data.ts`, `src/hooks/categories.ts` (mới), `src/collections/{ProductCategories,PostCategories}.ts`, `tests/int/collections.test.ts`, `docs/{DATA-MODEL,TESTING}.md`, `README.md`.
+
+**Kiểm tra:**
+- Trang `/san-pham/test-san-pham-2` lúc chưa có danh mục: trước sửa trả 500, sau sửa trả 200. Mở bằng trình duyệt không cài tiện ích: không còn huy hiệu "Issue", console sạch.
+- `tests/int/collections.test.ts` "xóa danh mục":
+  - Danh mục còn một sản phẩm nháp thì từ chối, thông báo nêu đúng tên danh mục, số lượng, tên sản phẩm; danh mục trống thì xóa được.
+  - Danh mục bài viết còn bài thì từ chối.
+  - `getRelatedProducts` và `getRelatedPosts` với `category = null` trả rỗng, không lỗi.
+- unit 68/68, int 128/128, lint, typecheck sạch.
+
+**Lưu ý:**
+- Viết tắt kiểu `typeof x === 'object' ? x.id : x` cho ô quan hệ là sai khi ô trống; dùng `relationId()` hoặc kiểm `x && typeof x === 'object'`.
+- Dữ liệu dev: sản phẩm này đã được gắn lại danh mục "Tấm đục lỗ"; không còn sản phẩm, bài viết nào thiếu danh mục.
+
+---
+
+## 26/10/2026 · nhánh `test` (đợt 2)
+
+### Ảnh: thẻ sản phẩm hiện ảnh cũ sau khi đổi ảnh; xem phóng to bị cắt mất một phần
+
+**Thẻ hiện ảnh cũ**
+- **Vì sao:** đổi ảnh (thay tệp `screen.jpg`, chọn lại vùng ảnh) thì trang chi tiết ra ảnh mới nhưng thẻ ở trang danh mục vẫn ảnh cũ. Tệp trên đĩa đã đúng (`screen-800x600.webp` là ảnh mới), nhưng Payload ghi đè các cỡ ảnh **giữ nguyên tên tệp**, mà `next/image` lưu ảnh đã tối ưu theo đường dẫn (bản chạy thật: `minimumCacheTTL` mặc định 14400 giây = 4 giờ, cả server lẫn trình duyệt; dev: trình duyệt giữ ảnh trong bộ nhớ khi chuyển trang). Chỗ nào đã từng tải đường dẫn đó thì vẫn nhận ảnh cũ.
+- **Làm gì:** `mediaUrl()` (`src/lib/media.ts`) gắn `?v=<updatedAt của media, cơ số 36>`. Ảnh đổi thì đường dẫn đổi, mọi bộ đệm lấy bản mới; ảnh không đổi thì giữ nguyên đường dẫn, bộ đệm vẫn dùng được. `images.localPatterns` không khai `search` nên Next nhận query. Áp cho mọi chỗ dùng `mediaUrl` (ảnh, logo, tệp catalogue, ảnh OG, JSON-LD, ô ảnh trong admin).
+- **Kiểm tra:** trên dev server, trang danh mục giờ dùng `screen-800x600.webp?v=mvo39zgw`, tải về đúng ảnh mới. Unit `media.test.ts`: đường dẫn đổi khi `updatedAt` đổi, giữ nguyên khi không đổi, thiếu `updatedAt` thì trả đường dẫn trơn.
+
+**Xem phóng to bị cắt**
+- **Vì sao:** Lightbox (11/10) dùng cỡ `hero`, lúc đó là "rộng 2400, giữ tỉ lệ". Ngày 13/10 (#5) `hero` đổi thành 2400×1200 cắt 2:1 cho slider, nên ảnh phóng to bị cắt theo khung 2:1 (ảnh gần vuông mất đỉnh và đáy).
+- **Làm gì:** thêm cỡ `'original'` (`MediaSize`, `sizedOf()` dùng chung cho `mediaUrl`, `mediaDims`, `Img`): ảnh gốc, không cắt. Lightbox dùng `original`; `next/image` vẫn thu nhỏ theo màn hình nên ảnh gốc lớn không nặng. Chỉ Lightbox dùng nhầm, slider dùng `hero` 2:1 là đúng.
+- **Kiểm tra:** `tests/e2e/products.spec.ts` "ảnh phóng to là ảnh gốc đủ khung…": chọn sản phẩm có ảnh đầu không phải 2:1, tỉ lệ tệp ảnh và khung hiện trong Lightbox khớp ảnh gốc (sai số dưới 0,02), đường dẫn không phải `-2400x1200`. Unit: `'original'` luôn trả ảnh gốc kể cả khi có cỡ cắt sẵn. Đã chụp Lightbox trên dev server: ảnh 1080×892 hiện đủ khung.
+
+**File:** `src/lib/media.ts`, `src/components/ui/{Img,Lightbox}.tsx`, `tests/unit/media.test.ts`, `tests/e2e/products.spec.ts`, `docs/{DATA-MODEL,DESIGN,TESTING}.md`, `README.md`.
+
+**Sửa test:** `tests/e2e/products.spec.ts` mượn sản phẩm, bài viết mẫu qua API giờ lọc `_status = published` (bài đầu tiên trong DB test đang là bản nháp thiếu ảnh bìa, tạo bài mới từ nó bị từ chối). Toàn bộ `products.spec.ts` 20/20, unit 68/68, int 125/125, lint, typecheck sạch.
+
+**Lưu ý:** DATA-MODEL trước ghi `hero` "2400 width" (đúng trước 13/10) nên dễ dùng nhầm; đã sửa. Cần ảnh không cắt thì dùng `original` (hoặc `wide` nếu chỉ cần rộng 1600).
+
+---
+
+## 26/10/2026 · nhánh `test`
+
+### Ô liên quan: mục đã chọn rồi bị ẩn không còn chặn lưu; lỗi nêu rõ tên mục
+
+**Vì sao:** sau thay đổi 25/10 (đợt 3), sản phẩm "phong cảnh" đang nằm trong "Sản phẩm liên quan" của sản phẩm khác thì bị "Ẩn tài liệu". Web tự không hiện nó, đúng. Nhưng khi sửa sản phẩm chủ, thêm một sản phẩm khác rồi xuất bản thì bị chặn với câu chung chung "Field này có những lựa chọn không hợp lệ", không biết mục nào sai: Payload áp `filterOptions` (chỉ bản đã xuất bản) lên cả danh sách khi lưu.
+
+**Làm gì:** `validatePublishedRelation()` trong `src/fields/publishedOnly.ts` thay bước kiểm mặc định của Payload cho 3 ô ("Sản phẩm liên quan", "Bài viết liên quan", "4 sản phẩm tiêu biểu" ở Trang chủ):
+- Chạy kiểm tra mặc định của Payload (`relationship` từ `payload/shared`: bắt buộc, số dòng, id hợp lệ) nhưng bỏ phần `filterOptions`.
+- Mục đã có từ lần lưu trước (`previousValue`) được giữ kể cả khi nay đang ẩn. Web không hiện, xuất bản lại thì hiện lại.
+- Mục **mới thêm** mà chưa xuất bản (chỉ còn đường API vì danh sách chọn đã lọc) bị chặn, báo rõ: `"<tên>" chưa xuất bản (bản nháp hoặc đang ẩn) nên không chọn được. Xuất bản trước rồi chọn lại.`
+- Chọn chính nó: `Không chọn được chính tài liệu này.` (Trang chủ tắt bước này vì `id` khi đó là của global.)
+- Mô tả ô ghi thêm: mục bị ẩn sau khi chọn vẫn nằm trong danh sách nhưng không hiện trên web.
+
+**File:** `src/fields/publishedOnly.ts`, `src/collections/{Products,Posts}.ts`, `src/globals/Home.ts`, `src/payload-types.ts`, `tests/int/collections.test.ts`, `tests/int/data.test.ts`, `docs/{DATA-MODEL,TESTING}.md`, `README.md`.
+
+**Kiểm tra:** `tests/int/collections.test.ts`: đúng kịch bản trên (chọn sản phẩm đang xuất bản → ẩn nó → thêm sản phẩm khác, xuất bản sản phẩm chủ: lưu được, giữ cả hai, `getRelatedProducts` chỉ trả sản phẩm đang xuất bản); thêm mới bản nháp thì lỗi nằm ở ô `related` và nêu đúng tên; chọn chính nó báo rõ. `tests/int/data.test.ts` "bản nháp không lên website": dữ liệu chuẩn bị đổi sang "chọn lúc đang xuất bản rồi ẩn" (không còn tạo được bản nháp trong ô liên quan). unit 65/65, int 125/125, `pnpm lint`, `pnpm typecheck` sạch.
+
+**Lưu ý:** e2e đầy đủ chưa chạy lại được từ 25/10 (đợt 2) vì máy hết RAM khi build (`JavaScript heap out of memory`); các test e2e mới của giá, mô tả rộng đã chạy riêng và qua. Chạy lại `CIRCLE_NODE_TOTAL=4 pnpm test:e2e --workers=1` khi máy rảnh.
+
+---
+
+## 25/10/2026 · nhánh `test` (đợt 3)
+
+### Ô "Sản phẩm liên quan", "Bài viết liên quan", "4 sản phẩm tiêu biểu" không chọn được bản nháp
+
+**Vì sao:** ô "Sản phẩm liên quan" cho chọn cả bản nháp (kể cả bản nháp chưa đặt tên, hiện "Chưa có tiêu đề - ID: 20"). Ngoài web bản nháp không hiện (truy vấn chạy dưới quyền khách) nhưng chọn được trong admin là vô lý, dễ tưởng đã gắn mà web không thấy. "Bài viết liên quan" và "4 sản phẩm tiêu biểu" (tab Ứng dụng ở Trang chủ) cùng lỗi.
+
+**Làm gì:** `src/fields/publishedOnly.ts` (mới):
+- `publishedOthers`: chỉ bản đã xuất bản và không phải chính tài liệu đang sửa. Gắn vào `related` của Sản phẩm và Bài viết (trước chỉ loại chính nó).
+- `publishedOnly`: chỉ bản đã xuất bản. Gắn vào `products` trong tab Ứng dụng của global Trang chủ (global không có "chính nó"; `id` Payload truyền vào có thể là id của global, lọc theo id sẽ loại nhầm).
+- (Đã đổi ngày 26/10, xem mục 26/10) Lúc đầu để Payload tự kiểm `filterOptions` khi lưu: mục chọn từ trước mà sau bị ẩn làm cả tài liệu không lưu được.
+
+**File:** `src/fields/publishedOnly.ts` (mới), `src/collections/{Products,Posts}.ts`, `src/globals/Home.ts`, `tests/int/collections.test.ts`, `docs/{DATA-MODEL,TESTING}.md`.
+
+**Kiểm tra:** `tests/int/collections.test.ts` "ô quan hệ chỉ chọn được bản đã xuất bản": Sản phẩm liên quan lưu được bản đã xuất bản, từ chối bản nháp và chính nó; Bài viết liên quan từ chối bản nháp (lỗi nêu tên ô "…liên quan").
+
+**Lưu ý:**
+- Sản phẩm đang có bản nháp mới chưa xuất bản (đã từng xuất bản) vẫn chọn được, vì bản trên web vẫn còn.
+- Chưa áp cho khối "Mối quan hệ" và link nội bộ trong ô soạn thảo (Lexical `RelationshipFeature`, `LinkFeature`): web không lộ (kiểm ngày 26/10 đợt 8); từ 26/10 đợt 11 khung chọn cũng không còn liệt kê bản nháp.
+
+---
+
+## 25/10/2026 · nhánh `test` (đợt 2)
+
+### Giá: chỉ có dấu cách không còn hiện ô trắng; thẻ "Sản phẩm liên quan" cập nhật khi sửa sản phẩm khác
+
+**Vì sao:** ô Giá nhập toàn dấu cách rồi xuất bản thì trang chi tiết hiện "Giá" trống trơn (trang chỉ thay chuỗi rỗng bằng "Liên hệ"). Thẻ sản phẩm thì so đúng chữ `Liên hệ`, gõ "liên hệ", "Lien he" hay toàn dấu cách là hiện nguyên chữ đó hoặc trống, thay vì "Xem sản phẩm". Khi kiểm kịch bản "đổi giá thì thẻ danh sách cập nhật" còn lộ thêm: mục "Sản phẩm liên quan" trên trang của sản phẩm khác (trang dựng sẵn) giữ giá, tên cũ, vì sửa sản phẩm chỉ làm mới trang của chính nó.
+
+**Làm gì:**
+- `src/lib/price.ts` (mới): `priceText()` trả giá đã gọn khoảng trắng, hoặc `null` khi coi như chưa có giá: trống, toàn khoảng trắng (cả dấu cách không ngắt, ký tự rộng 0 khi dán), "Liên hệ" viết kiểu nào (thường, hoa, không dấu, có dấu chấm). Trang chi tiết thay `null` bằng "Liên hệ" (`CONTACT_PRICE`), `ProductCard` thay bằng "Xem sản phẩm".
+- Ô `price`: `beforeValidate` gọn khoảng trắng (`tidyPrice`), toàn dấu cách thì lưu thành trống. Mô tả ô ghi rõ nhập tự do kèm ví dụ.
+- Sửa sản phẩm thì làm mới thêm mọi trang chi tiết sản phẩm (`revalidatePath('/(frontend)/san-pham/[slug]', 'page')`, trang dựng lại khi có người mở). Hàm `revalidatePath` trong `src/hooks/revalidate.ts` tự thêm type `'page'` cho đường dẫn dạng mẫu.
+- Trang `/san-pham`, trang danh mục đọc `?page=` nên luôn dựng mới; trang tìm kiếm cũng vậy. Không cần làm mới.
+
+**Trả lời "giá nhập tự do hay chỉ số?":** giữ nhập tự do. Gia công kim loại thường báo theo đơn vị hoặc khoảng ("Từ 350.000đ/m²", "45.000đ/kg", "1.200.000đ/bộ"); chỉ cho số sẽ mất đơn vị. Web hiện đúng chữ đã nhập.
+
+**File:** `src/lib/price.ts` (mới), `src/collections/Products.ts`, `src/hooks/revalidate.ts`, `src/components/ui/ProductCard.tsx`, `src/app/(frontend)/san-pham/[slug]/page.tsx`, `src/payload-types.ts`, `tests/unit/price.test.ts` (mới), `tests/e2e/products.spec.ts`, `docs/{DATA-MODEL,TESTING}.md`, `README.md`.
+
+**Kiểm tra:** `tests/unit/price.test.ts` (5 test). `tests/e2e/products.spec.ts` "Giá sản phẩm": tạo sản phẩm (giá mặc định "Liên hệ"), đổi giá qua API lần lượt `1.250.000đ/m²` → toàn dấu cách (API trả `''`) → `liên hệ` → trống; mỗi lần kiểm ô Giá ở trang chi tiết và thẻ của sản phẩm ở `/san-pham`, trang danh mục, trang tìm kiếm, mục "Sản phẩm liên quan" của một sản phẩm mẫu cùng danh mục.
+
+**Lưu ý:**
+- Làm mới theo mẫu phải ghi đúng đường thư mục route, **kể cả nhóm** `(frontend)`. Ghi `/san-pham/[slug]` thì Next lặng lẽ bỏ qua (đã thử: test hỏng, log vẫn báo "Làm mới cache"). Đường dẫn cụ thể (`/san-pham/abc`) thì không ghi nhóm.
+- Cùng kiểu thiếu sót, chưa sửa: sửa bài viết không làm mới mục "Bài viết liên quan" ở bài khác; đổi tên danh mục không làm mới tên danh mục trên trang chi tiết sản phẩm, bài viết. Sửa cùng cách nếu cần.
+- JSON-LD `Offer` vẫn không có `price` (giá chữ tự do không chuyển chắc chắn thành số).
+
+### Mô tả chi tiết sản phẩm rộng hết khung như trang tĩnh; bài viết giữ 860px
+
+**Vì sao:** khối "Mô tả chi tiết" bị giới hạn 860px, màn rộng bỏ trống nửa phải.
+
+**Làm gì:** mô tả sản phẩm dùng `.prose-wide` như trang tĩnh: khung rộng hết (lưới video lấp đầy), riêng đoạn chữ, tiêu đề, bảng, ảnh tối đa 1100px.
+
+**Bài viết: đã xem xét, giữ 860px.** 860px có từ commit dựng giao diện đầu tiên (08/10, áp chung cho mô tả sản phẩm, bài viết, trang tĩnh); 17/10 (#6) đồng nghiệp đổi riêng trang tĩnh sang `.prose-wide` và ghi rõ "bài viết giữ 860px". Đo bằng đúng font, cỡ chữ của bài (Be Vietnam Pro 300, 17px): 860px ≈ 100 ký tự/dòng, 1100px ≈ 120–130. Khuyến nghị cho chữ dễ đọc là 45–75, tối đa khoảng 80–90 ký tự/dòng; bài viết dài nên giữ cột đọc. Cột bài viết cũng thẳng hàng trái với tiêu đề, breadcrumb ở ảnh bìa phía trên. Muốn lấp khoảng trống bên phải thì làm cột phụ (mục lục, bài liên quan), là tính năng mới, ghi giai đoạn 2.
+
+**File:** `src/app/(frontend)/san-pham/[slug]/page.tsx`, `tests/e2e/products.spec.ts`, `docs/DESIGN.md`.
+
+**Kiểm tra:** `tests/e2e/products.spec.ts` "mô tả chi tiết rộng hết khung…": tạo sản phẩm có mô tả (dữ liệu mẫu chưa có), ở 1440px khung mô tả rộng bằng phần nội dung của trang, đoạn chữ `max-width: 1100px`.
+
+---
+
+## 25/10/2026 · nhánh `test`
+
+### Tóm tắt (và tên) là chuỗi liền dài không còn làm tràn trang
+
+**Vì sao:** sản phẩm có Tóm tắt là chuỗi liền không khoảng trắng (`testtest…`, 300 ký tự) thì ở trang chi tiết đoạn tóm tắt chạy thẳng ra ngoài cột, cả trang cuộn ngang (đo được tràn 2004px ở 1440px); trên thẻ sản phẩm thì bị cắt cụt ở mép. Bài viết (ô Tóm tắt `excerpt`) và tên, tiêu đề dài liền cũng cùng lỗi.
+
+**Làm gì:** cho phép ngắt giữa chữ (`overflow-wrap: anywhere`) ở mọi chỗ hiện chữ khách nhập. Chỉ ngắt khi một chuỗi dài hơn cả dòng; chữ bình thường vẫn xuống dòng ở khoảng trắng như cũ.
+- `globals.css`: thêm vào `.h-serif` (tên sản phẩm, tiêu đề, tên danh mục trên ảnh, mega menu), `.label-sm` (nhãn danh mục), `.lead` (tóm tắt ở trang chi tiết sản phẩm, bài viết, đoạn giới thiệu đầu trang); `.prose-lux > p, ul, ol, h2–h4, blockquote` (link, chuỗi dài trong nội dung; không áp cho bảng).
+- Utility `wrap-anywhere` (Tailwind 4.1+): tóm tắt trên `ProductCard` (giờ xuống 2 dòng rồi "…"), tiêu đề `PostCard`, tiêu đề trang chi tiết bài viết, bảng giá/vật liệu/thông số ở chi tiết sản phẩm, `Breadcrumb` (thêm `min-w-0`), tên sản phẩm ở khối Ứng dụng trang chủ (thêm `min-w-0`), mô tả trong `ImageCard`.
+
+**File:** `src/app/(frontend)/globals.css`, `src/components/ui/{ProductCard,PostCard,Breadcrumb,ImageCard}.tsx`, `src/components/home/Applications.tsx`, `src/app/(frontend)/san-pham/[slug]/page.tsx`, `src/app/(frontend)/bai-viet/[slug]/page.tsx`, `tests/e2e/products.spec.ts`, `docs/{DESIGN,TESTING}.md`, `README.md`.
+
+**Kiểm tra:** `tests/e2e/products.spec.ts` "Chữ khách nhập rất dài": tạo sản phẩm và bài viết có tóm tắt 300 ký tự liền, tên/tiêu đề ~95 ký tự liền (qua API, tài khoản Quản trị, xóa sau khi xong); ở 1440px và 390px: trang chi tiết sản phẩm, bài viết, trang tìm kiếm không tràn ngang, tóm tắt trên thẻ không bị cắt ngang. Đối chứng: tắt `overflow-wrap` thì trang tràn lại 2004px. Đã chụp màn hình trang chi tiết và thẻ sau khi sửa. Toàn bộ e2e 106/106, `pnpm lint`, `pnpm typecheck` sạch.
+
+**Lưu ý:** thêm chỗ hiện chữ khách nhập mới (nhất là trong flex/grid) thì gắn `wrap-anywhere` (và `min-w-0` nếu là phần tử con của flex), hoặc dùng các class trên. Không áp chung cho cả trang để tránh nhãn menu, nút bị ngắt giữa chữ khi chật.
+
+---
+
+## 24/10/2026 · nhánh `test`
+
+### Ô slug hiện cả đường dẫn, tiền tố khóa, nút chép
+
+**Vì sao:** ô "Đường dẫn (slug)" chỉ có phần cuối (`hn2`). Chép nó sang ô "Đường dẫn" của "Menu và mega menu" thì thiếu `/san-pham/danh-muc/`, link trên menu bị sai.
+
+**Làm gì:**
+- Ô slug của sản phẩm, danh mục sản phẩm, bài viết, danh mục bài viết, trang tĩnh hiện cả đường dẫn trên website: tiền tố màu xám, không sửa được (`/san-pham/`, `/san-pham/danh-muc/`, `/bai-viet/`, `/bai-viet/danh-muc/`, `/`) + slug màu thường, sửa được. Hai phần nằm chung một khung, bôi đen một lượt chép được cả đường dẫn.
+- Nút chép ở cuối ô: chép đường dẫn không kèm tên miền (vd. `/san-pham/danh-muc/hn2`), đã chuẩn hóa như khi lưu (bỏ dấu, khoảng trắng thành gạch), báo "Đã chép đường dẫn …". Ô trống thì nút mờ.
+- Tiền tố được giữ: bấm vào tiền tố thì con trỏ nhảy về đầu slug; Backspace ở đầu slug không xóa được; gõ, xóa, dán, cắt khi vùng bôi đen lấn vào tiền tố chỉ tác động phần slug; dán cả URL (`https://…/san-pham/danh-muc/abc` hay `/san-pham/danh-muc/abc`) chỉ giữ `abc`; Enter không xuống dòng.
+- Ô trống thì hiện chữ nghiêng mờ gợi ý slug sẽ tự tạo từ tên/tiêu đề.
+- Mỗi collection khai báo một hằng `URL_PREFIX`, dùng chung cho hàm làm mới cache (`paths`) và ô slug, để hai chỗ không lệch nhau.
+
+**Cách làm:** `src/components/admin/SlugField.tsx`, gắn qua tùy chọn mới `urlPrefix` của `slugField()` (`src/fields/slug.ts`, `admin.components.Field` + `clientProps`). Cả đường dẫn nằm trong một `<textarea>` thật có chữ trong suốt; lớp `__mirror` nằm dưới, cùng font và lề, vẽ màu (tiền tố xám, slug thường). Thử `contentEditable` trước nhưng Chrome không cho bôi đen nối từ chữ thường sang vùng sửa được, nên bỏ. Giá trị lưu vẫn chỉ là slug, không đổi dữ liệu.
+
+**File:** `src/components/admin/SlugField.tsx` (mới), `src/fields/slug.ts`, `src/collections/{Products,ProductCategories,Posts,PostCategories,Pages}.ts`, `src/app/(payload)/custom.scss` (khối "Ô slug"), `importMap.js`, `tests/e2e/admin.spec.ts`, `CLAUDE.md`, `docs/{DATA-MODEL,TESTING}.md`, `README.md`.
+
+**Kiểm tra:** `tests/e2e/admin.spec.ts` nhóm "Ô đường dẫn (slug) trong trang sửa" (3 test, e2e giờ 105): đúng tiền tố từng loại, tiền tố màu khác slug; kéo chuột bôi đen ra cả đường dẫn, Ctrl+C và nút chép cho `/san-pham/danh-muc/<slug>`; bấm tiền tố, Home + Backspace, gõ, dán cả URL, Ctrl+A rồi Ctrl+X đều không đụng tiền tố. Đã chụp màn hình nền tối: slug ngắn, slug dài xuống dòng ở dấu gạch, đang bôi đen, ô trống có gợi ý.
+
+**Lưu ý:**
+- `__mirror` và `__input` trong custom.scss phải giữ y hệt font, cỡ chữ, lề, cách xuống dòng; lệch một chút là con trỏ và vùng bôi đen không khớp chữ.
+- Slug dài xuống dòng: phím End về cuối dòng đang đứng như mọi ô nhiều dòng, Ctrl+End về cuối chữ.
+- Thêm collection có slug mới: truyền `urlPrefix` đúng route trong `src/app/(frontend)`.
+- Dev server đang chạy từ trước phải khởi động lại `pnpm dev` mới thấy ô mới (cấu hình collection không tự nạp lại).
+- Không đổi schema database.
+
+---
+
+## 20/10/2026 · quyền Nhân viên sửa báo giá và xuất bản
+
+**Làm gì:** Nhân viên sửa được họ tên, điện thoại, email, công ty, nội dung, trạng thái và thay tệp trong chi tiết yêu cầu báo giá. Quản trị và Nhân viên có thể tải tệp bản vẽ mới trong trang quản trị; tệp cũ không bị chỉnh sửa hay xóa. Hai ô hệ thống `source`, `ip` vẫn khóa. Nhân viên được chọn lưu nháp hoặc xuất bản sản phẩm, bài viết, trang tĩnh; có thể khôi phục phiên bản đã xuất bản để xuất bản lại. Bỏ thông báo và CSS chỉ dành cho chính sách cũ.
+
+**Vì sao:** theo yêu cầu cập nhật quyền của vai trò Nhân viên.
+
+**File:** `src/access/index.ts`, `src/collections/{Products,Posts,Pages,QuoteRequests,QuoteFiles,Users}.ts`, `src/hooks/versions.ts`, `src/app/(payload)/custom.scss`, import map, test quyền và giao diện, `CLAUDE.md`, `docs/{DATA-MODEL,TESTING}.md`.
+
+**Kiểm tra:** `pnpm lint`, `pnpm typecheck`, kiểm thử `tests/int/editor.test.ts` và `tests/e2e/editor.spec.ts`. Nhân viên vẫn không được xóa, không sửa `source`/`ip` hay nội dung tệp đã tải lên.
+
+**Lưu ý:** ô tệp đính kèm dùng lại upload field mặc định của Payload để cho phép chọn/tải tệp mới. Collection `quote-files` không hiện trên menu và chỉ Quản trị được xóa. Không đổi schema cơ sở dữ liệu.
+
+---
+
+## 20/10/2026 · nhánh `test`
+
+### Ghi lại tài khoản Nhân viên để thử quyền
+
+**Làm gì:** ghi tài khoản `nhanvien@thanhvinhmetal.vn` / `NhanVien@2026` (vai trò editor) vào `CLAUDE.md` (mục Chạy local) và `README.md` (cạnh tài khoản mẫu), kèm tài khoản E2E `editor.e2e@thanhvinhmetal.vn` / `Editor@2026`.
+
+**Vì sao:** tài khoản tạo tay trong DB dev ngày 17/10 để thử chính sách Nhân viên, chưa ghi ở đâu nên khó dùng lại.
+
+**Kiểm tra:** đăng nhập thử bằng Local API `payload.login` → được, vai trò `editor`.
+
+**Lưu ý:** seed không tạo tài khoản này; `SEED_RESET=1 pnpm seed` không xóa bảng `users` nên tài khoản vẫn còn. DB mới (máy khác, `docker compose down -v`) thì tạo lại ở Tài khoản → Tạo mới. Không tạo tài khoản mật khẩu mẫu này trên bản thật.
+
+---
+
+## 18/10/2026 · nhánh `test` (đợt 2)
+
+### Nhân viên thêm, sửa được danh mục; vẫn không xóa
+
+**Vì sao:** khách muốn Nhân viên tự quản lý danh mục sản phẩm, danh mục bài viết (thêm, sửa) nhưng không được xóa. Chính sách 17/10 để danh mục chỉ Quản trị.
+
+**Làm gì:**
+- `ProductCategories`, `PostCategories`: `create`, `update` đổi từ `isAdmin` sang `isAdminOrEditor`; `delete` giữ `isAdmin`. Payload tự ẩn nút "Xóa" (trong menu "..." ở trang sửa và nút xóa hàng loạt ở danh sách) khi không có quyền xóa.
+- Mô tả vai trò ở trang Tài khoản cập nhật theo.
+- Rà lại quyền xóa toàn bộ: mọi collection (sản phẩm, bài viết, trang tĩnh, danh mục, ảnh, yêu cầu báo giá, tệp bản vẽ, đăng ký bản tin, tài khoản) đều `delete: isAdmin`, nên Nhân viên không xóa được gì. Không đổi.
+
+**File:** `src/collections/ProductCategories.ts`, `PostCategories.ts`, `Users.ts`, `src/payload-types.ts`, `tests/int/editor.test.ts`, `tests/e2e/editor.spec.ts`, `CLAUDE.md`, `docs/DATA-MODEL.md`, `docs/TESTING.md`, `README.md`.
+
+**Kiểm tra:** `tests/int/editor.test.ts`: test "danh mục chỉ Quản trị" thay bằng 2 test: Nhân viên thêm, sửa được cả hai loại danh mục; Nhân viên xóa bị từ chối, Quản trị xóa được (int 117 → 118). `tests/e2e/editor.spec.ts`: danh sách danh mục có nút Tạo mới, chọn dòng không có nút Xóa; trang sửa ô tên sửa được, menu "..." có "Tạo mới" nhưng không có "Xóa".
+
+**Lưu ý:**
+- Danh mục không có nháp: Nhân viên lưu là đổi ngay trên web (menu, trang chủ, đường dẫn `/san-pham/danh-muc/...`). Đổi tên danh mục thì slug đã có giữ nguyên (`src/fields/slug.ts`), link cũ vẫn chạy; nhưng Nhân viên sửa tay ô slug thì link đổi theo.
+- Sản phẩm, bài viết, trang tĩnh giữ chính sách chỉ lưu nháp như 17/10.
+- Không đổi schema database.
+
+---
+
 ## 18/10/2026 · nhánh `test`
 
 ### Gộp `main` (#4, #5, #6) vào `test`, gỡ conflict

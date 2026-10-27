@@ -13,6 +13,11 @@ loadEnv({ path: '.env' })
  */
 const PORT = Number(process.env.E2E_PORT || 3100)
 const baseURL = `http://localhost:${PORT}`
+const browserExecutable = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+const editorBrowser = {
+  ...devices['Desktop Chrome'],
+  ...(browserExecutable ? { launchOptions: { executablePath: browserExecutable } } : {}),
+}
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -48,12 +53,12 @@ export default defineConfig({
     },
     { name: 'mobile', use: { ...devices['Pixel 7'] }, testMatch: /responsive\.spec\.ts/ },
     // Vai trò Nhân viên: tự tạo tài khoản (nếu chưa có) rồi đăng nhập một lần
-    { name: 'setup-editor', testMatch: /editor\.setup\.ts/, use: { ...devices['Desktop Chrome'] } },
+    { name: 'setup-editor', testMatch: /editor\.setup\.ts/, use: editorBrowser },
     {
       name: 'editor',
       testMatch: /editor\.spec\.ts/,
       dependencies: ['setup-editor'],
-      use: { ...devices['Desktop Chrome'], storageState: EDITOR_STORAGE_STATE },
+      use: { ...editorBrowser, storageState: EDITOR_STORAGE_STATE },
     },
   ],
   webServer: {

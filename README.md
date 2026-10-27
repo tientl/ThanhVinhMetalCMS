@@ -14,7 +14,7 @@ pnpm seed                     # tạo admin + dữ liệu mẫu (ADMIN_EMAIL, AD
 pnpm dev                      # http://localhost:3000, admin http://localhost:3000/admin
 ```
 
-Tài khoản mẫu: `admin@thanhvinhmetal.vn` / `ThanhVinh@2026`. Đổi mật khẩu sau khi đăng nhập. Nạp lại dữ liệu mẫu từ đầu: `SEED_RESET=1 pnpm seed`.
+Tài khoản mẫu: `admin@thanhvinhmetal.vn` / `ThanhVinh@2026`. Đổi mật khẩu sau khi đăng nhập. Thử quyền Nhân viên trên máy dev: `nhanvien@thanhvinhmetal.vn` / `NhanVien@2026` (seed không tạo; DB mới thì đăng nhập Quản trị, vào Tài khoản → Tạo mới, chọn vai trò Nhân viên). Chỉ dùng cho môi trường dev, không tạo tài khoản này trên bản thật. Nạp lại dữ liệu mẫu từ đầu: `SEED_RESET=1 pnpm seed`.
 
 ## Lệnh
 
@@ -55,11 +55,11 @@ docs/                    SCOPE, DESIGN, DATA-MODEL, PLAN, DEPLOY, TESTING, KNOWN
 - Tên code tiếng Anh, nhãn trong admin tiếng Việt.
 - Mỗi tính năng một nhánh, mở PR để người kia review. `main` tự deploy lên bản thử qua GitHub Actions.
 - Không thêm tính năng ngoài `docs/SCOPE.md`.
-- Ảnh upload nằm ở `public/media` (Nginx phục vụ trực tiếp), tệp bản vẽ khách gửi ở `uploads/quote-files` (chỉ admin tải qua API).
+- Ảnh upload nằm ở `public/media` (Nginx phục vụ trực tiếp), tệp bản vẽ báo giá ở `uploads/quote-files` (Quản trị và Nhân viên xem, tải qua API).
 
 ## Kiểm thử
 
-276 test phủ backend và giao diện. Chi tiết ở `docs/TESTING.md`.
+333 test phủ backend và giao diện. Chi tiết ở `docs/TESTING.md`.
 
 ```bash
 pnpm test                        # unit + integration

@@ -37,7 +37,7 @@ export const Users: CollectionConfig = {
       access: { update: isAdminField },
       admin: {
         description:
-          'Quản trị: toàn quyền. Nhân viên: thêm, sửa sản phẩm, bài viết, trang tĩnh nhưng chỉ lưu nháp (Quản trị duyệt và xuất bản); tải ảnh; sửa trang chủ; đổi trạng thái yêu cầu báo giá. Nhân viên không xóa gì, không sửa danh mục, menu, thông tin công ty, tài khoản.',
+          'Quản trị: toàn quyền. Nhân viên: thêm, sửa, xuất bản sản phẩm, bài viết, trang tĩnh; thêm, sửa danh mục; tải ảnh; sửa trang chủ và yêu cầu báo giá. Nhân viên không xóa gì, không sửa menu, thông tin công ty, tài khoản.',
       },
     },
   ],

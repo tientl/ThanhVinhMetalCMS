@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import React from 'react'
 
-import { Img } from '@/components/ui/Img'
+import { FramedImage } from '@/components/ui/FramedImage'
 import type { Home } from '@/payload-types'
 
 export const About = ({ about }: { about: Home['about'] }) => {
@@ -22,7 +22,7 @@ export const About = ({ about }: { about: Home['about'] }) => {
         </Link>
       </div>
       <div className="relative h-[360px] md:h-[480px] lg:h-[560px]" data-reveal>
-        <Img media={about.image} size="wide" sizes="(min-width: 1024px) 55vw, 100vw" />
+        <FramedImage media={about.image} frame={about.imageFrame} sizes="(min-width: 1024px) 55vw, 100vw" />
         {about.badgeTitle && (
           <span className="absolute bottom-6 left-0 flex flex-col gap-1.5 bg-accent px-6 py-5 text-bg md:bottom-10 lg:-left-10 lg:px-[30px] lg:py-[26px]">
             <span className="h-serif text-[20px] md:text-[26px]">{about.badgeTitle}</span>

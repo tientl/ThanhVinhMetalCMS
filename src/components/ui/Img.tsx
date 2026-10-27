@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import React from 'react'
 
-import { isMedia, mediaAlt, mediaDims, mediaUrl, type MediaRef, type MediaSize } from '@/lib/media'
+import { isMedia, mediaAlt, mediaDims, mediaUrl, sizedOf, type MediaRef, type MediaSize } from '@/lib/media'
 
 type Props = {
   media: MediaRef
@@ -34,7 +34,7 @@ export const Img = ({ media, size = 'card', alt, className, sizes, priority, fil
   if (fill) {
     // Điểm lấy nét chọn trong admin: chỉ áp cho cỡ còn nguyên khung (wide, ảnh gốc).
     // Các cỡ có cả rộng lẫn cao (thumb, card, hero, og) Payload đã cắt quanh điểm đó, chủ thể đã ở giữa.
-    const sized = size ? media.sizes?.[size] : undefined
+    const sized = sizedOf(media, size)
     const alreadyCropped = Boolean(sized?.url && sized?.width && sized?.height && size !== 'wide')
     const focal =
       !alreadyCropped && typeof media.focalX === 'number' && typeof media.focalY === 'number'

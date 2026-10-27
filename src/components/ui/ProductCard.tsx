@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import React from 'react'
 
+import { priceText } from '@/lib/price'
 import type { Product } from '@/payload-types'
 
 import { Img } from './Img'
@@ -19,12 +20,12 @@ export const ProductCard = ({ product }: { product: Product }) => {
       </span>
       <span className="flex flex-col gap-1.5">
         {category && <span className="label-sm">{category.name}</span>}
-        <span className="h-serif text-[18px] md:text-[19px]" style={{ letterSpacing: 1.2 }}>
+        <span className="h-serif line-clamp-3 text-[18px] md:text-[19px]" style={{ letterSpacing: 1.2 }}>
           {product.name}
         </span>
-        {product.summary && <span className="line-clamp-2 text-[14px] font-light leading-relaxed text-muted">{product.summary}</span>}
+        {product.summary && <span className="line-clamp-2 text-[14px] font-light leading-relaxed text-muted wrap-anywhere">{product.summary}</span>}
         <span className="mt-1 text-[11px] font-semibold uppercase text-accent-text group-hover:text-accent-ghost" style={{ letterSpacing: 2 }}>
-          {product.price && product.price !== 'Liên hệ' ? product.price : 'Xem sản phẩm'}
+          {priceText(product.price) ?? 'Xem sản phẩm'}
         </span>
       </span>
     </Link>

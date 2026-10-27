@@ -1,12 +1,26 @@
-import type { GlobalConfig } from 'payload'
+import type { Field, GlobalConfig } from 'payload'
 
 import { anyone, isAdminOrEditor } from '@/access'
+import { limit, MAX } from '@/fields/limits'
+import { publishedOnly, validatePublishedRelation } from '@/fields/publishedOnly'
 import { revalidateAll } from '@/hooks/revalidate'
+import { rejectStaleSave } from '@/hooks/staleSave'
+
+/**
+ * "Vùng ảnh muốn giữ" của ô ảnh cùng hàng: kéo khung trong admin (ImageFrameField), lưu cùng trang chủ khi bấm Lưu,
+ * web phóng ảnh theo vùng đó (FramedImage, src/lib/frame.ts). `aspect` là tỉ lệ khung trên máy tính.
+ */
+const imageFrame = (aspect: number): Field => ({
+  name: 'imageFrame',
+  type: 'json',
+  label: 'Vùng ảnh muốn giữ',
+  admin: { components: { Field: { path: '@/components/admin/ImageFrameField#ImageFrameField', clientProps: { aspect, mode: 'focal' } } } },
+})
 
 export const Home: GlobalConfig = {
   slug: 'home',
   label: 'Trang chủ',
-  admin: { components: { elements: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } }, hideAPIURL: true, group: 'Nội dung' },
+  admin: { components: { elements: { beforeDocumentControls: ['@/components/admin/StaleDocWatcher#StaleDocWatcher', '@/components/admin/CancelButton#CancelButton'] } }, hideAPIURL: true, group: 'Nội dung' },
   access: { read: anyone, update: isAdminOrEditor },
   fields: [
     {
@@ -29,12 +43,12 @@ export const Home: GlobalConfig = {
                   type: 'ui',
                   admin: { components: { Field: { path: '@/components/admin/ImageFrameField#ImageFrameField', clientProps: { aspect: 2, mode: 'hero' } } } },
                 },
-                { name: 'title', type: 'text', label: 'Tiêu đề', required: true },
+                limit({ name: 'title', type: 'text', label: 'Tiêu đề', required: true }, MAX.heading),
                 { name: 'description', type: 'textarea', label: 'Mô tả' },
                 {
                   type: 'row',
                   fields: [
-                    { name: 'buttonLabel', type: 'text', label: 'Chữ trên nút', defaultValue: 'Khám phá ngay' },
+                    limit({ name: 'buttonLabel', type: 'text', label: 'Chữ trên nút', defaultValue: 'Khám phá ngay' }, MAX.short),
                     { name: 'buttonHref', type: 'text', label: 'Nút dẫn tới', defaultValue: '/san-pham' },
                   ],
                 },
@@ -54,13 +68,9 @@ export const Home: GlobalConfig = {
               maxRows: 2,
               fields: [
                 { name: 'image', type: 'upload', relationTo: 'media', label: 'Ảnh', required: true },
-                {
-                  name: 'imageFrame',
-                  type: 'ui',
-                  admin: { components: { Field: { path: '@/components/admin/ImageFrameField#ImageFrameField', clientProps: { aspect: 1, mode: 'focal' } } } },
-                },
-                { name: 'tag', type: 'text', label: 'Nhãn nhỏ', admin: { description: 'Ví dụ: INOX, THÉP' } },
-                { name: 'title', type: 'text', label: 'Tiêu đề', required: true },
+                imageFrame(1),
+                limit({ name: 'tag', type: 'text', label: 'Nhãn nhỏ', admin: { description: 'Ví dụ: INOX, THÉP' } }, MAX.short),
+                limit({ name: 'title', type: 'text', label: 'Tiêu đề', required: true }, MAX.tile),
                 { name: 'description', type: 'textarea', label: 'Mô tả' },
                 { name: 'href', type: 'text', label: 'Dẫn tới', required: true },
               ],
@@ -75,9 +85,9 @@ export const Home: GlobalConfig = {
               type: 'group',
               label: 'Khối giới thiệu',
               fields: [
-                { name: 'slogan', type: 'text', label: 'Câu khẩu hiệu' },
+                limit({ name: 'slogan', type: 'text', label: 'Câu khẩu hiệu' }, MAX.line),
                 { name: 'foundedYear', type: 'number', label: 'Năm thành lập' },
-                { name: 'heading', type: 'text', label: 'Tiêu đề', defaultValue: 'Giới thiệu' },
+                limit({ name: 'heading', type: 'text', label: 'Tiêu đề', defaultValue: 'Giới thiệu' }, MAX.heading),
                 {
                   name: 'paragraphs',
                   type: 'array',
@@ -89,21 +99,17 @@ export const Home: GlobalConfig = {
                 {
                   type: 'row',
                   fields: [
-                    { name: 'buttonLabel', type: 'text', label: 'Chữ trên nút', defaultValue: 'Về chúng tôi' },
+                    limit({ name: 'buttonLabel', type: 'text', label: 'Chữ trên nút', defaultValue: 'Về chúng tôi' }, MAX.short),
                     { name: 'buttonHref', type: 'text', label: 'Nút dẫn tới', defaultValue: '/gioi-thieu' },
                   ],
                 },
                 { name: 'image', type: 'upload', relationTo: 'media', label: 'Ảnh' },
-                {
-                  name: 'imageFrame',
-                  type: 'ui',
-                  admin: { components: { Field: { path: '@/components/admin/ImageFrameField#ImageFrameField', clientProps: { aspect: 1.4, mode: 'focal' } } } },
-                },
+                imageFrame(1.4),
                 {
                   type: 'row',
                   fields: [
-                    { name: 'badgeTitle', type: 'text', label: 'Ô nổi bật: tiêu đề', defaultValue: 'Cắt, chấn, hàn, sơn' },
-                    { name: 'badgeSub', type: 'text', label: 'Ô nổi bật: dòng phụ', defaultValue: 'Làm trọn trong một xưởng' },
+                    limit({ name: 'badgeTitle', type: 'text', label: 'Ô nổi bật: tiêu đề', defaultValue: 'Cắt, chấn, hàn, sơn' }, 40),
+                    limit({ name: 'badgeSub', type: 'text', label: 'Ô nổi bật: dòng phụ', defaultValue: 'Làm trọn trong một xưởng' }, 60),
                   ],
                 },
               ],
@@ -113,7 +119,7 @@ export const Home: GlobalConfig = {
         {
           label: 'Giải pháp',
           fields: [
-            { name: 'solutionsHeading', type: 'text', label: 'Tiêu đề', defaultValue: 'Giải pháp' },
+            limit({ name: 'solutionsHeading', type: 'text', label: 'Tiêu đề', defaultValue: 'Giải pháp' }, MAX.heading),
             { name: 'solutionsIntro', type: 'textarea', label: 'Mô tả' },
             {
               name: 'solutions',
@@ -123,13 +129,9 @@ export const Home: GlobalConfig = {
               maxRows: 2,
               fields: [
                 { name: 'image', type: 'upload', relationTo: 'media', label: 'Ảnh', required: true },
-                {
-                  name: 'imageFrame',
-                  type: 'ui',
-                  admin: { components: { Field: { path: '@/components/admin/ImageFrameField#ImageFrameField', clientProps: { aspect: 1.3333333333333333, mode: 'focal' } } } },
-                },
-                { name: 'title', type: 'text', label: 'Tiêu đề', required: true },
-                { name: 'subtitle', type: 'text', label: 'Mô tả ngắn' },
+                imageFrame(4 / 3),
+                limit({ name: 'title', type: 'text', label: 'Tiêu đề', required: true }, MAX.tile),
+                limit({ name: 'subtitle', type: 'text', label: 'Mô tả ngắn' }, MAX.line),
                 { name: 'href', type: 'text', label: 'Dẫn tới', required: true },
               ],
             },
@@ -138,7 +140,7 @@ export const Home: GlobalConfig = {
         {
           label: 'Ứng dụng',
           fields: [
-            { name: 'applicationsHeading', type: 'text', label: 'Tiêu đề', defaultValue: 'Khám phá ứng dụng cho công trình' },
+            limit({ name: 'applicationsHeading', type: 'text', label: 'Tiêu đề', defaultValue: 'Khám phá ứng dụng cho công trình' }, MAX.heading),
             { name: 'applicationsIntro', type: 'textarea', label: 'Mô tả', defaultValue: 'Chọn loại công trình để xem các sản phẩm phù hợp.' },
             {
               name: 'applications',
@@ -150,17 +152,13 @@ export const Home: GlobalConfig = {
                 {
                   type: 'row',
                   fields: [
-                    { name: 'tabLabel', type: 'text', label: 'Tên tab', required: true },
-                    { name: 'title', type: 'text', label: 'Tiêu đề', required: true },
+                    limit({ name: 'tabLabel', type: 'text', label: 'Tên tab', required: true }, MAX.short),
+                    limit({ name: 'title', type: 'text', label: 'Tiêu đề', required: true }, MAX.heading),
                   ],
                 },
                 { name: 'description', type: 'textarea', label: 'Mô tả' },
                 { name: 'image', type: 'upload', relationTo: 'media', label: 'Ảnh', required: true },
-                {
-                  name: 'imageFrame',
-                  type: 'ui',
-                  admin: { components: { Field: { path: '@/components/admin/ImageFrameField#ImageFrameField', clientProps: { aspect: 1.6, mode: 'focal' } } } },
-                },
+                imageFrame(1.6),
                 {
                   name: 'products',
                   type: 'relationship',
@@ -168,6 +166,9 @@ export const Home: GlobalConfig = {
                   hasMany: true,
                   maxRows: 4,
                   label: '4 sản phẩm tiêu biểu',
+                  // Bản nháp không chọn được (src/fields/publishedOnly.ts)
+                  filterOptions: publishedOnly,
+                  validate: validatePublishedRelation('products', 'name', { excludeSelf: false }),
                 },
                 {
                   name: 'hotspotPicker',
@@ -188,7 +189,7 @@ export const Home: GlobalConfig = {
                       fields: [
                         { name: 'x', type: 'number', label: '% trái', min: 0, max: 100, required: true, admin: { width: '25%' } },
                         { name: 'y', type: 'number', label: '% trên', min: 0, max: 100, required: true, admin: { width: '25%' } },
-                        { name: 'label', type: 'text', label: 'Nhãn', required: true, admin: { width: '50%' } },
+                        limit({ name: 'label', type: 'text', label: 'Nhãn', required: true, admin: { width: '50%' } }, 40),
                       ],
                     },
                   ],
@@ -200,7 +201,7 @@ export const Home: GlobalConfig = {
         {
           label: 'Danh mục và tin',
           fields: [
-            { name: 'categoriesHeading', type: 'text', label: 'Tiêu đề khối danh mục', defaultValue: 'Tìm hiểu sản phẩm theo danh mục' },
+            limit({ name: 'categoriesHeading', type: 'text', label: 'Tiêu đề khối danh mục', defaultValue: 'Tìm hiểu sản phẩm theo danh mục' }, MAX.heading),
             {
               name: 'homeCategories',
               type: 'relationship',
@@ -210,7 +211,7 @@ export const Home: GlobalConfig = {
               label: '6 danh mục hiển thị',
               admin: { description: 'Để trống sẽ lấy các danh mục có bật "Hiện ở trang chủ".' },
             },
-            { name: 'newsHeading', type: 'text', label: 'Tiêu đề khối tin', defaultValue: 'Kiến thức và tin tức' },
+            limit({ name: 'newsHeading', type: 'text', label: 'Tiêu đề khối tin', defaultValue: 'Kiến thức và tin tức' }, MAX.heading),
             { name: 'newsIntro', type: 'textarea', label: 'Mô tả khối tin' },
             { name: 'newsCount', type: 'number', label: 'Số bài hiển thị', defaultValue: 4, min: 1, max: 8 },
           ],
@@ -218,21 +219,21 @@ export const Home: GlobalConfig = {
         {
           label: 'Liên hệ',
           fields: [
-            { name: 'contactHeading', type: 'text', label: 'Tiêu đề', defaultValue: 'Liên hệ với chúng tôi' },
+            limit({ name: 'contactHeading', type: 'text', label: 'Tiêu đề', defaultValue: 'Liên hệ với chúng tôi' }, MAX.heading),
             { name: 'contactIntro', type: 'textarea', label: 'Mô tả' },
-            { name: 'newsletterNote', type: 'text', label: 'Ghi chú ô bản tin', defaultValue: 'Nhận thông tin mẫu hoa văn mới và chương trình ưu đãi.' },
+            limit({ name: 'newsletterNote', type: 'text', label: 'Ghi chú ô bản tin', defaultValue: 'Nhận thông tin mẫu hoa văn mới và chương trình ưu đãi.' }, MAX.line),
           ],
         },
         {
           label: 'SEO',
           fields: [
-            { name: 'metaTitle', type: 'text', label: 'Tiêu đề trang chủ' },
-            { name: 'metaDescription', type: 'textarea', label: 'Mô tả trang chủ' },
+            limit({ name: 'metaTitle', type: 'text', label: 'Tiêu đề trang chủ' }, 70),
+            limit({ name: 'metaDescription', type: 'textarea', label: 'Mô tả trang chủ' }, 160),
             { name: 'metaImage', type: 'upload', relationTo: 'media', label: 'Ảnh chia sẻ' },
           ],
         },
       ],
     },
   ],
-  hooks: { afterChange: [revalidateAll] },
+  hooks: { beforeValidate: [rejectStaleSave], afterChange: [revalidateAll] },
 }

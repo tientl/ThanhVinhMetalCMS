@@ -144,7 +144,7 @@ export interface UserAuthOperations {
   };
 }
 /**
- * Khách gửi từ form trên website. Đổi trạng thái sau khi đã liên hệ.
+ * Khách gửi từ form trên website. Có thể sửa thông tin và đổi trạng thái khi xử lý.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "quote-requests".
@@ -156,6 +156,9 @@ export interface QuoteRequest {
   email?: string | null;
   company?: string | null;
   message?: string | null;
+  /**
+   * Chọn hoặc tải tệp bản vẽ mới để thay tệp đính kèm.
+   */
   attachment?: (number | null) | QuoteFile;
   status?: ('new' | 'callback' | 'contacted' | 'done') | null;
   source?: string | null;
@@ -204,12 +207,10 @@ export interface Product {
   /**
    * Ảnh đầu tiên là ảnh đại diện.
    */
-  images?:
-    | {
-        image: number | Media;
-        id?: string | null;
-      }[]
-    | null;
+  images: {
+    image: number | Media;
+    id?: string | null;
+  }[];
   /**
    * Hiện ở thẻ sản phẩm và đầu trang chi tiết.
    */
@@ -241,17 +242,17 @@ export interface Product {
       }[]
     | null;
   /**
-   * Nhập giá hoặc để "Liên hệ".
+   * Nhập tự do, ví dụ "1.200.000đ", "Từ 350.000đ/m²", "45.000đ/kg". Để trống hoặc "Liên hệ" thì trang chi tiết hiện "Liên hệ", thẻ sản phẩm hiện "Xem sản phẩm".
    */
   price?: string | null;
   category: number | ProductCategory;
   /**
-   * Để trống sẽ tự tạo từ tiêu đề, không dấu, cách nhau bằng dấu gạch ngang.
+   * Để trống sẽ tự tạo từ tên; nếu trùng sẽ thêm -2, -3… Slug tự nhập phải là duy nhất.
    */
   slug?: string | null;
   featured?: boolean | null;
   /**
-   * Chọn gì hiện nấy (tối đa 4). Để trống sẽ tự lấy 4 sản phẩm cùng danh mục.
+   * Chọn gì hiện nấy, tối đa 8 sản phẩm. Để trống sẽ tự lấy 4 sản phẩm cùng danh mục. Sản phẩm bị ẩn sau khi chọn vẫn nằm trong danh sách nhưng không hiện trên web; xuất bản lại thì hiện lại.
    */
   related?: (number | Product)[] | null;
   searchText?: string | null;
@@ -390,7 +391,7 @@ export interface Post {
   publishedAt?: string | null;
   author?: (number | null) | User;
   /**
-   * Chọn gì hiện nấy (tối đa 4). Để trống sẽ tự lấy 4 bài cùng danh mục.
+   * Chọn gì hiện nấy, tối đa 6 bài. Để trống sẽ tự lấy 3 bài cùng danh mục. Bài bị ẩn sau khi chọn vẫn nằm trong danh sách nhưng không hiện trên web; xuất bản lại thì hiện lại.
    */
   related?: (number | Post)[] | null;
   searchText?: string | null;
@@ -429,7 +430,7 @@ export interface User {
   id: number;
   name: string;
   /**
-   * Quản trị: toàn quyền. Nhân viên: thêm, sửa sản phẩm, bài viết, trang tĩnh nhưng chỉ lưu nháp (Quản trị duyệt và xuất bản); tải ảnh; sửa trang chủ; đổi trạng thái yêu cầu báo giá. Nhân viên không xóa gì, không sửa danh mục, menu, thông tin công ty, tài khoản.
+   * Quản trị: toàn quyền. Nhân viên: thêm, sửa, xuất bản sản phẩm, bài viết, trang tĩnh; thêm, sửa danh mục; tải ảnh; sửa trang chủ và yêu cầu báo giá. Nhân viên không xóa gì, không sửa menu, thông tin công ty, tài khoản.
    */
   role: 'admin' | 'editor';
   updatedAt: string;
@@ -911,6 +912,15 @@ export interface Home {
   collections?:
     | {
         image: number | Media;
+        imageFrame?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
         /**
          * Ví dụ: INOX, THÉP
          */
@@ -934,6 +944,15 @@ export interface Home {
     buttonLabel?: string | null;
     buttonHref?: string | null;
     image?: (number | null) | Media;
+    imageFrame?:
+      | {
+          [k: string]: unknown;
+        }
+      | unknown[]
+      | string
+      | number
+      | boolean
+      | null;
     badgeTitle?: string | null;
     badgeSub?: string | null;
   };
@@ -942,6 +961,15 @@ export interface Home {
   solutions?:
     | {
         image: number | Media;
+        imageFrame?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
         title: string;
         subtitle?: string | null;
         href: string;
@@ -956,6 +984,15 @@ export interface Home {
         title: string;
         description?: string | null;
         image: number | Media;
+        imageFrame?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
         products?: (number | Product)[] | null;
         /**
          * Vị trí tính theo % từ mép trái và mép trên (0–100). Đặt bằng chuột trên ảnh phía trên hoặc gõ số ở đây.
@@ -994,6 +1031,7 @@ export interface Home {
  */
 export interface Navigation {
   id: number;
+  revision?: number | null;
   left?:
     | {
         label: string;
@@ -1189,6 +1227,7 @@ export interface HomeSelect<T extends boolean = true> {
     | T
     | {
         image?: T;
+        imageFrame?: T;
         tag?: T;
         title?: T;
         description?: T;
@@ -1210,6 +1249,7 @@ export interface HomeSelect<T extends boolean = true> {
         buttonLabel?: T;
         buttonHref?: T;
         image?: T;
+        imageFrame?: T;
         badgeTitle?: T;
         badgeSub?: T;
       };
@@ -1219,6 +1259,7 @@ export interface HomeSelect<T extends boolean = true> {
     | T
     | {
         image?: T;
+        imageFrame?: T;
         title?: T;
         subtitle?: T;
         href?: T;
@@ -1233,6 +1274,7 @@ export interface HomeSelect<T extends boolean = true> {
         title?: T;
         description?: T;
         image?: T;
+        imageFrame?: T;
         products?: T;
         hotspots?:
           | T
@@ -1264,6 +1306,7 @@ export interface HomeSelect<T extends boolean = true> {
  * via the `definition` "navigation_select".
  */
 export interface NavigationSelect<T extends boolean = true> {
+  revision?: T;
   left?:
     | T
     | {

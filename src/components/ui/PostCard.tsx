@@ -14,7 +14,7 @@ export const PostCard = ({ post, imageHeight = 230 }: { post: Post; imageHeight?
         <Img media={post.cover} size="card" sizes="(min-width: 1024px) 23vw, (min-width: 640px) 45vw, 100vw" />
       </span>
       {category && <span className="label-sm">{category.name}</span>}
-      <span className="font-serif text-[20px] font-medium leading-[1.4]">{post.title}</span>
+      <span className="line-clamp-3 font-serif text-[20px] font-medium leading-[1.4] wrap-anywhere">{post.title}</span>
       <span className="text-xs font-medium text-accent-ghost underline decoration-accent underline-offset-[6px]" style={{ letterSpacing: 1.5 }}>
         {post.publishedAt ? formatDate(post.publishedAt) : 'Đọc thêm'}
       </span>

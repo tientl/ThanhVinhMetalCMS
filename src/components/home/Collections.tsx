@@ -12,6 +12,7 @@ export const Collections = ({ items }: { items: NonNullable<Home['collections']>
           <ImageCard
             href={c.href}
             image={c.image}
+            frame={c.imageFrame}
             tag={c.tag}
             title={c.title}
             subtitle={c.description}

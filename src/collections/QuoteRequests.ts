@@ -1,6 +1,6 @@
 import type { CollectionBeforeChangeHook, CollectionConfig } from 'payload'
 
-import { isAdmin, isAdminField, isAdminOrEditor } from '@/access'
+import { isAdmin, isAdminOrEditor } from '@/access'
 import { blockNoopRestore, VERSIONS_LIST_VIEW } from '@/hooks/versions'
 import { sendQuoteEmail } from '@/lib/email'
 import { notifyLiveChange } from '@/lib/liveEvents'
@@ -34,9 +34,6 @@ const saveBaselineVersion: CollectionBeforeChangeHook = async ({ data, operation
   return data
 }
 
-/** Thông tin khách gửi: Nhân viên chỉ xem, chỉ Quản trị sửa (ví dụ sửa số điện thoại khách ghi nhầm). */
-const customerField = { access: { update: isAdminField } }
-
 /** Ghi lúc khách gửi form (route /api/quote, bỏ qua phân quyền), sau đó không ai sửa. */
 const systemField = { access: { update: () => false } }
 
@@ -54,7 +51,7 @@ export const QuoteRequests: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'phone', 'status', 'createdAt'],
     group: 'Liên hệ',
-    description: 'Khách gửi từ form trên website. Đổi trạng thái sau khi đã liên hệ.',
+    description: 'Khách gửi từ form trên website. Có thể sửa thông tin và đổi trạng thái khi xử lý.',
   },
   access: {
     create: () => false,
@@ -68,25 +65,24 @@ export const QuoteRequests: CollectionConfig = {
     {
       type: 'row',
       fields: [
-        { name: 'name', type: 'text', label: 'Họ tên', required: true, ...customerField },
-        { name: 'phone', type: 'text', label: 'Điện thoại', required: true, ...customerField },
+        { name: 'name', type: 'text', label: 'Họ tên', required: true },
+        { name: 'phone', type: 'text', label: 'Điện thoại', required: true },
       ],
     },
     {
       type: 'row',
       fields: [
-        { name: 'email', type: 'email', label: 'Email', ...customerField },
-        { name: 'company', type: 'text', label: 'Công ty', ...customerField },
+        { name: 'email', type: 'email', label: 'Email' },
+        { name: 'company', type: 'text', label: 'Công ty' },
       ],
     },
-    { name: 'message', type: 'textarea', label: 'Nội dung, quy cách cần gia công', ...customerField },
+    { name: 'message', type: 'textarea', label: 'Nội dung, quy cách cần gia công' },
     {
       name: 'attachment',
       type: 'upload',
       relationTo: 'quote-files',
       label: 'Tệp bản vẽ',
-      ...customerField,
-      admin: { components: { Field: '@/components/admin/QuoteAttachmentField#QuoteAttachmentField' } },
+      admin: { description: 'Chọn hoặc tải tệp bản vẽ mới để thay tệp đính kèm.' },
     },
     {
       name: 'status',

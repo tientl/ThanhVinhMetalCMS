@@ -35,7 +35,8 @@ export const LocalBusinessJsonLd = ({ settings }: { settings: SiteSetting }) => 
 export const ProductJsonLd = ({ product }: { product: Product }) => {
   const base = getServerSideURL()
   const images = (product.images ?? []).map((i) => mediaUrl(i.image, 'card')).filter(Boolean)
-  const category = typeof product.category === 'object' ? product.category.name : undefined
+  // typeof null cũng là 'object': sản phẩm mất danh mục (đã bị xóa) thì category là null
+  const category = product.category && typeof product.category === 'object' ? product.category.name : undefined
   return (
     <JsonLd
       data={{

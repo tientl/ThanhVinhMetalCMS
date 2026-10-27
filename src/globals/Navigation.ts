@@ -1,13 +1,16 @@
 import type { ArrayField, Field, GlobalConfig } from 'payload'
 
 import { anyone, hiddenFromEditors, isAdmin } from '@/access'
+import { limit, MAX } from '@/fields/limits'
+import { revisionField } from '@/fields/revision'
 import { revalidateAll } from '@/hooks/revalidate'
+import { rejectStaleSave } from '@/hooks/staleSave'
 
 const simpleLink = (): Field[] => [
   {
     type: 'row',
     fields: [
-      { name: 'label', type: 'text', label: 'Nhãn', required: true, admin: { width: '50%' } },
+      limit({ name: 'label', type: 'text', label: 'Nhãn', required: true, admin: { width: '50%' } }, MAX.linkLabel),
       { name: 'href', type: 'text', label: 'Đường dẫn', required: true, admin: { width: '50%' } },
     ],
   },
@@ -27,7 +30,7 @@ const megaMenu: Field = {
       labels: { singular: 'Cột', plural: 'Cột' },
       maxRows: 4,
       fields: [
-        { name: 'title', type: 'text', label: 'Tiêu đề cột', required: true },
+        limit({ name: 'title', type: 'text', label: 'Tiêu đề cột', required: true }, 40),
         {
           name: 'links',
           type: 'array',
@@ -45,8 +48,8 @@ const megaMenu: Field = {
       maxRows: 2,
       fields: [
         { name: 'image', type: 'upload', relationTo: 'media', label: 'Ảnh', required: true },
-        { name: 'title', type: 'text', label: 'Tiêu đề', required: true },
-        { name: 'subtitle', type: 'text', label: 'Mô tả ngắn' },
+        limit({ name: 'title', type: 'text', label: 'Tiêu đề', required: true }, MAX.tile),
+        limit({ name: 'subtitle', type: 'text', label: 'Mô tả ngắn' }, MAX.line),
         { name: 'href', type: 'text', label: 'Đường dẫn', required: true },
       ],
     },
@@ -56,8 +59,8 @@ const megaMenu: Field = {
       label: 'Tài liệu tải về',
       labels: { singular: 'Tài liệu', plural: 'Tài liệu' },
       fields: [
-        { name: 'title', type: 'text', label: 'Tên tài liệu', required: true },
-        { name: 'note', type: 'text', label: 'Ghi chú', admin: { description: 'Ví dụ: PDF, 2 MB' } },
+        limit({ name: 'title', type: 'text', label: 'Tên tài liệu', required: true }, 80),
+        limit({ name: 'note', type: 'text', label: 'Ghi chú', admin: { description: 'Ví dụ: PDF, 2 MB' } }, MAX.short),
         { name: 'file', type: 'upload', relationTo: 'media', label: 'Tệp' },
         { name: 'href', type: 'text', label: 'Hoặc đường dẫn', admin: { description: 'Dùng khi chưa có tệp.' } },
       ],
@@ -76,7 +79,7 @@ const menuItems = (name: string, label: string): ArrayField => ({
     {
       type: 'row',
       fields: [
-        { name: 'label', type: 'text', label: 'Nhãn', required: true, admin: { width: '40%' } },
+        limit({ name: 'label', type: 'text', label: 'Nhãn', required: true, admin: { width: '40%' } }, MAX.menuLabel),
         {
           name: 'type',
           type: 'select',
@@ -98,9 +101,10 @@ const menuItems = (name: string, label: string): ArrayField => ({
 export const Navigation: GlobalConfig = {
   slug: 'navigation',
   label: 'Menu và mega menu',
-  admin: { components: { elements: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } }, group: 'Cài đặt', hideAPIURL: true, hidden: hiddenFromEditors },
+  admin: { components: { elements: { beforeDocumentControls: ['@/components/admin/StaleDocWatcher#StaleDocWatcher', '@/components/admin/CancelButton#CancelButton'] } }, group: 'Cài đặt', hideAPIURL: true, hidden: hiddenFromEditors },
   access: { read: anyone, update: isAdmin },
   fields: [
+    revisionField,
     {
       type: 'tabs',
       tabs: [
@@ -135,5 +139,5 @@ export const Navigation: GlobalConfig = {
       ],
     },
   ],
-  hooks: { afterChange: [revalidateAll] },
+  hooks: { beforeValidate: [rejectStaleSave], afterChange: [revalidateAll] },
 }

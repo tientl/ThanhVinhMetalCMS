@@ -7,6 +7,10 @@ export const formatDate = (value: string | null | undefined): string => {
 const VN_OFFSET_MS = 7 * 60 * 60 * 1000
 
 /** Thời điểm 0 giờ hôm nay theo giờ Việt Nam (UTC+7, không đổi giờ theo mùa), không phụ thuộc múi giờ máy chủ. */
+/** Giờ theo múi giờ Việt Nam, ví dụ 14:05:32 */
+export const timeVN = (value: string | Date): string =>
+  new Date(value).toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+
 export const startOfDayVN = (now: Date = new Date()): Date => {
   const local = new Date(now.getTime() + VN_OFFSET_MS)
   local.setUTCHours(0, 0, 0, 0)

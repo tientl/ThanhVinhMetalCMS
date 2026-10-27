@@ -6,10 +6,14 @@ import type {
 
 import { revalidatePath as nextRevalidatePath } from 'next/cache'
 
-/** revalidatePath chỉ chạy trong request của Next; từ script (seed, payload run) nó ném lỗi, bỏ qua là đủ. */
+/**
+ * revalidatePath chỉ chạy trong request của Next; từ script (seed, payload run) nó ném lỗi, bỏ qua là đủ.
+ * Đường dẫn dạng mẫu làm mới mọi trang của route đó; Next bắt buộc kèm type 'page' và mẫu phải theo thư mục route,
+ * kể cả nhóm: `/(frontend)/san-pham/[slug]`.
+ */
 const revalidatePath = (path: string, type?: 'layout' | 'page') => {
   try {
-    nextRevalidatePath(path, type)
+    nextRevalidatePath(path, type ?? (path.includes('[') ? 'page' : undefined))
   } catch {
     /* ngoài Next, không có cache để làm mới */
   }

@@ -26,18 +26,37 @@ describe('isMedia', () => {
 })
 
 describe('mediaUrl', () => {
+  // updatedAt của ảnh mẫu (2026-01-01) viết gọn theo cơ số 36
+  const v = `?v=${Date.parse('2026-01-01T00:00:00.000Z').toString(36)}`
+
   it('đổi đường dẫn API thành đường dẫn tĩnh /media', () => {
-    expect(mediaUrl(media({}))).toBe('/media/anh-goc.jpg')
+    expect(mediaUrl(media({}))).toBe(`/media/anh-goc.jpg${v}`)
+  })
+
+  it('đường dẫn đổi theo lần sửa ảnh (thay tệp, chọn lại vùng) để bộ đệm lấy ảnh mới; không sửa thì giữ nguyên', () => {
+    const before = mediaUrl(media({}), 'card')
+    expect(mediaUrl(media({}), 'card')).toBe(before)
+    expect(mediaUrl(media({ updatedAt: '2026-10-25T17:15:55.472Z' }), 'card')).not.toBe(before)
+  })
+
+  it('thiếu updatedAt thì trả đường dẫn trơn', () => {
+    expect(mediaUrl(media({ updatedAt: undefined as never }))).toBe('/media/anh-goc.jpg')
   })
 
   it('ưu tiên ảnh đúng cỡ được yêu cầu', () => {
     const m = media({ sizes: { card: { url: '/api/media/file/anh-card.webp', width: 800, height: 600 } } })
-    expect(mediaUrl(m, 'card')).toBe('/media/anh-card.webp')
+    expect(mediaUrl(m, 'card')).toBe(`/media/anh-card.webp${v}`)
+  })
+
+  it("'original' luôn là ảnh gốc không cắt, kể cả khi đã có các cỡ cắt sẵn", () => {
+    const m = media({ sizes: { hero: { url: '/api/media/file/anh-2400x1200.webp', width: 2400, height: 1200 } } })
+    expect(mediaUrl(m, 'original')).toBe(`/media/anh-goc.jpg${v}`)
+    expect(mediaDims(m, 'original')).toEqual({ width: 2000, height: 1200 })
   })
 
   it('lùi về ảnh gốc khi chưa có cỡ đó', () => {
     const m = media({ sizes: { card: { url: '/api/media/file/anh-card.webp', width: 800, height: 600 } } })
-    expect(mediaUrl(m, 'hero')).toBe('/media/anh-goc.jpg')
+    expect(mediaUrl(m, 'hero')).toBe(`/media/anh-goc.jpg${v}`)
   })
 
   it('trả chuỗi rỗng khi chưa populate ảnh', () => {

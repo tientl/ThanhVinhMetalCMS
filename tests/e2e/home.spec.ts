@@ -25,6 +25,35 @@ test.describe('Trang chủ', () => {
     await expect(hero.locator('img').first()).toBeVisible()
   })
 
+  test('rê chuột lên nút slide thì slider dừng, bấm vào đúng link của slide đang xem', async ({ page }) => {
+    // Trước đây slide vẫn tự chuyển dưới con trỏ: bấm nút slide cuối lại vào link "/san-pham" của slide 1.
+    // Tắt cuộn mượt: Playwright cuộn tới phần tử trước khi thao tác, trang còn trượt thì nút trôi khỏi con trỏ.
+    await page.addStyleTag({ content: 'html { scroll-behavior: auto !important }' })
+    await expect(page.locator('.intro-splash')).toHaveCount(0)
+    const hero = page.locator('section[aria-label="Bộ sưu tập nổi bật"]')
+    const current = hero.locator('button[aria-current="true"]')
+    const button = hero.locator('a.btn-ghost')
+
+    await hero.getByRole('button', { name: 'Ảnh 2', exact: true }).click()
+    const href = await button.getAttribute('href')
+    const box = (await button.boundingBox())!
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 5 })
+    await page.waitForTimeout(7000) // quá 5,5 giây của một slide
+    await expect(current).toHaveAttribute('aria-label', 'Ảnh 2')
+    await expect(button).toHaveAttribute('href', href!)
+
+    // Rời chuột thì chạy tiếp
+    await page.mouse.move(box.x + box.width / 2, 5)
+    await expect(current).not.toHaveAttribute('aria-label', 'Ảnh 2', { timeout: 8000 })
+
+    await hero.getByRole('button', { name: 'Ảnh 2', exact: true }).click()
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 5 })
+    await page.waitForTimeout(6000)
+    await page.mouse.down()
+    await page.mouse.up()
+    await expect(page).toHaveURL(new RegExp(`${href!.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`))
+  })
+
   test('khối danh mục dẫn sang trang danh mục sản phẩm', async ({ page }) => {
     const categoryLink = page.locator('a[href^="/san-pham/danh-muc/"]').first()
     await expect(categoryLink).toBeVisible()
@@ -58,6 +87,18 @@ test.describe('Trang chủ', () => {
 
   test('trang có nút gọi nhanh tới hotline', async ({ page }) => {
     await expect(page.locator('a[href^="tel:"]').first()).toBeVisible()
+  })
+
+  test('ảnh chia sẻ (og:image) của trang chủ và các trang không có ảnh riêng đều mở được', async ({ page, request }) => {
+    // Trang không có ảnh riêng dùng /og-default.jpg (src/lib/metadata.ts); trước 27/10/2026 file này không có, chia sẻ ra ảnh hỏng
+    for (const path of ['/', '/lien-he', '/san-pham', '/bai-viet']) {
+      await page.goto(path)
+      const og = await page.locator('meta[property="og:image"]').getAttribute('content')
+      expect(og, path).toBeTruthy()
+      const res = await request.get(og!)
+      expect(res.status(), `${path} → ${og}`).toBe(200)
+      expect(res.headers()['content-type'], `${path} → ${og}`).toMatch(/^image\//)
+    }
   })
 
   test('có dữ liệu có cấu trúc JSON-LD cho SEO', async ({ page }) => {

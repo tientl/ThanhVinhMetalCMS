@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test'
+import { expect, test, type Locator, type Page } from '@playwright/test'
 
 import { randomIp } from './rate-limit'
 
@@ -302,6 +302,475 @@ test.describe('Trang quản trị, đã đăng nhập', () => {
     await page.goto('/admin/collections/products')
     await expect(page.locator('body')).toContainText(/Tạo mới|Lưu|Sản phẩm/i)
   })
+})
+
+/** Ô slug hiện cả đường dẫn trên website (SlugField): tiền tố xám không sửa được + slug + nút chép. */
+test.describe('Ô đường dẫn (slug) trong trang sửa', () => {
+  test.use({ permissions: ['clipboard-read', 'clipboard-write'] })
+
+  const readClipboard = (page: Page) => page.evaluate(() => navigator.clipboard.readText())
+
+  /** Mở bản ghi đầu tiên, chờ ô slug có chữ (sau hydrate). */
+  const openFirst = async (page: Page, collection: string, prefixText: string) => {
+    await page.goto(`/admin/collections/${collection}`)
+    await page.locator(`table tbody tr a[href*="/collections/${collection}/"]`).first().click()
+    const input = page.locator('textarea.slug-field__input')
+    await expect(input).toHaveValue(new RegExp(`^${prefixText.replace(/\//g, '\\/')}.+`))
+    const slug = (await input.inputValue()).slice(prefixText.length)
+    return {
+      input,
+      slug,
+      prefix: page.locator('.slug-field__prefix'),
+      value: page.locator('.slug-field__value'),
+      copy: page.locator('.slug-field__copy'),
+    }
+  }
+
+  const selectedText = (input: Locator) =>
+    input.evaluate((el: HTMLTextAreaElement) => el.value.slice(el.selectionStart, el.selectionEnd))
+
+  test('mỗi loại hiện đúng tiền tố, tiền tố màu khác phần slug', async ({ page }) => {
+    const cases = [
+      ['product-categories', '/san-pham/danh-muc/'],
+      ['products', '/san-pham/'],
+      ['posts', '/bai-viet/'],
+      ['post-categories', '/bai-viet/danh-muc/'],
+      ['pages', '/'],
+    ] as const
+    for (const [collection, expected] of cases) {
+      const { prefix, value, slug } = await openFirst(page, collection, expected)
+      await expect(prefix).toHaveText(expected)
+      await expect(value).toHaveText(slug)
+      const [prefixColor, valueColor] = await Promise.all([
+        prefix.evaluate((el) => getComputedStyle(el).color),
+        value.evaluate((el) => getComputedStyle(el).color),
+      ])
+      expect(prefixColor).not.toBe(valueColor)
+    }
+  })
+
+  test('kéo chuột bôi đen được cả đường dẫn; nút chép lấy đường dẫn không kèm tên miền', async ({ page }) => {
+    const { input, prefix, value, copy, slug } = await openFirst(page, 'product-categories', '/san-pham/danh-muc/')
+    const full = `/san-pham/danh-muc/${slug}`
+
+    // Chuột thật bấm trúng textarea phủ trên chữ màu; slug dài có thể xuống dòng nên kéo tới góc dưới phải
+    const from = (await prefix.boundingBox())!
+    const to = (await value.boundingBox())!
+    await page.mouse.move(from.x + 1, from.y + 10)
+    await page.mouse.down()
+    await page.mouse.move(to.x + to.width + 2, to.y + to.height - 4, { steps: 10 })
+    await page.mouse.up()
+    expect(await selectedText(input)).toBe(full)
+    await page.keyboard.press('Control+C')
+    expect(await readClipboard(page)).toBe(full)
+
+    await page.evaluate(() => navigator.clipboard.writeText(''))
+    await copy.click()
+    expect(await readClipboard(page)).toBe(full)
+    await expect(page.getByText(`Đã chép đường dẫn ${full}`)).toBeVisible()
+  })
+
+  test('tiền tố không sửa được: gõ, xóa, dán, cắt chỉ tác động lên phần slug', async ({ page }) => {
+    const prefixText = '/san-pham/danh-muc/'
+    const { input, prefix, copy, slug } = await openFirst(page, 'product-categories', prefixText)
+
+    // Bấm vào tiền tố: con trỏ nhảy về đầu phần slug; Backspace ở đó không xóa được tiền tố
+    const at = (await prefix.boundingBox())!
+    await page.mouse.click(at.x + 8, at.y + 10)
+    await page.keyboard.type('moi-')
+    await page.keyboard.press('Home')
+    await page.keyboard.press('Backspace')
+    await expect(input).toHaveValue(`${prefixText}moi-${slug}`)
+
+    // Gõ ở cuối (slug dài xuống dòng nên dùng Ctrl+End); nút chép chuẩn hóa như khi lưu (bỏ dấu, khoảng trắng thành gạch)
+    await page.keyboard.press('Control+End')
+    await page.keyboard.type(' Thử')
+    await copy.click()
+    expect(await readClipboard(page)).toBe(`${prefixText}moi-${slug}-thu`)
+
+    // Bôi đen tất cả rồi dán cả URL: chỉ phần slug bị thay, tiền tố trong URL được bỏ
+    await page.evaluate(() => navigator.clipboard.writeText('https://thanhvinhmetal.vn/san-pham/danh-muc/dan-thu'))
+    await input.focus()
+    await page.keyboard.press('Control+A')
+    await page.keyboard.press('Control+V')
+    await expect(input).toHaveValue(`${prefixText}dan-thu`)
+
+    // Bôi đen tất cả rồi cắt: chép đủ đường dẫn, chỉ xóa phần slug
+    await page.keyboard.press('Control+A')
+    await page.keyboard.press('Control+X')
+    expect(await readClipboard(page)).toBe(`${prefixText}dan-thu`)
+    await expect(input).toHaveValue(prefixText)
+    await expect(prefix).toHaveText(prefixText)
+  })
+})
+
+/**
+ * Chèn "Mối quan hệ" trong ô soạn thảo: khung chọn liệt kê sản phẩm với ô tên tự làm (DocLinkCell). Trước 26/10/2026 ô tên
+ * luôn là link: bấm tên thì chuyển sang trang sửa sản phẩm, hiện "Thay đổi chưa được lưu", không chèn được.
+ */
+test('chèn "Mối quan hệ": bấm tên sản phẩm trong khung chọn là chèn vào nội dung, không chuyển trang', async ({ page }) => {
+  await page.goto('/admin/collections/posts/create')
+  const editor = page.locator('[data-lexical-editor="true"]').first()
+  await editor.click()
+  // Gõ không dấu: Playwright gõ chữ có dấu thành ký tự tổ hợp, menu / không lọc ra
+  await page.keyboard.type('/quan')
+  await expect(page.getByText('Mối quan hệ', { exact: true }).first()).toBeVisible()
+  await page.keyboard.press('Enter')
+
+  const drawer = page.locator('.list-drawer').first()
+  const pick = drawer.locator('button.doc-link-cell--select').first()
+  await expect(pick).toBeVisible()
+  const name = (await pick.textContent())!.trim()
+  await pick.click()
+
+  await expect(drawer).toBeHidden()
+  await expect(page.getByText('Thay đổi chưa được lưu')).toHaveCount(0)
+  await expect(page).toHaveURL(/\/posts\/create/)
+  await expect(page.locator('.rich-text-lexical').getByText(name).first()).toBeVisible()
+})
+
+/**
+ * Khung chọn "Mối quan hệ" chỉ liệt kê bản đã xuất bản (src/lib/drawerFilter.ts, gắn ở serverFunction của layout admin).
+ * Trước 26/10/2026 bản nháp, bản bị ẩn vẫn chọn được.
+ */
+test('khung chọn "Mối quan hệ" không liệt kê sản phẩm nháp, vẫn có sản phẩm đã xuất bản', async ({ page }) => {
+  const stamp = Date.now()
+  const draftName = `ZzNhapKhongChon ${stamp}`
+  const published = ((await (await page.request.get('/api/products?where[_status][equals]=published&limit=1&depth=0')).json()) as {
+    docs: { name: string; category: number; images: { image: number }[] }[]
+  }).docs[0]!
+  // Gọi API bằng token (cookie đăng nhập không được nhận khi request không kèm Origin)
+  const login = await page.request.post('/api/users/login', {
+    data: { email: process.env.ADMIN_EMAIL || 'admin@thanhvinhmetal.vn', password: process.env.ADMIN_PASSWORD || 'ThanhVinh@2026' },
+  })
+  const headers = { Authorization: `JWT ${((await login.json()) as { token: string }).token}` }
+  const created = await page.request.post('/api/products?draft=true', {
+    headers,
+    data: { name: draftName, category: published.category, images: [{ image: published.images[0]!.image }], _status: 'draft' },
+  })
+  expect(created.ok(), await created.text()).toBe(true)
+  const draftId = ((await created.json()) as { doc: { id: number } }).doc.id
+
+  try {
+    await page.goto('/admin/collections/posts/create')
+    await page.locator('[data-lexical-editor="true"]').first().click()
+    await page.keyboard.type('/quan')
+    await expect(page.getByText('Mối quan hệ', { exact: true }).first()).toBeVisible()
+    await page.keyboard.press('Enter')
+
+    const drawer = page.locator('.list-drawer').first()
+    const search = drawer.locator('.search-filter__input')
+    await search.fill(draftName)
+    await expect(drawer.locator('table tbody tr')).toHaveCount(0)
+    await search.fill(published.name)
+    await expect(drawer.locator('button.doc-link-cell--select', { hasText: published.name }).first()).toBeVisible()
+  } finally {
+    await page.request.delete(`/api/products/${draftId}`, { headers })
+  }
+})
+
+/**
+ * Dán ảnh vào ô soạn thảo: tự tải lên "Ảnh và tệp" rồi chèn, không mở khung "Tệp để tải lên" bắt điền alt, bấm Lưu
+ * (src/components/admin/PasteImageFeature.tsx).
+ */
+test('dán ảnh vào nội dung: tự tải lên và chèn, không bắt bấm Lưu', async ({ page }) => {
+  const fileName = `zz-dan-anh-${Date.now()}.png`
+  // PNG 1×1 hợp lệ (sharp phải đọc được để tạo các cỡ ảnh)
+  const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='
+  await page.goto('/admin/collections/posts/create')
+  await page.locator('#field-title').fill('Bài thử dán ảnh')
+  const editor = page.locator('[data-lexical-editor="true"]').first()
+  await editor.click()
+
+  try {
+    await editor.evaluate(
+      (el, { b64, name }) => {
+        const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))
+        const data = new DataTransfer()
+        data.items.add(new File([bytes], name, { type: 'image/png' }))
+        el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true, cancelable: true }))
+      },
+      { b64: png, name: fileName },
+    )
+
+    await expect(page.getByText('Đã chèn ảnh').first()).toBeVisible()
+    await expect(page.locator('[class*="bulk-upload"]')).toHaveCount(0)
+    // Khối ảnh trong ô soạn thảo hiện tên tệp vừa tải
+    await expect(page.locator('.rich-text-lexical').getByText(fileName.replace(/\.png$/, ''), { exact: false }).first()).toBeVisible()
+
+    // Ảnh đã nằm trong thư viện, alt tự đặt theo tiêu đề bài
+    const media = (await (await page.request.get(`/api/media?where[filename][like]=${fileName.replace(/\.png$/, '')}&limit=1`)).json()) as {
+      docs: { alt: string }[]
+    }
+    expect(media.docs[0]?.alt).toBe('Ảnh trong "Bài thử dán ảnh"')
+  } finally {
+    // Dọn ảnh bằng token (cookie đăng nhập không được nhận khi request không kèm Origin)
+    const login = await page.request.post('/api/users/login', {
+      data: { email: process.env.ADMIN_EMAIL || 'admin@thanhvinhmetal.vn', password: process.env.ADMIN_PASSWORD || 'ThanhVinh@2026' },
+    })
+    const headers = { Authorization: `JWT ${((await login.json()) as { token: string }).token}` }
+    await page.request.delete(`/api/media?where[filename][like]=${fileName.replace(/\.png$/, '')}`, { headers })
+  }
+})
+
+/**
+ * Các test sửa dữ liệu Trang chủ chạy lần lượt: chạy song song (CI 2 worker) thì lần lưu của test này làm form đang mở
+ * của test kia thành bản cũ và bị chặn (src/hooks/staleSave.ts).
+ */
+test.describe('Trang chủ: các test sửa dữ liệu', () => {
+  test.describe.configure({ mode: 'serial' })
+
+  /**
+   * "Vùng ảnh muốn giữ" ở ô Bộ sưu tập (ImageFrameField chế độ focal, FramedImage, src/lib/frame.ts).
+   * Trước đây khung chỉ lưu tâm làm điểm lấy nét của ảnh nên web gần như không đổi; ảnh cao còn có viền đen trong khung
+   * làm % lệch so với ảnh.
+   */
+  test('vùng ảnh muốn giữ ở Bộ sưu tập: kéo khung, bấm Lưu, trang chủ phóng ảnh đúng vùng đó', async ({ page }) => {
+    const login = await page.request.post('/api/users/login', {
+      data: { email: process.env.ADMIN_EMAIL || 'admin@thanhvinhmetal.vn', password: process.env.ADMIN_PASSWORD || 'ThanhVinh@2026' },
+    })
+    const headers = { Authorization: `JWT ${((await login.json()) as { token: string }).token}` }
+    type Tile = { image: number; imageFrame?: { x: number; y: number; width: number; height: number; media: number } | null }
+    const getTiles = async () => ((await (await page.request.get('/api/globals/home?depth=0')).json()) as { collections: Tile[] }).collections
+    const original = await getTiles()
+
+    try {
+      await page.goto('/admin/globals/home')
+      await page.locator('.tabs-field__tab-button', { hasText: /^Bộ sưu tập$/ }).click()
+      const field = page.locator('.slider-crop').first()
+      const img = field.locator('.ReactCrop img')
+      await expect(img).toBeVisible()
+      await expect.poll(() => img.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0)
+
+      // Ảnh trong khung đúng tỉ lệ gốc, không viền đen: % của khung là % của ảnh.
+      // Ô thứ hai là ảnh 4:3 bị chặn cao 520px, trước đây bị kéo đủ ngang rồi contain, có viền đen hai bên.
+      for (const each of await page.locator('.slider-crop .ReactCrop img').all()) {
+        await expect.poll(() => each.evaluate((el: HTMLImageElement) => el.naturalWidth)).toBeGreaterThan(0)
+        const [shown, natural] = await each.evaluate((el: HTMLImageElement) => [el.clientWidth / el.clientHeight, el.naturalWidth / el.naturalHeight])
+        expect(Math.abs(shown / natural - 1)).toBeLessThan(0.02)
+      }
+      // Khung vuông như ô Bộ sưu tập (aspect 1)
+      const corner = field.locator('.ReactCrop__drag-handle.ord-se')
+      await corner.scrollIntoViewIfNeeded()
+      const box = (await field.locator('.ReactCrop__crop-selection').boundingBox())!
+      expect(Math.abs(box.width / box.height - 1)).toBeLessThan(0.03)
+
+      // Bấm vào khung mà không kéo: vùng không đổi, không ghi gì (trang không bị tính là có thay đổi)
+      await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
+      await expect(field.getByText(/^Chưa chọn vùng/)).toBeVisible()
+
+      // Kéo góc dưới phải vào trong cho khung nhỏ lại rồi thả. Phần tử góc rộng 0, ô bấm được là ::after 10×10 nằm đúng góc khung.
+      const [x, y] = [box.x + box.width - 2, box.y + box.height - 2]
+      await page.mouse.move(x, y)
+      await page.mouse.down()
+      await page.mouse.move(x - box.width * 0.4, y - box.height * 0.4, { steps: 8 })
+      await page.mouse.up()
+      await expect(field.getByText('Đã chọn vùng.')).toBeVisible()
+      await page.getByRole('button', { name: 'Lưu', exact: true }).click()
+      await expect(page.getByText(/thành công/i).first()).toBeVisible()
+
+      // Vùng lưu cùng trang chủ, gắn với ảnh của ô, vẫn vuông theo pixel ảnh
+      const tile = (await getTiles())[0]!
+      const frame = tile.imageFrame!
+      expect(frame.media).toBe(tile.image)
+      expect(frame.width).toBeLessThan(80)
+      const media = (await (await page.request.get(`/api/media/${tile.image}?depth=0`)).json()) as { width: number; height: number }
+      expect(Math.abs((frame.width * media.width) / (frame.height * media.height) - 1)).toBeLessThan(0.03)
+
+      // Trang chủ: ảnh phủ kín ô, vùng chọn hiện trọn trong ô và lấp đầy một chiều của ô
+      await page.goto('/')
+      await page.mouse.move(1, 1)
+      const card = page.locator('#bo-suu-tap a').first()
+      await card.scrollIntoViewIfNeeded()
+      await expect(card.locator('img')).toHaveJSProperty('complete', true)
+      const r = await card.evaluate((a) => {
+        const t = a.getBoundingClientRect()
+        const i = a.querySelector('img')!.getBoundingClientRect()
+        return { t: { x: t.x, y: t.y, w: t.width, h: t.height }, i: { x: i.x, y: i.y, w: i.width, h: i.height } }
+      })
+      const region = {
+        x: r.i.x + (frame.x / 100) * r.i.w,
+        y: r.i.y + (frame.y / 100) * r.i.h,
+        w: (frame.width / 100) * r.i.w,
+        h: (frame.height / 100) * r.i.h,
+      }
+      expect(r.i.x).toBeLessThanOrEqual(r.t.x + 1)
+      expect(r.i.y).toBeLessThanOrEqual(r.t.y + 1)
+      expect(r.i.x + r.i.w).toBeGreaterThanOrEqual(r.t.x + r.t.w - 1)
+      expect(r.i.y + r.i.h).toBeGreaterThanOrEqual(r.t.y + r.t.h - 1)
+      expect(region.x).toBeGreaterThanOrEqual(r.t.x - 1)
+      expect(region.y).toBeGreaterThanOrEqual(r.t.y - 1)
+      expect(region.x + region.w).toBeLessThanOrEqual(r.t.x + r.t.w + 1)
+      expect(region.y + region.h).toBeLessThanOrEqual(r.t.y + r.t.h + 1)
+      expect(Math.min(Math.abs(region.w - r.t.w), Math.abs(region.h - r.t.h))).toBeLessThan(2)
+    } finally {
+      await page.request.post('/api/globals/home', { headers, data: { collections: original } })
+    }
+  })
+
+  /**
+   * Mở Trang chủ ở hai tab: tab B sửa Giới thiệu rồi lưu, tab A (mở từ trước) sửa Bộ sưu tập rồi lưu thì trước đây đè
+   * Giới thiệu về bản cũ. Giờ quay lại tab A là có cảnh báo (StaleDocWatcher), lưu thì bị chặn (src/hooks/staleSave.ts).
+   */
+  test('mở Trang chủ ở hai tab: tab cũ được cảnh báo và không lưu đè được thay đổi của tab kia', async ({ page }) => {
+    const login = await page.request.post('/api/users/login', {
+      data: { email: process.env.ADMIN_EMAIL || 'admin@thanhvinhmetal.vn', password: process.env.ADMIN_PASSWORD || 'ThanhVinh@2026' },
+    })
+    const headers = { Authorization: `JWT ${((await login.json()) as { token: string }).token}` }
+    type HomeDoc = { about: { heading: string }; collections: { title: string }[] }
+    const getHome = async () => (await (await page.request.get('/api/globals/home?depth=0')).json()) as HomeDoc
+    const original = await getHome()
+    const tab = (p: Page, name: string) => p.locator('.tabs-field__tab-button', { hasText: new RegExp(`^${name}$`) }).click()
+
+    const other = await page.context().newPage()
+    try {
+      await page.goto('/admin/globals/home')
+      await tab(page, 'Bộ sưu tập')
+      await expect(page.locator('#field-collections__0__title')).toBeVisible()
+
+      // Tab B mở sau, sửa Giới thiệu rồi lưu
+      await other.goto('/admin/globals/home')
+      await tab(other, 'Giới thiệu')
+      await other.locator('#field-about__heading').fill('Giới thiệu sửa ở tab B')
+      await other.getByRole('button', { name: 'Lưu', exact: true }).click()
+      await expect(other.getByText(/thành công/i).first()).toBeVisible()
+
+      // Quay lại tab A: báo ngay là bản đang mở đã cũ
+      await page.bringToFront()
+      await page.evaluate(() => window.dispatchEvent(new Event('focus')))
+      await expect(page.getByText(/Trang này vừa được lưu ở tab hoặc máy khác/)).toBeVisible()
+
+      // Vẫn sửa và bấm Lưu: bị chặn, Giới thiệu của tab B giữ nguyên
+      await page.locator('#field-collections__0__title').fill('Bộ sưu tập sửa ở tab A')
+      await page.getByRole('button', { name: 'Lưu', exact: true }).click()
+      await expect(page.getByText(/Trang chủ đã được lưu ở tab hoặc máy khác lúc/)).toBeVisible()
+      let now = await getHome()
+      expect(now.about.heading).toBe('Giới thiệu sửa ở tab B')
+      expect(now.collections[0]!.title).toBe(original.collections[0]!.title)
+
+      // Tải lại theo nút trên cảnh báo: lấy bản mới, lưu được, không mất phần của tab B
+      page.once('dialog', (d) => d.accept())
+      await page.getByRole('button', { name: 'Tải lại' }).click()
+      await tab(page, 'Bộ sưu tập')
+      await page.locator('#field-collections__0__title').fill('Bộ sưu tập sửa ở tab A')
+      await page.getByRole('button', { name: 'Lưu', exact: true }).click()
+      await expect(page.getByText(/thành công/i).first()).toBeVisible()
+      now = await getHome()
+      expect(now.about.heading).toBe('Giới thiệu sửa ở tab B')
+      expect(now.collections[0]!.title).toBe('Bộ sưu tập sửa ở tab A')
+    } finally {
+      await other.close()
+      const latest = await getHome()
+      await page.request.post('/api/globals/home', {
+        headers,
+        data: {
+          about: { ...latest.about, heading: original.about.heading },
+          collections: latest.collections.map((c, i) => ({ ...c, title: original.collections[i]!.title })),
+        },
+      })
+    }
+  })
+
+  /** Chấm sát mép trái, phải với nhãn dài: nhãn lật vào trong và xuống dòng, không bị khung ảnh cắt (Applications.tsx). */
+  test('điểm chấm sát mép ở tab Ứng dụng: nhãn nằm trọn trong khung ảnh, cả máy tính lẫn điện thoại', async ({ page }) => {
+    const login = await page.request.post('/api/users/login', {
+      data: { email: process.env.ADMIN_EMAIL || 'admin@thanhvinhmetal.vn', password: process.env.ADMIN_PASSWORD || 'ThanhVinh@2026' },
+    })
+    const headers = { Authorization: `JWT ${((await login.json()) as { token: string }).token}` }
+    type App = Record<string, unknown> & { hotspots?: { x: number; y: number; label: string }[] | null }
+    const original = ((await (await page.request.get('/api/globals/home?depth=0')).json()) as { applications: App[] }).applications
+    const label = 'Nhãn dài để thử xuống dòng sát mép ảnh'
+    const spots = [
+      { x: 97, y: 30, label },
+      { x: 3, y: 60, label },
+      { x: 55, y: 85, label: 'Giữa' },
+    ]
+
+    try {
+      const saved = await page.request.post('/api/globals/home', {
+        headers,
+        data: { applications: original.map((a, i) => (i === 0 ? { ...a, hotspots: spots } : a)) },
+      })
+      expect(saved.ok(), await saved.text()).toBe(true)
+
+      for (const size of [
+        { width: 1280, height: 800 },
+        { width: 390, height: 844 },
+      ]) {
+        await page.setViewportSize(size)
+        await page.goto('/')
+        const frame = page.locator('#app-panel > div').first()
+        await frame.scrollIntoViewIfNeeded()
+        await expect(frame.locator('.dot-pulse + span')).toHaveCount(3)
+        // Đo trong một lần để hiệu ứng hiện dần (data-reveal) không làm lệch giữa các phép đo
+        const m = await frame.evaluate((el) => {
+          const box = el.getBoundingClientRect()
+          const labels = [...el.querySelectorAll('.dot-pulse + span')].map((l) => l.getBoundingClientRect())
+          const dot = el.querySelector('.dot-pulse')!.getBoundingClientRect()
+          return { left: box.left, right: box.right, width: box.width, labels: labels.map((r) => [r.left, r.right]), dotX: dot.left + dot.width / 2 }
+        })
+        for (const [l, r] of m.labels) {
+          expect(l, `nhãn lọt mép trái ở ${size.width}px`).toBeGreaterThanOrEqual(m.left - 1)
+          expect(r, `nhãn lọt mép phải ở ${size.width}px`).toBeLessThanOrEqual(m.right + 1)
+        }
+        // Chấm vẫn ở đúng vị trí đã đặt
+        expect(Math.abs(m.dotX - (m.left + m.width * 0.97))).toBeLessThan(2)
+      }
+    } finally {
+      await page.request.post('/api/globals/home', { headers, data: { applications: original } })
+    }
+  })
+})
+
+/**
+ * Menu chỉ gồm mảng: trước đây `updatedAt` không bao giờ đổi (adapter Postgres bỏ qua ghi dòng chính), nay có ô ẩn
+ * `revision` (src/fields/revision.ts). Lưu xong form phải nhận `updatedAt` mới, lưu lần hai trong cùng tab không bị chặn nhầm.
+ */
+test('Menu lưu hai lần liên tiếp trong cùng tab đều được, không bị báo là bản cũ', async ({ page }) => {
+  type Nav = { updatedAt: string; searchSuggestions: { label: string; href: string }[] }
+  const getNav = async () => (await (await page.request.get('/api/globals/navigation?depth=0')).json()) as Nav
+  const original = await getNav()
+  expect(original.searchSuggestions.length).toBeGreaterThan(0)
+  const first = original.searchSuggestions[0]!.label
+
+  try {
+    await page.goto('/admin/globals/navigation')
+    await page.locator('.tabs-field__tab-button', { hasText: /^Tìm kiếm$/ }).click()
+    const label = page.locator('#field-searchSuggestions__0__label')
+    for (const n of [1, 2]) {
+      await label.fill(`${first} ${n}`)
+      await page.getByRole('button', { name: 'Lưu', exact: true }).click()
+      await expect.poll(async () => (await getNav()).searchSuggestions[0]!.label).toBe(`${first} ${n}`)
+    }
+    await expect(page.getByText(/đã được lưu ở tab hoặc máy khác/)).toHaveCount(0)
+    expect(Date.parse((await getNav()).updatedAt)).toBeGreaterThan(Date.parse(original.updatedAt))
+  } finally {
+    const login = await page.request.post('/api/users/login', {
+      data: { email: process.env.ADMIN_EMAIL || 'admin@thanhvinhmetal.vn', password: process.env.ADMIN_PASSWORD || 'ThanhVinh@2026' },
+    })
+    const headers = { Authorization: `JWT ${((await login.json()) as { token: string }).token}` }
+    await page.request.post('/api/globals/navigation', { headers, data: { searchSuggestions: original.searchSuggestions } })
+  }
+})
+
+/** Ô có giới hạn độ dài hiện bộ đếm ký tự dưới ô (CharCountDescription, src/fields/limits.ts). */
+test('ô tên sản phẩm có bộ đếm ký tự, vượt 80 thì báo đỏ, lưu bị chặn', async ({ page }) => {
+  await page.goto('/admin/collections/products/create')
+  const name = page.locator('#field-name')
+  const counter = page.locator('.field-type.text').filter({ has: name }).locator('.char-count__n')
+
+  await name.fill('Vách')
+  await expect(counter).toHaveText('4/80 ký tự')
+  await expect(counter).not.toHaveClass(/char-count__n--over/)
+
+  await name.fill('a'.repeat(81))
+  await expect(counter).toHaveText('81/80 ký tự, dài hơn 1 ký tự')
+  await expect(counter).toHaveClass(/char-count__n--over/)
+
+  // Lưu nháp vẫn kiểm độ dài (hook enforceMaxLength): báo lỗi ở ô tên, không tạo sản phẩm
+  await page.getByRole('button', { name: /lưu bản nháp/i }).click()
+  await expect(page.getByText(/không hợp lệ: Tên sản phẩm/).first()).toBeVisible()
+  await expect(page).toHaveURL(/\/products\/create/)
 })
 
 test.describe('Trang quản trị, chưa đăng nhập', () => {

@@ -29,7 +29,8 @@ export const Lightbox = ({ images, start, label, onClose }: Props) => {
   const touchX = useRef<number | null>(null)
 
   const go = (step: number) => setIndex((i) => (i + step + count) % count)
-  const dims = mediaDims(images[index], 'hero')
+  // Ảnh gốc, không cắt: các cỡ hero, card… đều cắt theo khung (hero cắt 2:1 cho slider từ 13/10)
+  const dims = mediaDims(images[index], 'original')
   const ratio = dims.width / dims.height
 
   useEffect(() => {
@@ -96,7 +97,7 @@ export const Lightbox = ({ images, start, label, onClose }: Props) => {
           <span onClick={stop} className="contents">
             <Img
               media={images[index]}
-              size="hero"
+              size="original"
               fill={false}
               sizes="100vw"
               className="h-auto"

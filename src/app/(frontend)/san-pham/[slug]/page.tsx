@@ -13,16 +13,18 @@ import { RichText } from '@/components/ui/RichText'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { getPayloadClient } from '@/lib/payload'
 import { AS_GUEST, getProduct, getRelatedProducts, getSiteSettings } from '@/lib/data'
+import { hasUsableProductCover } from '@/lib/productImage'
 import { telHref, zaloHref } from '@/lib/format'
 import { buildMetadata } from '@/lib/metadata'
+import { CONTACT_PRICE, priceText } from '@/lib/price'
 import { getServerSideURL } from '@/utilities/getURL'
 
 type Props = { params: Promise<{ slug: string }> }
 
 export async function generateStaticParams() {
   const payload = await getPayloadClient()
-  const res = await payload.find({ collection: 'products', limit: 500, select: { slug: true }, ...AS_GUEST })
-  return res.docs.map((p) => ({ slug: p.slug }))
+  const res = await payload.find({ collection: 'products', limit: 500, depth: 1, ...AS_GUEST })
+  return res.docs.filter(hasUsableProductCover).map((p) => ({ slug: p.slug }))
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -67,9 +69,9 @@ export default async function ProductPage({ params }: Props) {
           <h1 className="h-serif text-[28px] md:text-[36px]">{product.name}</h1>
           {product.summary && <p className="lead m-0">{product.summary}</p>}
 
-          <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 border-t border-line pt-5 text-[15px]">
+          <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 border-t border-line pt-5 text-[15px] wrap-anywhere">
             <dt className="text-muted-2">Giá</dt>
-            <dd className="m-0 font-semibold text-accent-text">{product.price || 'Liên hệ'}</dd>
+            <dd className="m-0 font-semibold text-accent-text">{priceText(product.price) ?? CONTACT_PRICE}</dd>
             {product.material && (
               <>
                 <dt className="text-muted-2">Vật liệu</dt>
@@ -104,7 +106,8 @@ export default async function ProductPage({ params }: Props) {
 
       {product.description && (
         <section className="section-x pb-16 md:pb-24">
-          <div className="max-w-[860px]">
+          {/* Như trang tĩnh: khung rộng hết (lưới video lấp đầy), riêng chữ, bảng tối đa 1100px (.prose-wide) */}
+          <div className="prose-wide">
             <h2 className="h-serif mb-6 text-[24px] md:text-[28px]">Mô tả chi tiết</h2>
             <RichText data={product.description} />
           </div>

@@ -12,7 +12,7 @@ export const Solutions = ({ heading, intro, items }: { heading?: string | null; 
       <div className="grid gap-6 md:grid-cols-2 md:gap-8">
         {items.map((s, i) => (
           <div key={s.id ?? i} className="h-[380px] md:h-[440px] lg:h-[520px] [&>a]:h-full">
-            <ImageCard href={s.href} image={s.image} title={s.title} subtitle={s.subtitle} sizes="(min-width: 768px) 50vw, 100vw" />
+            <ImageCard href={s.href} image={s.image} frame={s.imageFrame} title={s.title} subtitle={s.subtitle} sizes="(min-width: 768px) 50vw, 100vw" />
           </div>
         ))}
       </div>

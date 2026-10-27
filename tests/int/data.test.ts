@@ -21,6 +21,7 @@ import {
   search,
 } from '@/lib/data'
 
+import { RELATED } from '@/lib/related'
 import type { Post, Product } from '@/payload-types'
 import { richText } from '@/seed/lexical'
 
@@ -204,6 +205,29 @@ describe('bài viết', () => {
     expect(related.length).toBeLessThanOrEqual(3)
     expect(related.map((r) => r.id)).not.toContain(post.id)
   })
+
+  it('bài viết liên quan chọn tay: hiện đủ 6; chọn 7 thì admin chặn; để trống tự lấy 3', async () => {
+    // Trước 26/10/2026 chọn 6 chỉ hiện 3 (src/lib/related.ts)
+    const { docs } = await payload.find({ collection: 'posts', where: { _status: { equals: 'published' } }, limit: 8, depth: 0, ...asRoot })
+    const [host, ...others] = docs
+    expect(others.length).toBeGreaterThanOrEqual(RELATED.posts.picked + 1)
+    const ctx = { context: { disableRevalidate: true } }
+    try {
+      const six = others.slice(0, RELATED.posts.picked).map((p) => p.id)
+      await payload.update({ collection: 'posts', id: host!.id, data: { related: six }, ...asRoot, ...ctx })
+      const full = await payload.findByID({ collection: 'posts', id: host!.id, depth: 1, overrideAccess: false })
+      expect((await getRelatedPosts(full)).map((p) => p.id)).toEqual(six)
+
+      const seven = others.slice(0, RELATED.posts.picked + 1).map((p) => p.id)
+      await expect(payload.update({ collection: 'posts', id: host!.id, data: { related: seven }, ...asRoot, ...ctx })).rejects.toThrow()
+
+      await payload.update({ collection: 'posts', id: host!.id, data: { related: [] }, ...asRoot, ...ctx })
+      const empty = await payload.findByID({ collection: 'posts', id: host!.id, depth: 1, overrideAccess: false })
+      expect((await getRelatedPosts(empty)).length).toBeLessThanOrEqual(RELATED.posts.auto)
+    } finally {
+      await payload.update({ collection: 'posts', id: host!.id, data: { related: [] }, ...asRoot, ...ctx })
+    }
+  })
 })
 
 describe('trang tĩnh', () => {
@@ -266,6 +290,7 @@ describe('bản nháp không lên website', () => {
   const ctx = { context: { disableRevalidate: true } }
   let draftProduct: Product
   let publishedProduct: Product
+  let hiddenProduct: Product
   let draftPost: Post
   let authoredPost: Post
 
@@ -293,8 +318,16 @@ describe('bản nháp không lên website', () => {
       ...asRoot,
       ...ctx,
     })
-    // Bản nháp nằm trong "Sản phẩm liên quan" của một sản phẩm đã đăng
-    await payload.update({ collection: 'products', id: publishedProduct.id, data: { related: [draftProduct.id] } as never, ...asRoot, ...ctx })
+    // Sản phẩm được chọn vào "Sản phẩm liên quan" lúc đang xuất bản, sau đó bị "Ẩn tài liệu" (thành bản nháp).
+    // Từ 25/10/2026 không chọn mới được bản nháp (src/fields/publishedOnly.ts), nên đây là đường duy nhất còn lại.
+    hiddenProduct = await payload.create({
+      collection: 'products',
+      data: { name: `${PREFIX} Sản Phẩm Sẽ Ẩn`, category, images, _status: 'published' } as never,
+      ...asRoot,
+      ...ctx,
+    })
+    await payload.update({ collection: 'products', id: publishedProduct.id, data: { related: [hiddenProduct.id] } as never, ...asRoot, ...ctx })
+    await payload.update({ collection: 'products', id: hiddenProduct.id, data: { _status: 'draft' } as never, ...asRoot, ...ctx })
 
     const posts = await getPosts({ limit: 1 })
     const basePost = posts.docs[0]!
@@ -335,11 +368,11 @@ describe('bản nháp không lên website', () => {
     expect((await search(PREFIX)).products.map((p) => p.id)).not.toContain(draftProduct.id)
   })
 
-  it('sản phẩm nháp không hiện trong "Sản phẩm liên quan" của sản phẩm đã đăng', async () => {
+  it('sản phẩm đã chọn rồi bị ẩn không hiện trong "Sản phẩm liên quan" của sản phẩm đã đăng', async () => {
     const product = await getProduct(publishedProduct.slug!)
     expect(product).not.toBeNull()
     const related = await getRelatedProducts(product!, 4)
-    expect(related.map((p) => p.id)).not.toContain(draftProduct.id)
+    expect(related.map((p) => p.id)).not.toContain(hiddenProduct.id)
   })
 
   it('bài viết nháp không có trong danh sách, chi tiết, tìm kiếm', async () => {
@@ -348,14 +381,39 @@ describe('bản nháp không lên website', () => {
     expect((await search(PREFIX)).posts.map((p) => p.id)).not.toContain(draftPost.id)
   })
 
+  it('"Mối quan hệ" trong nội dung: bản đã xuất bản được nạp đủ cho thẻ, bản nháp không lộ ra (chỉ còn id)', async () => {
+    // Ô soạn thảo vẫn cho chọn bản nháp; web đọc dưới quyền khách nên bản nháp không được nạp, thẻ liên kết tự ẩn
+    const content = richText(['Xem thêm:'])
+    const relation = (id: number) => ({ type: 'relationship', version: 2, format: '', relationTo: 'products', value: id })
+    content.root.children.push(relation(publishedProduct.id) as never, relation(draftProduct.id) as never)
+    const page = await payload.create({
+      collection: 'pages',
+      data: { title: `${PREFIX} Trang Quan Hệ`, slug: 'zz-test-quan-he', content, _status: 'published' } as never,
+      ...asRoot,
+      ...ctx,
+    })
+    try {
+      const seen = await getPage('zz-test-quan-he')
+      const nodes = (seen!.content!.root.children as unknown as { type: string; value: unknown }[]).filter((n) => n.type === 'relationship')
+      const [published, draft] = nodes.map((n) => n.value)
+      // Thẻ cần tên, slug, ảnh: bản đã xuất bản được nạp thành object
+      expect(published && typeof published === 'object' ? (published as Product).name : null).toBe(publishedProduct.name)
+      expect(published && typeof published === 'object' ? (published as Product).slug : null).toBe(publishedProduct.slug)
+      // Bản nháp: không phải object (không có tên, nội dung), RichText bỏ qua không vẽ thẻ
+      expect(draft === null || typeof draft !== 'object').toBe(true)
+    } finally {
+      await payload.delete({ collection: 'pages', id: page.id, ...asRoot, ...ctx })
+    }
+  })
+
   it('trang tĩnh nháp không mở được', async () => {
     expect(await getPage('zz-test-nhap-trang')).toBeNull()
   })
 
-  it('bài đã đăng vẫn hiện tên người viết dù tài khoản không công khai với khách', async () => {
+  it('bài đã đăng không lộ tài khoản người viết ra web (tên nội bộ như "Quản trị", email)', async () => {
+    // Từ 26/10/2026 trang bài viết chỉ hiện ngày đăng; khách không đọc được tài khoản nên author chỉ còn là id
     const post = await getPost(authoredPost.slug!)
-    expect(post?.author && typeof post.author === 'object' ? post.author.name : null).toBe('Quản trị')
-    // Chỉ lấy tên, không lộ email tài khoản ra giao diện
-    expect(post?.author && typeof post.author === 'object' ? post.author.email : undefined).toBeUndefined()
+    expect(post).not.toBeNull()
+    expect(post!.author === null || typeof post!.author !== 'object').toBe(true)
   })
 })

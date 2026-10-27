@@ -25,6 +25,7 @@ Chữ trên nền accent dùng #0B0D10 (tối), không dùng trắng. Logo giữ
 - Thân: **Be Vietnam Pro** 300/400/500/600. Đoạn 17px/1.8, thẻ 15px, nhãn 11px letter-spacing 2.5px in hoa.
 - Menu: 12px, 500, letter-spacing 1.6px, in hoa.
 - Google Fonts: Be Vietnam Pro + Playfair Display, subset vietnamese.
+- Chữ khách nhập (tên, tóm tắt, tiêu đề, danh mục, nội dung bài) dùng `overflow-wrap: anywhere` (class `.h-serif`, `.label-sm`, `.lead`, đoạn trong `.prose-lux`, hoặc utility `wrap-anywhere`): chuỗi liền dài hơn khung được ngắt giữa chữ thay vì tràn, chữ thường vẫn xuống dòng ở khoảng trắng. Thêm chỗ hiện chữ khách nhập mới thì nhớ gắn (25/10/2026).
 
 ## Khoảng cách
 Khối: padding 128px dọc, 64px ngang. Lưới sản phẩm 3 cột gap 28. Thẻ bài viết 4 cột gap 28. Nút cao 52px, padding 0 30px, viền 1px accent, chữ 12.5px letter-spacing 2px; hover: nền accent, chữ tối.
@@ -41,11 +42,11 @@ Từ bề ngang 768px trở lên toàn trang phóng 110% (`zoom` trên `<html>`)
 - Màn máy tính mà menu ngang không đủ chỗ (laptop hẹp, hoặc nhiều mục menu) cũng tự thu về hamburger như mobile; với dữ liệu mẫu, menu ngang hiện từ 1366px (11/10/2026).
 
 ## Trang chủ, 8 khối theo thứ tự
-1. **Slider** 860px toàn màn hình, 3 ảnh, tự chuyển 5.5s, crossfade 1.8s, ảnh active scale 1→1.08 trong 9s. Chữ trái dưới: tiêu đề serif, mô tả, nút viền "Khám phá ngay". Phải dưới: số `01 / 03` + 2 nút mũi tên. Đáy: 3 thanh tiến trình, thanh active chạy 5.5s.
+1. **Slider** 860px toàn màn hình, 3 ảnh, tự chuyển 5.5s, crossfade 1.8s, ảnh active scale 1→1.08 trong 9s. Chữ trái dưới: tiêu đề serif, mô tả, nút viền "Khám phá ngay". Phải dưới: số `01 / 03` + 2 nút mũi tên. Đáy: 3 thanh tiến trình, thanh active chạy 5.5s. Thanh chạy hết thì sang slide kế. Rê chuột lên khối chữ hoặc Tab tới nút thì thanh và slide đứng lại (để không bấm nhầm link slide sau). `prefers-reduced-motion` thì không tự chuyển.
 2. **Bộ sưu tập**: 2 ô ảnh 680px sát nhau, tràn ngang, overlay tối từ dưới, viền mảnh accent lùi 18px, nhãn nhỏ + tiêu đề + mô tả + "Khám phá ngay" góc dưới trái. Nội dung từ admin.
 3. **Giới thiệu**: 2 cột; trái: câu khẩu hiệu, "Thành lập năm …", tiêu đề, 2 đoạn, nút; phải: ảnh 560px với ô accent "CẮT, CHẤN, HÀN, SƠN" lệch ra ngoài 40px.
 4. **Giải pháp**: tiêu đề + mô tả; 2 ô ảnh 520px overlay chữ.
-5. **Ứng dụng theo công trình** (nền deep): 4 tab; trái ảnh 540px có tối đa 5 điểm chấm (nới từ 3 ngày 09/10/2026) (vòng accent viền trắng, nhấp nháy, nhãn chip trắng); phải tiêu đề, mô tả, 4 sản phẩm thumbnail 72px, nút "Xem tất cả sản phẩm". Vị trí điểm chấm đặt bằng chuột trong admin.
+5. **Ứng dụng theo công trình** (nền deep): 4 tab; trái ảnh 540px có tối đa 5 điểm chấm (nới từ 3 ngày 09/10/2026) (vòng accent viền trắng, nhấp nháy, nhãn chip trắng); phải tiêu đề, mô tả, 4 sản phẩm thumbnail 72px, nút "Xem tất cả sản phẩm". Vị trí điểm chấm đặt bằng chuột trong admin. Nhãn nằm bên phải chấm; chấm ở nửa phải ảnh thì nhãn lật sang trái. Nhãn dài thì xuống dòng trong phần còn lại của khung, không bị cắt (27/10/2026).
 6. **Sản phẩm theo danh mục**: lưới 3×2, ảnh 4:3, tên in hoa + "XEM SẢN PHẨM".
 7. **Kiến thức và tin tức**: 4 thẻ ảnh 230px, nhãn danh mục accent-text, tiêu đề serif, "Đọc thêm".
 8. **Liên hệ**: trái form (Họ tên*, Email*, Điện thoại*, Công ty, Nội dung, nút "Gửi yêu cầu"); phải panel surface: logo, tên công ty, hotline, email, địa chỉ, MST, mạng xã hội, ô đăng ký bản tin.
@@ -59,8 +60,12 @@ Nút nổi góc phải dưới: về đầu trang (hiện khi cuộn > 500px), Z
 - `prefers-reduced-motion: reduce` tắt toàn bộ.
 
 ## Trang con (Dev B thiết kế tuần 1, cùng ngôn ngữ hình ảnh)
+Bề rộng nội dung (26/10/2026, khách chọn): bài viết, trang tĩnh, "Mô tả chi tiết" sản phẩm đều rộng hết khung (`.prose-wide`), kể cả đoạn chữ; đầu bài viết (breadcrumb, tiêu đề) thẳng mép trái với nội dung. Ảnh trong nội dung hiện cỡ thật, tối đa bằng khung (không ép 100% để ảnh nhỏ không bị phóng mờ). Đánh đổi: màn 1920 khoảng 190 ký tự/dòng (khuyến nghị đọc 50–90); muốn giới hạn lại thì đặt max-width ở `.prose-wide` trong globals.css. Lịch sử: 860px (bài viết), 1100px (chữ ở trang tĩnh) trước 26/10, xem CHANGELOG 25/10 đợt 2 và 26/10 đợt 5–6.
+
 Danh sách sản phẩm theo danh mục, chi tiết sản phẩm, danh sách bài viết, chi tiết bài viết, giới thiệu, liên hệ, chính sách, 404, trang kết quả tìm kiếm, bản điện thoại.
 
-Chi tiết sản phẩm, bộ ảnh (cập nhật 11/10/2026): ảnh chính 4:3 có viền mảnh accent và biểu tượng phóng to ở góc; ảnh thu nhỏ vuông, 4 cột trên điện thoại, 5 cột từ 640px. Bấm ảnh chính hoặc ảnh thu nhỏ mở xem ảnh lớn toàn màn hình (ảnh thu nhỏ mở thẳng ảnh đó, 12/10/2026): nền gần đen, ảnh vừa khung theo tỉ lệ, số `01 / 02` trên trái, nút Đóng trên phải, 2 nút mũi tên hai bên, tên sản phẩm dưới cùng. Chuyển bằng mũi tên, phím ← → hoặc vuốt; đóng bằng Esc, nút Đóng hoặc bấm ra ngoài ảnh.
+Chi tiết sản phẩm, bộ ảnh (cập nhật 11/10/2026): ảnh chính 4:3 có viền mảnh accent và biểu tượng phóng to ở góc; ảnh thu nhỏ vuông, 4 cột trên điện thoại, 5 cột từ 640px. Bấm ảnh chính hoặc ảnh thu nhỏ mở xem ảnh lớn toàn màn hình (ảnh thu nhỏ mở thẳng ảnh đó, 12/10/2026): nền gần đen, ảnh gốc không cắt (cỡ `original`; trước 26/10 dùng nhầm cỡ `hero` đã cắt 2:1) vừa khung theo tỉ lệ, số `01 / 02` trên trái, nút Đóng trên phải, 2 nút mũi tên hai bên, tên sản phẩm dưới cùng. Chuyển bằng mũi tên, phím ← → hoặc vuốt; đóng bằng Esc, nút Đóng hoặc bấm ra ngoài ảnh.
 
 Slider (cập nhật 13/10/2026): ảnh slide được Payload cắt sẵn về 2400×1200 (2:1) quanh điểm lấy nét khi tải lên. Trên desktop khung slider theo tỉ lệ 2:1, tối thiểu 600px, tối đa bằng chiều cao màn hình; điện thoại giữ 640px.
+
+Ô ảnh trang chủ (cập nhật 27/10/2026): Bộ sưu tập, Giới thiệu, Giải pháp, Ứng dụng có "Vùng ảnh muốn giữ" chọn trong admin. Vùng luôn hiện trọn và to nhất có thể trong ô. Ô đổi tỉ lệ theo màn hình (máy tính ngang, điện thoại dọc), nên phần dư lấy thêm ảnh quanh vùng; ảnh luôn phủ kín ô, sát mép ảnh thì dừng ở mép. Khung chọn trong admin theo tỉ lệ ô trên máy tính: Bộ sưu tập 1:1, Giới thiệu 1.4, Giải pháp 4:3, Ứng dụng 1.6. Chưa chọn vùng thì ảnh phủ kín ô, căn theo điểm lấy nét. Khung đặt điểm chấm của tab Ứng dụng có tỉ lệ 1.6 và hiện đúng phần ảnh web hiện, để chấm khớp vị trí.

@@ -26,6 +26,7 @@ Bàn giao sau 20–25 ngày làm việc kể từ khi nhận cọc và đủ n�
 - Thư viện ảnh, video.
 - Bản tiếng Anh (nút VI/EN trên header chỉ là giao diện).
 - Nhập nội dung thật: khách tự nhập, dev chỉ hỗ trợ dữ liệu mẫu.
+- Gửi bản tin qua email cho người đăng ký (tự động khi xuất bản bài, hoặc Quản trị bấm gửi), kèm link hủy đăng ký; hoặc nút xuất danh sách email (CSV) để gửi qua Mailchimp, Brevo. Gói hiện tại chỉ lưu email vào admin (mục 5). Cần khách có email công ty và SMTP trước (ghi nhận 26/10/2026).
 
 ## Khách phải cung cấp
 Ảnh xưởng và sản phẩm (ưu tiên nền tối), danh mục và sản phẩm thật, email công ty, địa chỉ mới, link Fanpage, nội dung giới thiệu và chính sách, tên miền và VPS đứng tên khách.
