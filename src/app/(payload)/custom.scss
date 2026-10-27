@@ -297,7 +297,7 @@ html {
   &__box {
     position: relative;
     max-width: 640px;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 16 / 10; // như khung tab ứng dụng trên máy tính (vùng chọn 1.6), chấm đặt ở đây khớp với web
     border: 1px solid var(--theme-elevation-150);
     border-radius: 6px;
     overflow: hidden;
@@ -322,9 +322,10 @@ html {
     color: var(--theme-elevation-500);
   }
 
+  // Tâm vòng số (26px) nằm đúng điểm đặt, như chấm trên web; chấm ở nửa phải thì nhãn lật sang trái (Applications.tsx)
   &__dot {
     position: absolute;
-    transform: translate(-50%, -50%);
+    transform: translate(-13px, -50%);
     display: flex;
     align-items: center;
     gap: 0.35rem;
@@ -333,6 +334,11 @@ html {
 
     &:active {
       cursor: grabbing;
+    }
+
+    &--flip {
+      flex-direction: row-reverse;
+      transform: translate(calc(-100% + 13px), -50%);
     }
   }
 
@@ -492,6 +498,17 @@ html[data-version-restore='same'] .view-version__version-to-version::after {
     color: var(--tv-accent);
     text-decoration: underline;
   }
+}
+
+/* Trong khung chọn (Mối quan hệ…): ô tên là nút chọn, trông như chữ link */
+.doc-link-cell--select {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
 }
 
 /* ---------- Trạng thái yêu cầu báo giá: màu đặc trưng (src/lib/quoteStatus.ts) ---------- */
@@ -897,31 +914,38 @@ html[data-theme='dark'] {
     }
   }
 
+  // Ảnh co theo đúng tỉ lệ, khung ReactCrop ôm sát ảnh. Không kéo ảnh đủ bề ngang rồi object-fit: contain:
+  // ảnh cao sẽ có viền đen hai bên mà react-image-crop vẫn tính % theo cả viền, vùng chọn lệch so với ảnh.
   &__editor {
+    display: flex;
+    justify-content: center;
     max-width: 720px;
     background: var(--theme-elevation-100);
 
-    .ReactCrop {
-      display: block;
-    }
-
     img {
       display: block;
-      width: 100%;
+      width: auto;
       height: auto;
+      max-width: 100%;
       max-height: 520px;
-      object-fit: contain;
     }
   }
 
   &__actions {
     display: flex;
-    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
     margin-top: 0.75rem;
 
     .btn {
       margin: 0;
     }
+  }
+
+  &__status {
+    font-size: 0.85rem;
+    color: var(--theme-elevation-600);
   }
 
   &__preview {
@@ -952,4 +976,142 @@ html[data-theme='dark'] {
 /* Nút "Kích cỡ xem trước" ở trang ảnh: liệt kê các cỡ ảnh Payload tự tạo, chỉ gây rối cho nhân viên nên ẩn */
 .file-field__previewSizes {
   display: none;
+}
+
+/* ---------- Ô slug: tiền tố đường dẫn (xám, không sửa) + slug (sửa được) + nút chép (SlugField) ---------- */
+/* Chữ thật nằm trong textarea trong suốt (bôi đen, gõ, chép như ô thường); __mirror nằm dưới, cùng font và lề,
+   chỉ để tô màu. Hai lớp phải giữ y hệt font, cỡ chữ, lề, cách xuống dòng thì con trỏ mới khớp chữ. */
+.slug-field__box {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding-right: 6px;
+  border: 1px solid var(--theme-elevation-150);
+  border-radius: var(--style-radius-s);
+  background: var(--theme-input-bg);
+  box-shadow: 0 2px 2px -1px #0000001a;
+  transition:
+    border-color 0.1s,
+    box-shadow 0.1s;
+
+  &:hover {
+    box-shadow: 0 2px 2px -1px #0003;
+  }
+
+  &:focus-within {
+    border-color: var(--theme-elevation-400);
+  }
+}
+
+.slug-field__control {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.slug-field__mirror,
+.slug-field__input {
+  margin: 0;
+  padding: 9px 0 9px 15px;
+  border: 0;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: normal;
+  text-align: left;
+  white-space: pre-wrap;
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+
+.slug-field__mirror {
+  min-height: 38px;
+  color: var(--theme-elevation-800);
+  pointer-events: none;
+}
+
+.slug-field__prefix {
+  color: var(--theme-elevation-400);
+}
+
+/* Ô trống: gợi ý slug sẽ tự tạo từ tên (chỉ là chữ vẽ, không nằm trong ô nên không bị chép) */
+.slug-field__placeholder {
+  color: var(--theme-elevation-400);
+  font-style: italic;
+}
+
+.slug-field__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  resize: none;
+  overflow: hidden;
+  outline: none;
+  background: transparent;
+  box-shadow: none;
+  color: transparent;
+  caret-color: var(--theme-elevation-800);
+
+  &::selection {
+    color: transparent;
+    background: rgb(51 144 255 / 0.4);
+  }
+}
+
+.slug-field__copy {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-top: 5px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--style-radius-s);
+  background: transparent;
+  color: var(--theme-elevation-500);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: var(--theme-elevation-100);
+    color: var(--theme-elevation-800);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+}
+
+.slug-field.error .slug-field__box {
+  border-color: var(--theme-error-500);
+}
+
+.slug-field.read-only .slug-field__box {
+  background: var(--theme-elevation-100);
+  box-shadow: none;
+
+  .slug-field__value {
+    color: var(--theme-elevation-500);
+  }
+}
+
+/* ---------- Bộ đếm ký tự dưới ô có giới hạn độ dài (CharCountDescription, src/fields/limits.ts) ---------- */
+.char-count__n {
+  color: var(--theme-elevation-500);
+  white-space: nowrap;
+}
+
+.char-count__n--over {
+  color: var(--theme-error-500);
+  font-weight: 600;
+}
+
+/* Vùng mô tả của Payload xếp theo flex, khoảng trắng giữa mô tả và bộ đếm bị nuốt: dùng khoảng cách cột */
+.char-count {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.4em;
 }

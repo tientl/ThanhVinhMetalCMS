@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 
 import { Img } from '@/components/ui/Img'
 import { IconNext, IconPrev } from '@/components/ui/Icons'
@@ -9,31 +9,23 @@ import type { Home } from '@/payload-types'
 
 type Slide = NonNullable<Home['slides']>[number]
 
-const INTERVAL = 5500
-
+/**
+ * Tự chuyển slide khi thanh tiến trình chạy hết (animation `.slide-fill` 5.5s trong globals.css), không dùng setInterval:
+ * - Rê chuột lên khối chữ hoặc Tab tới nút thì thanh đứng lại, slide không đổi. Trước đây slide tự nhảy ngay dưới con trỏ,
+ *   bấm nút slide cuối lại vào link của slide 1.
+ * - prefers-reduced-motion tắt animation nên không tự chuyển, vẫn bấm mũi tên/thanh được.
+ */
 export const HeroSlider = ({ slides }: { slides: Slide[] }) => {
   const [index, setIndex] = useState(0)
   const [tick, setTick] = useState(0)
-  const timer = useRef<ReturnType<typeof setInterval> | null>(null)
+  const [hovered, setHovered] = useState(false)
+  const [focused, setFocused] = useState(false)
+  const paused = hovered || focused
   const count = slides.length
-
-  const restart = useCallback(() => {
-    if (timer.current) clearInterval(timer.current)
-    if (count <= 1) return
-    timer.current = setInterval(() => setIndex((i) => (i + 1) % count), INTERVAL)
-  }, [count])
-
-  useEffect(() => {
-    restart()
-    return () => {
-      if (timer.current) clearInterval(timer.current)
-    }
-  }, [restart])
 
   const go = (i: number) => {
     setIndex((i + count) % count)
     setTick((t) => t + 1)
-    restart()
   }
 
   if (count === 0) return null
@@ -57,7 +49,14 @@ export const HeroSlider = ({ slides }: { slides: Slide[] }) => {
         style={{ background: 'linear-gradient(0deg, rgba(8,10,13,.88) 0%, rgba(8,10,13,.45) 45%, rgba(8,10,13,.05) 75%)' }}
       />
 
-      <div key={`${index}-${tick}`} className="absolute bottom-28 left-5 right-5 flex flex-col gap-5 text-white sm:left-8 md:left-12 md:bottom-24 lg:left-16 lg:w-[780px] lg:right-auto">
+      <div
+        key={`${index}-${tick}`}
+        onPointerEnter={() => setHovered(true)}
+        onPointerLeave={() => setHovered(false)}
+        onFocus={(e) => setFocused(e.target.matches(':focus-visible'))}
+        onBlur={() => setFocused(false)}
+        className="absolute bottom-28 left-5 right-5 flex flex-col gap-5 text-white sm:left-8 md:left-12 md:bottom-24 lg:left-16 lg:w-[780px] lg:right-auto"
+      >
         {index === 0 ? (
           <h1 className="fade-up h-serif text-[34px] text-white sm:text-[44px] lg:text-[58px]" style={{ letterSpacing: 2 }}>
             {slides[index].title}
@@ -92,7 +91,14 @@ export const HeroSlider = ({ slides }: { slides: Slide[] }) => {
             {slides.map((s, i) => (
               <button key={s.id ?? i} type="button" aria-label={`Ảnh ${i + 1}`} aria-current={i === index} onClick={() => go(i)} className="flex h-6 cursor-pointer items-center border-0 bg-transparent p-0">
                 <span className="relative block h-[3px] w-full overflow-hidden bg-white/30">
-                  {i === index && <span key={`${index}-${tick}`} className="slide-fill absolute left-0 top-0 h-full bg-accent" />}
+                  {i === index && (
+                    <span
+                      key={`${index}-${tick}`}
+                      className="slide-fill absolute left-0 top-0 h-full bg-accent"
+                      style={{ animationPlayState: paused ? 'paused' : 'running' }}
+                      onAnimationEnd={() => setIndex((n) => (n + 1) % count)}
+                    />
+                  )}
                 </span>
               </button>
             ))}

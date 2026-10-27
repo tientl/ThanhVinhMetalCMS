@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import React, { useState } from 'react'
 
+import { FramedImage } from '@/components/ui/FramedImage'
 import { Img } from '@/components/ui/Img'
 import type { Home, Product } from '@/payload-types'
 
@@ -42,19 +43,29 @@ export const Applications = ({ heading, intro, items }: { heading?: string | nul
       <div id="app-panel" role="tabpanel" aria-labelledby={`app-tab-${active}`} className="grid items-stretch gap-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-14" data-reveal>
         <div key={`img-${active}`} className="relative h-[320px] overflow-hidden bg-surface sm:h-[420px] lg:h-[540px]">
           <div className="tab-fade absolute inset-0">
-            <Img media={tab.image} size="wide" sizes="(min-width: 1024px) 60vw, 100vw" />
+            <FramedImage media={tab.image} frame={tab.imageFrame} sizes="(min-width: 1024px) 60vw, 100vw" />
           </div>
           <div className="tab-fade absolute inset-0">
-            {(tab.hotspots ?? []).map((h, i) => (
-              <span
-                key={h.id ?? i}
-                className="absolute flex items-center gap-2.5"
-                style={{ left: `${h.x}%`, top: `${h.y}%`, transform: 'translate(-11px, -11px)' }}
-              >
-                <span className="dot-pulse h-[22px] w-[22px] shrink-0 rounded-full border-[3px] border-white bg-accent" />
-                <span className="whitespace-nowrap bg-[rgba(15,19,23,0.92)] px-3 py-1.5 text-[13px] font-semibold text-ink">{h.label}</span>
-              </span>
-            ))}
+            {(tab.hotspots ?? []).map((h, i) => {
+              // Chấm ở nửa phải thì nhãn nằm bên trái chấm. Nhãn dài thì xuống dòng trong phần còn lại của khung, không bị cắt.
+              // Tâm chấm (22px) luôn ở đúng (x, y), kể cả khi nhãn hai dòng.
+              const flip = h.x > 50
+              return (
+                <span
+                  key={h.id ?? i}
+                  className={`absolute flex w-max items-center gap-2.5 ${flip ? 'flex-row-reverse' : ''}`}
+                  style={{
+                    left: `${h.x}%`,
+                    top: `${h.y}%`,
+                    transform: flip ? 'translate(calc(-100% + 11px), -50%)' : 'translate(-11px, -50%)',
+                    maxWidth: flip ? `calc(${h.x}% + 3px)` : `calc(${100 - h.x}% + 3px)`,
+                  }}
+                >
+                  <span className="dot-pulse h-[22px] w-[22px] shrink-0 rounded-full border-[3px] border-white bg-accent" />
+                  <span className="min-w-0 bg-[rgba(15,19,23,0.92)] px-3 py-1.5 text-[13px] font-semibold leading-snug text-ink wrap-anywhere">{h.label}</span>
+                </span>
+              )
+            })}
           </div>
         </div>
 
@@ -70,7 +81,7 @@ export const Applications = ({ heading, intro, items }: { heading?: string | nul
                   <span className="relative h-[72px] w-[72px] shrink-0 overflow-hidden bg-surface">
                     <Img media={p.images?.[0]?.image} size="thumb" sizes="72px" />
                   </span>
-                  <span className="text-sm font-medium leading-[1.4]">{p.name}</span>
+                  <span className="min-w-0 text-sm font-medium leading-[1.4] wrap-anywhere">{p.name}</span>
                 </Link>
               ))}
             </div>

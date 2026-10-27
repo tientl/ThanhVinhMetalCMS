@@ -18,7 +18,7 @@ export const QuoteFiles: CollectionConfig = {
   labels: { singular: 'Tệp bản vẽ', plural: 'Tệp bản vẽ' },
   admin: { hideAPIURL: true, group: 'Liên hệ', hidden: true, useAsTitle: 'originalName' },
   access: {
-    create: () => false,
+    create: isAdminOrEditor,
     read: isAdminOrEditor,
     update: () => false,
     delete: isAdmin,
@@ -27,7 +27,7 @@ export const QuoteFiles: CollectionConfig = {
     staticDir: path.resolve(dirname, '../../uploads/quote-files'),
     mimeTypes: QUOTE_FILE_MIME_TYPES,
     disableLocalStorage: false,
-    // Tệp của khách chỉ để xem và tải, không cắt hay chỉnh
+    // Không cắt hay chỉnh nội dung tệp đã tải lên
     crop: false,
     focalPoint: false,
   },
@@ -39,4 +39,14 @@ export const QuoteFiles: CollectionConfig = {
       admin: { readOnly: true, description: 'Tên tệp đúng như khách đặt. Tên lưu trên máy chủ đã bỏ dấu tiếng Việt.' },
     },
   ],
+  hooks: {
+    beforeChange: [
+      ({ data, req, operation }) => {
+        if (operation === 'create' && !data.originalName && req.file?.name) {
+          data.originalName = req.file.name.slice(0, 200)
+        }
+        return data
+      },
+    ],
+  },
 }

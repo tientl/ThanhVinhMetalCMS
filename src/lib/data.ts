@@ -1,9 +1,11 @@
 import { cache } from 'react'
 
-import type { Post, Product, User } from '@/payload-types'
+import type { Post, Product } from '@/payload-types'
 import { normalizeSearch } from '@/utilities/unaccent'
+import { hasUsableProductCover } from './productImage'
 
 import { getPayloadClient } from './payload'
+import { RELATED } from './related'
 import { readStats } from './visitors'
 
 export const PRODUCTS_PER_PAGE = 12
@@ -55,7 +57,7 @@ export const getCategory = cache(async (slug: string) => {
 export const getProducts = cache(
   async ({ category, page = 1, limit = PRODUCTS_PER_PAGE }: { category?: number; page?: number; limit?: number }) => {
     const payload = await getPayloadClient()
-    return payload.find({
+    const result = await payload.find({
       collection: 'products',
       where: category ? { category: { equals: category } } : undefined,
       sort: ['-featured', '-updatedAt'],
@@ -64,6 +66,7 @@ export const getProducts = cache(
       depth: 1,
       ...AS_GUEST,
     })
+    return { ...result, docs: result.docs.filter(hasUsableProductCover) }
   },
 )
 
@@ -77,7 +80,7 @@ export const getFeaturedProducts = cache(async (limit = 6) => {
     depth: 1,
     ...AS_GUEST,
   })
-  return res.docs
+  return res.docs.filter(hasUsableProductCover)
 })
 
 export const getProduct = cache(async (slug: string) => {
@@ -89,30 +92,51 @@ export const getProduct = cache(async (slug: string) => {
     depth: 2,
     ...AS_GUEST,
   })
-  return res.docs[0] ?? null
+  const product = res.docs[0]
+  return product && hasUsableProductCover(product) ? product : null
 })
 
-export const getRelatedProducts = cache(async (product: Product, limit = 4): Promise<Product[]> => {
-  const picked = (product.related ?? []).filter((p): p is Product => typeof p === 'object')
-  // Đã chọn thì hiện đúng những gì đã chọn; để trống mới tự lấy cùng danh mục
-  if (picked.length > 0) return picked.slice(0, limit)
+/**
+ * Id của một ô quan hệ (đã nạp thành object hay chỉ là id), `null` khi trống.
+ * Không viết `typeof x === 'object' ? x.id : x`: `typeof null` cũng là 'object', đọc `.id` của null là trang lỗi 500
+ * (gặp ngày 26/10/2026 khi sản phẩm còn trỏ tới danh mục đã bị xóa).
+ */
+const relationId = (value: unknown): number | string | null => {
+  if (value && typeof value === 'object') return (value as { id: number | string }).id ?? null
+  return typeof value === 'number' || typeof value === 'string' ? value : null
+}
 
+export const getRelatedProducts = cache(async (product: Product, limit: number = RELATED.products.auto, pickedLimit: number = RELATED.products.picked): Promise<Product[]> => {
   const payload = await getPayloadClient()
-  const categoryId = typeof product.category === 'object' ? product.category.id : product.category
+  const pickedIds = (product.related ?? [])
+    .map(relationId)
+    .filter((id): id is number | string => id !== null)
+    .slice(0, pickedLimit)
+  // Quan hệ được nạp ở độ sâu thấp có thể thiếu thông tin ảnh; đọc lại từng sản phẩm dưới quyền khách.
+  if (pickedIds.length > 0) {
+    const picked = await Promise.all(pickedIds.map((id) =>
+      payload.findByID({ collection: 'products', id, depth: 1, ...AS_GUEST }).catch(() => null),
+    ))
+    return picked.filter((p): p is Product => Boolean(p && hasUsableProductCover(p)))
+  }
+
+  // Chưa có danh mục (danh mục cũ đã bị xóa) thì không có "cùng danh mục" để lấy
+  const categoryId = relationId(product.category)
+  if (categoryId === null) return []
   const res = await payload.find({
     collection: 'products',
     where: {
       and: [
         { category: { equals: categoryId } },
-        { id: { not_in: [product.id, ...picked.map((p) => p.id)] } },
+        { id: { not_in: [product.id] } },
       ],
     },
     sort: '-updatedAt',
-    limit: limit - picked.length,
+    limit,
     depth: 1,
     ...AS_GUEST,
   })
-  return [...picked, ...res.docs]
+  return res.docs.filter(hasUsableProductCover)
 })
 
 export const getPostCategories = cache(async () => {
@@ -154,25 +178,19 @@ export const getPost = cache(async (slug: string) => {
     depth: 2,
     ...AS_GUEST,
   })
-  const post = res.docs[0]
-  if (!post) return null
-  // Tài khoản không công khai với khách nên người viết chỉ còn là id: lấy riêng tên để hiện dưới tiêu đề
-  if (post.author && typeof post.author !== 'object') {
-    const author = await payload
-      .findByID({ collection: 'users', id: post.author, depth: 0, select: { name: true } })
-      .catch(() => null)
-    if (author) return { ...post, author: { id: author.id, name: author.name } as User }
-  }
-  return post
+  // Không hiện người viết ngoài web (26/10/2026): tên tài khoản là tên nội bộ ("Nhân viên", "Quản trị"), không phải
+  // tác giả thật. Khách không đọc được tài khoản nên `author` ở đây chỉ là id; không tra thêm tên.
+  return res.docs[0] ?? null
 })
 
-export const getRelatedPosts = cache(async (post: Post, limit = 3): Promise<Post[]> => {
-  const picked = (post.related ?? []).filter((p): p is Post => typeof p === 'object')
+export const getRelatedPosts = cache(async (post: Post, limit: number = RELATED.posts.auto, pickedLimit: number = RELATED.posts.picked): Promise<Post[]> => {
+  const picked = (post.related ?? []).filter((p): p is Post => Boolean(p) && typeof p === 'object')
   // Đã chọn thì hiện đúng những gì đã chọn; để trống mới tự lấy cùng danh mục
-  if (picked.length > 0) return picked.slice(0, limit)
+  if (picked.length > 0) return picked.slice(0, pickedLimit)
 
   const payload = await getPayloadClient()
-  const categoryId = typeof post.category === 'object' ? post.category.id : post.category
+  const categoryId = relationId(post.category)
+  if (categoryId === null) return []
   const res = await payload.find({
     collection: 'posts',
     where: {
@@ -224,7 +242,7 @@ export const search = cache(async (q: string) => {
       ...AS_GUEST,
     }),
   ])
-  return { products: products.docs, posts: posts.docs }
+  return { products: products.docs.filter(hasUsableProductCover), posts: posts.docs }
 })
 
 /** Số liệu bộ đếm truy cập cho footer. */

@@ -34,6 +34,9 @@ const saveBaselineVersion: CollectionBeforeChangeHook = async ({ data, operation
   return data
 }
 
+/** Ghi lúc khách gửi form (route /api/quote, bỏ qua phân quyền), sau đó không ai sửa. */
+const systemField = { access: { update: () => false } }
+
 export const QuoteRequests: CollectionConfig = {
   slug: 'quote-requests',
   labels: { singular: 'Yêu cầu báo giá', plural: 'Yêu cầu báo giá' },
@@ -48,7 +51,7 @@ export const QuoteRequests: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'phone', 'status', 'createdAt'],
     group: 'Liên hệ',
-    description: 'Khách gửi từ form trên website. Đổi trạng thái sau khi đã liên hệ.',
+    description: 'Khách gửi từ form trên website. Có thể sửa thông tin và đổi trạng thái khi xử lý.',
   },
   access: {
     create: () => false,
@@ -79,7 +82,7 @@ export const QuoteRequests: CollectionConfig = {
       type: 'upload',
       relationTo: 'quote-files',
       label: 'Tệp bản vẽ',
-      admin: { components: { Field: '@/components/admin/QuoteAttachmentField#QuoteAttachmentField' } },
+      admin: { description: 'Chọn hoặc tải tệp bản vẽ mới để thay tệp đính kèm.' },
     },
     {
       name: 'status',
@@ -101,6 +104,7 @@ export const QuoteRequests: CollectionConfig = {
       name: 'source',
       type: 'text',
       label: 'Gửi từ trang',
+      ...systemField,
       // Vẫn lưu để thống kê sau này, không hiện trong form
       admin: { position: 'sidebar', readOnly: true, hidden: true },
     },
@@ -108,6 +112,7 @@ export const QuoteRequests: CollectionConfig = {
       name: 'ip',
       type: 'text',
       label: 'IP',
+      ...systemField,
       // Vẫn lưu để tra khi bị spam, không hiện trong form
       admin: { position: 'sidebar', readOnly: true, hidden: true },
     },

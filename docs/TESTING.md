@@ -4,9 +4,9 @@ Bộ test phủ cả backend (Payload, phân quyền, API) và giao diện (tran
 
 | Nhóm | Công cụ | Chạy gì | Số test |
 |---|---|---|---|
-| unit | Vitest | Hàm thuần: bỏ dấu, slug, định dạng, ảnh, màu, rate limit, so sánh phiên bản | 60 |
-| int | Vitest + Payload Local API | Collection, phân quyền, `src/lib/data.ts`, 4 API route, kênh realtime, lịch sử phiên bản, bản nháp không lên web, khôi phục bản nháp | 102 |
-| e2e | Playwright (Chromium) | Trang thật trong trình duyệt, cả desktop và điện thoại | 92 |
+| unit | Vitest | Hàm thuần: bỏ dấu, slug, định dạng, ảnh, màu, rate limit, so sánh phiên bản, vùng ảnh muốn giữ | 77 |
+| int | Vitest + Payload Local API | Collection, phân quyền, `src/lib/data.ts`, 4 API route, kênh realtime, lịch sử phiên bản, bản nháp không lên web, khôi phục bản nháp, quyền Nhân viên, chặn lưu đè bản cũ | 136 |
+| e2e | Playwright (Chromium) | Trang thật trong trình duyệt, cả desktop và điện thoại, quyền Nhân viên, ô slug trong admin, chữ dài không tràn, slider dừng khi rê chuột, vùng ảnh muốn giữ, mở trang ở hai tab, nhãn điểm chấm không bị cắt, ảnh chia sẻ mở được | 120 |
 
 ## Chạy
 
@@ -55,14 +55,16 @@ E2E không đụng `pnpm dev` đang chạy:
 
 Playwright tự chạy `pnpm build && pnpm start`. Ở máy local nếu đã có server ở 3100 thì dùng lại (`reuseExistingServer`), trên CI luôn dựng mới.
 
-### Bốn project
+### Các project
 
 | Project | Chạy file | Ghi chú |
 |---|---|---|
 | `setup` | `auth.setup.ts` | Đăng nhập admin một lần, lưu cookie vào `playwright/.auth/admin.json` |
-| `desktop` | tất cả trừ `responsive`, `admin` | Chrome desktop 1440×900 (bề ngang thiết kế gốc); laptop 1280, 1366 có test riêng trong `theme-nav.spec.ts` |
+| `desktop` | tất cả trừ `responsive`, `admin`, `editor` | Chrome desktop 1440×900 (bề ngang thiết kế gốc); laptop 1280, 1366 có test riêng trong `theme-nav.spec.ts` |
 | `admin` | `admin.spec.ts` | Dùng cookie từ `setup`; nhóm "chưa đăng nhập" tự xóa cookie |
 | `mobile` | `responsive.spec.ts` | Pixel 7 |
+| `setup-editor` | `editor.setup.ts` | Tạo tài khoản Nhân viên `editor.e2e@thanhvinhmetal.vn` qua REST bằng quyền Quản trị (nếu chưa có), đăng nhập, lưu cookie vào `playwright/.auth/editor.json` |
+| `editor` | `editor.spec.ts` | Dùng cookie Nhân viên: có nút Xuất bản, menu không có mục chỉ Quản trị, sửa được thông tin trong chi tiết yêu cầu báo giá |
 
 Đăng nhập một lần thay vì mỗi test một lần, vì nhiều phiên đăng nhập song song cùng tài khoản gây lỗi chập chờn.
 
@@ -77,6 +79,8 @@ Playwright tự chạy `pnpm build && pnpm start`. Ở máy local nếu đã có
 - Field `related` có `filterOptions` dựa trên id của chính document nên không gán được lúc tạo; tạo trước rồi `update` sau, đúng như thao tác trong admin.
 - Payload kiểm tra cấu trúc thật của tệp upload. Dùng `tests/int/fixtures.ts` thay vì chuỗi giả.
 - Trong E2E, `[role="alert"]` còn khớp route announcer của Next; bọc trong `form [role="alert"]`.
+- Test sửa dữ liệu Trang chủ (ghi global `home`) đặt trong nhóm 'Trang chủ: các test sửa dữ liệu' của `admin.spec.ts` (`mode: 'serial'`). Chạy song song thì lần lưu của test này làm form đang mở của test kia thành bản cũ và bị `rejectStaleSave` chặn. Test mới sửa Trang chủ thì thêm vào nhóm đó.
+- Trang người xem có `html { scroll-behavior: smooth }`. Playwright cuộn tới phần tử trước khi `hover`/`click`; trang còn đang trượt thì phần tử trôi khỏi con trỏ, sinh sự kiện rời chuột giả. Test cần giữ chuột yên trên phần tử thì `page.addStyleTag({ content: 'html { scroll-behavior: auto !important }' })` rồi `page.mouse.move` tới tâm `boundingBox()` (xem test slider trong `home.spec.ts`).
 - Menu chính lấy từ global Điều hướng và dùng mega menu (thẻ `button`), không có liên kết `/san-pham` cố định trong header.
 
 ## CI

@@ -1,11 +1,15 @@
 import type { CollectionConfig } from 'payload'
 
 import { anyone, isAdmin, isAdminOrEditor } from '@/access'
+import { limit, MAX } from '@/fields/limits'
 import { slugField } from '@/fields/slug'
 import { linkedNameCell, thumbnailColumn } from '@/fields/thumbnail'
+import { blockDeleteWhileUsed } from '@/hooks/categories'
 import { revalidateCollection, revalidateCollectionDelete } from '@/hooks/revalidate'
 
-const paths = (doc: { slug?: string | null }) => ['/san-pham', `/san-pham/danh-muc/${doc.slug}`]
+// Đường dẫn danh mục trên website: dùng chung cho làm mới cache và ô slug trong admin
+const URL_PREFIX = '/san-pham/danh-muc/'
+const paths = (doc: { slug?: string | null }) => ['/san-pham', `${URL_PREFIX}${doc.slug}`]
 
 export const ProductCategories: CollectionConfig = {
   slug: 'product-categories',
@@ -18,6 +22,7 @@ export const ProductCategories: CollectionConfig = {
     group: 'Sản phẩm',
   },
   access: {
+    // Nhân viên thêm, sửa được (không có nháp, lưu là lên web); xóa thì chỉ Quản trị vì sản phẩm đang gắn danh mục
     create: isAdminOrEditor,
     read: anyone,
     update: isAdminOrEditor,
@@ -25,9 +30,9 @@ export const ProductCategories: CollectionConfig = {
   },
   defaultSort: 'order',
   fields: [
-    { name: 'name', type: 'text', label: 'Tên danh mục', required: true, admin: { components: linkedNameCell } },
+    limit({ name: 'name', type: 'text', label: 'Tên danh mục', required: true, admin: { components: linkedNameCell } }, MAX.categoryName),
     thumbnailColumn('image'),
-    slugField('name'),
+    slugField('name', {}, { urlPrefix: URL_PREFIX }),
     { name: 'description', type: 'textarea', label: 'Mô tả ngắn' },
     { name: 'image', type: 'upload', relationTo: 'media', label: 'Ảnh đại diện' },
     {
@@ -47,6 +52,8 @@ export const ProductCategories: CollectionConfig = {
   ],
   hooks: {
     afterChange: [revalidateCollection(paths)],
+    // Còn sản phẩm đang dùng thì không xóa được (src/hooks/categories.ts)
+    beforeDelete: [blockDeleteWhileUsed('products')],
     afterDelete: [revalidateCollectionDelete(paths)],
   },
 }

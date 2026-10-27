@@ -12,7 +12,7 @@ export const Breadcrumb = ({ items }: { items: Crumb[] }) => (
         </Link>
       </li>
       {items.map((c, i) => (
-        <li key={i} className="flex items-center gap-2">
+        <li key={i} className="flex min-w-0 items-center gap-2 wrap-anywhere">
           <span aria-hidden="true" className="text-line-2">
             /
           </span>

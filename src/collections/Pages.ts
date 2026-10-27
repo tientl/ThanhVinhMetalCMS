@@ -2,11 +2,14 @@ import type { CollectionConfig } from 'payload'
 
 import { isAdmin, isAdminOrEditor, publishedOrLoggedIn } from '@/access'
 import { fullRichText } from '@/fields/richText'
+import { limit, MAX } from '@/fields/limits'
 import { slugField } from '@/fields/slug'
 import { revalidateCollection, revalidateCollectionDelete } from '@/hooks/revalidate'
 import { blockNoopRestore, restoreVersionEndpoint, VERSIONS_LIST_VIEW } from '@/hooks/versions'
 
-const paths = (doc: { slug?: string | null }) => [`/${doc.slug}`]
+// Trang tĩnh nằm ngay sau tên miền: dùng chung cho làm mới cache và ô slug trong admin
+const URL_PREFIX = '/'
+const paths = (doc: { slug?: string | null }) => [`${URL_PREFIX}${doc.slug}`]
 
 export const Pages: CollectionConfig<'pages'> = {
   slug: 'pages',
@@ -29,7 +32,7 @@ export const Pages: CollectionConfig<'pages'> = {
     delete: isAdmin,
   },
   fields: [
-    { name: 'title', type: 'text', label: 'Tiêu đề', required: true },
+    limit({ name: 'title', type: 'text', label: 'Tiêu đề', required: true }, MAX.pageTitle),
     {
       type: 'tabs',
       tabs: [
@@ -37,13 +40,13 @@ export const Pages: CollectionConfig<'pages'> = {
           label: 'Nội dung',
           fields: [
             { name: 'cover', type: 'upload', relationTo: 'media', label: 'Ảnh đầu trang' },
-            { name: 'intro', type: 'textarea', label: 'Đoạn mở đầu' },
+            limit({ name: 'intro', type: 'textarea', label: 'Đoạn mở đầu' }, MAX.summary),
             { name: 'content', type: 'richText', label: 'Nội dung', editor: fullRichText, required: true },
           ],
         },
       ],
     },
-    slugField('title'),
+    slugField('title', {}, { urlPrefix: URL_PREFIX }),
   ],
   // Phiên bản là bản nháp thì khôi phục dưới dạng nháp (xem restoreVersionEndpoint)
   endpoints: [restoreVersionEndpoint],
@@ -53,7 +56,7 @@ export const Pages: CollectionConfig<'pages'> = {
     afterDelete: [revalidateCollectionDelete(paths)],
   },
   versions: {
-    // Không tự động lưu nháp: nhân viên bấm "Lưu nháp" hoặc "Xuất bản" mới ghi,
+    // Không tự động lưu nháp: bấm "Lưu nháp" hoặc "Xuất bản" mới ghi,
     // nhờ vậy nút Lưu và Hủy chỉ bấm được khi có thay đổi, không sinh nháp rỗng.
     drafts: true,
     maxPerDoc: 20,

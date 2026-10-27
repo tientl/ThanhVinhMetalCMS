@@ -119,16 +119,22 @@ img {
 }
 
 /* ---------- Chữ ---------- */
+/* Ba class dưới hay chứa chữ khách nhập (tên, tóm tắt, danh mục). Chuỗi liền rất dài (vd. "testtest…", link)
+   được ngắt giữa chữ khi không vừa dòng, thay vì tràn khung và làm cả trang cuộn ngang. Chữ thường vẫn
+   xuống dòng ở khoảng trắng như cũ. */
 .h-serif {
   @apply font-serif font-medium uppercase leading-[1.12];
   letter-spacing: 1.5px;
+  overflow-wrap: anywhere;
 }
 .label-sm {
   @apply text-[11px] font-semibold uppercase text-accent-text;
   letter-spacing: 2.5px;
+  overflow-wrap: anywhere;
 }
 .lead {
   @apply text-[17px] font-light leading-[1.8] text-muted;
+  overflow-wrap: anywhere;
 }
 .link-ghost {
   @apply text-xs font-medium text-accent-ghost underline underline-offset-[7px] decoration-accent;
@@ -355,8 +361,14 @@ textarea.field {
   @apply font-serif font-medium;
   letter-spacing: 1px;
 }
+/* Ảnh trong nội dung: cỡ thật, tối đa bằng khung. Khung giờ rộng hết trang (26/10/2026), ép 100% thì ảnh nhỏ bị phóng mờ */
 .prose-lux img {
-  @apply w-full;
+  max-width: 100%;
+  height: auto;
+}
+/* Link hay chuỗi liền dài trong nội dung: ngắt giữa chữ thay vì tràn. Không áp cho bảng (cột bảng tính theo chữ dài nhất). */
+.prose-lux > :where(p, ul, ol, h2, h3, h4, blockquote) {
+  overflow-wrap: anywhere;
 }
 
 :root[data-theme='light'] .prose-lux {
@@ -373,10 +385,8 @@ html {
 }
 
 
-/* Trang tĩnh: nội dung rộng hết khung (lưới video lấp đầy), riêng chữ giữ bề rộng dễ đọc */
-.prose-wide .prose-lux > :where(p, h1, h2, h3, h4, ul, ol, blockquote, table, figure:not(.not-prose), a) {
-  max-width: 1100px;
-}
+/* .prose-wide (bài viết, trang tĩnh, mô tả sản phẩm): nội dung rộng hết khung, kể cả chữ. Trước 26/10/2026 chữ giới hạn
+   1100px (trang tĩnh, mô tả) và 860px (bài viết) cho dễ đọc; khách chọn giãn hết. Muốn giới hạn lại thì đặt max-width ở đây. */
 
 /* ---------- Màn chào trang chủ (IntroSplash) ---------- */
 .intro-splash {

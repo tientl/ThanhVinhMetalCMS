@@ -1,12 +1,14 @@
 import type { GlobalConfig } from 'payload'
 
-import { anyone, isAdmin } from '@/access'
+import { anyone, hiddenFromEditors, isAdmin } from '@/access'
+import { limit, MAX } from '@/fields/limits'
 import { revalidateAll } from '@/hooks/revalidate'
+import { rejectStaleSave } from '@/hooks/staleSave'
 
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
   label: 'Thông tin công ty',
-  admin: { components: { elements: { beforeDocumentControls: ['@/components/admin/CancelButton#CancelButton'] } }, hideAPIURL: true, group: 'Cài đặt' },
+  admin: { components: { elements: { beforeDocumentControls: ['@/components/admin/StaleDocWatcher#StaleDocWatcher', '@/components/admin/CancelButton#CancelButton'] } }, hideAPIURL: true, group: 'Cài đặt', hidden: hiddenFromEditors },
   access: { read: anyone, update: isAdmin },
   fields: [
     {
@@ -18,12 +20,12 @@ export const SiteSettings: GlobalConfig = {
             {
               type: 'row',
               fields: [
-                { name: 'brandName', type: 'text', label: 'Tên thương hiệu', required: true, defaultValue: 'Thành Vinh Metal' },
-                { name: 'companyName', type: 'text', label: 'Tên pháp nhân', required: true, defaultValue: 'Công ty TNHH Vinh Metal' },
+                limit({ name: 'brandName', type: 'text', label: 'Tên thương hiệu', required: true, defaultValue: 'Thành Vinh Metal' }, 60),
+                limit({ name: 'companyName', type: 'text', label: 'Tên pháp nhân', required: true, defaultValue: 'Công ty TNHH Vinh Metal' }, MAX.line),
               ],
             },
             { name: 'logo', type: 'upload', relationTo: 'media', label: 'Logo' },
-            { name: 'tagline', type: 'text', label: 'Câu khẩu hiệu', defaultValue: 'Giải pháp kim loại tấm cho mọi công trình' },
+            limit({ name: 'tagline', type: 'text', label: 'Câu khẩu hiệu', defaultValue: 'Giải pháp kim loại tấm cho mọi công trình' }, MAX.line),
             { name: 'taxCode', type: 'text', label: 'Mã số thuế' },
             { name: 'address', type: 'textarea', label: 'Địa chỉ' },
             { name: 'workingHours', type: 'text', label: 'Giờ làm việc', defaultValue: 'Thứ 2 – Thứ 7, 7:30 – 17:00' },
@@ -92,5 +94,5 @@ export const SiteSettings: GlobalConfig = {
       ],
     },
   ],
-  hooks: { afterChange: [revalidateAll] },
+  hooks: { beforeValidate: [rejectStaleSave], afterChange: [revalidateAll] },
 }

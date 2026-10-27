@@ -1,12 +1,12 @@
 'use client'
 
-import { Hamburger, Link, NavGroup, useNav } from '@payloadcms/ui'
+import { Hamburger, Link, NavGroup, useAuth, useNav } from '@payloadcms/ui'
 
 import type { LiveCounts } from '@/lib/liveEvents'
 
 import { LiveCount, LiveListRefresh } from '../LiveCount'
 import { usePathname } from 'next/navigation'
-import React from 'react'
+import React, { useEffect } from 'react'
 
 export type NavGroupData = {
   label: string
@@ -25,6 +25,14 @@ const baseClass = 'nav'
 export const NavClient = ({ groups, brandName, live }: { groups: NavGroupData[]; brandName: string; live: LiveCounts }) => {
   const { hydrated, navOpen, navRef, setNavOpen, shouldAnimate } = useNav()
   const pathname = usePathname()
+  const { user } = useAuth()
+  const role = user && 'role' in user ? String(user.role) : ''
+
+  // Đánh dấu vai trò trên <html> để custom.scss ẩn những nút Nhân viên không dùng được (xuất bản hàng loạt...)
+  useEffect(() => {
+    if (role) document.documentElement.setAttribute('data-role', role)
+    else document.documentElement.removeAttribute('data-role')
+  }, [role])
 
   const classes = [
     baseClass,

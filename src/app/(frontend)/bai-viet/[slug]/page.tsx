@@ -35,26 +35,30 @@ export default async function PostPage({ params }: Props) {
   if (!post) notFound()
   const related = await getRelatedPosts(post)
   const category = typeof post.category === 'object' ? post.category : null
-  const author = typeof post.author === 'object' ? post.author : null
 
   return (
     <article>
       <section className="dark-zone relative overflow-hidden bg-deep pt-[var(--header-h)]">
         <Img media={post.cover} size="wide" className="opacity-35" sizes="100vw" priority />
         <div className="absolute inset-0 bg-gradient-to-t from-deep via-deep/70 to-deep/20" />
-        <div className="section-x relative flex max-w-[1000px] flex-col gap-5 py-16 md:py-24">
-          <Breadcrumb items={[{ label: 'Bài viết', href: '/bai-viet' }, ...(category ? [{ label: category.name, href: `/bai-viet/danh-muc/${category.slug}` }] : []), { label: post.title }]} />
-          {category && <span className="label-sm">{category.name}</span>}
-          <h1 className="font-serif text-[30px] font-medium leading-[1.2] md:text-[44px]">{post.title}</h1>
-          <p className="m-0 text-sm text-muted-2">
-            {post.publishedAt && <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>}
-            {author?.name && <> · {author.name}</>}
-          </p>
+        {/* Đầu bài và nội dung rộng hết khung như trang tĩnh, mô tả sản phẩm (khách chọn ngày 26/10/2026) */}
+        <div className="section-x relative">
+          <div className="flex flex-col gap-5 py-16 md:py-24">
+            <Breadcrumb items={[{ label: 'Bài viết', href: '/bai-viet' }, ...(category ? [{ label: category.name, href: `/bai-viet/danh-muc/${category.slug}` }] : []), { label: post.title }]} />
+            {category && <span className="label-sm">{category.name}</span>}
+            <h1 className="font-serif text-[30px] font-medium leading-[1.2] wrap-anywhere md:text-[44px]">{post.title}</h1>
+            {/* Chỉ ngày đăng, không hiện tên tài khoản người viết (tên nội bộ trong admin) */}
+            {post.publishedAt && (
+              <p className="m-0 text-sm text-muted-2">
+                <time dateTime={post.publishedAt}>{formatDate(post.publishedAt)}</time>
+              </p>
+            )}
+          </div>
         </div>
       </section>
 
       <section className="section-x py-12 md:py-20">
-        <div className="max-w-[860px]">
+        <div className="article-column prose-wide">
           {post.excerpt && <p className="lead mb-8 border-l-[3px] border-accent pl-5 text-ink">{post.excerpt}</p>}
           <RichText data={post.content} />
           <div className="mt-10 border-t border-line pt-6">

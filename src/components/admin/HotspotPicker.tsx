@@ -5,15 +5,29 @@ import type { UIFieldClientProps } from 'payload'
 import { useConfig, useForm, useFormFields } from '@payloadcms/ui'
 import React, { useEffect, useRef, useState } from 'react'
 
+import { FRAME_CONTAINER, frameBoxStyle, parseFrame } from '@/lib/frame'
+
 const MAX_POINTS = 5
 
 type Point = { x: number; y: number; label: string }
+
+type Loaded = {
+  id: number | string
+  url: string | null
+  wideUrl: string | null
+  width?: number | null
+  height?: number | null
+  focalX?: number | null
+  focalY?: number | null
+}
 
 const clamp = (n: number) => Math.round(Math.min(100, Math.max(0, n)) * 10) / 10
 
 /**
  * Đặt "Điểm chấm trên ảnh" bằng chuột: bấm vào ảnh để thêm chấm, kéo chấm để dời, ✕ để xóa.
  * Ghi thẳng vào các ô % trái, % trên của mảng hotspots cùng tab; nhãn gõ ở ô bên dưới.
+ * Chấm tính theo % khung ảnh trên web, nên khung ở đây hiện ảnh như web: tỉ lệ 1.6 (khung máy tính),
+ * phóng theo "Vùng ảnh muốn giữ" nếu đã chọn, không thì phủ kín và căn theo điểm lấy nét.
  */
 export const HotspotPicker = ({ path }: UIFieldClientProps) => {
   const parent = path.slice(0, path.lastIndexOf('.'))
@@ -24,6 +38,7 @@ export const HotspotPicker = ({ path }: UIFieldClientProps) => {
   const { addFieldRow, dispatchFields, removeFieldRow, setModified } = useForm()
 
   const imageId = useFormFields(([fields]) => fields[imagePath]?.value as number | string | undefined)
+  const frameValue = useFormFields(([fields]) => fields[`${parent}.imageFrame`]?.value)
   const points = useFormFields(([fields]) => {
     const rows = fields[hotspotsPath]?.rows ?? []
     return rows.map((_, i) => ({
@@ -34,8 +49,9 @@ export const HotspotPicker = ({ path }: UIFieldClientProps) => {
   })
 
   // Ảnh đã tải, kèm id để đổi ảnh thì không hiện nhầm ảnh cũ
-  const [loaded, setLoaded] = useState<{ id: number | string; url: string | null } | null>(null)
-  const imageUrl = loaded && loaded.id === imageId ? loaded.url : null
+  const [loaded, setLoaded] = useState<Loaded | null>(null)
+  const image = loaded && loaded.id === imageId && loaded.url ? loaded : null
+  const frame = image?.width && image.height ? parseFrame(frameValue, image.id) : null
   const boxRef = useRef<HTMLDivElement>(null)
   const dragging = useRef<number | null>(null)
 
@@ -46,7 +62,15 @@ export const HotspotPicker = ({ path }: UIFieldClientProps) => {
       .then((r) => (r.ok ? r.json() : null))
       .then((doc) => {
         if (cancelled) return
-        setLoaded({ id: imageId, url: doc?.sizes?.card?.url || doc?.url || null })
+        setLoaded({
+          id: imageId,
+          url: doc?.url || null,
+          wideUrl: doc?.sizes?.wide?.url || doc?.url || null,
+          width: doc?.width,
+          height: doc?.height,
+          focalX: doc?.focalX,
+          focalY: doc?.focalY,
+        })
       })
       .catch(() => {})
     return () => {
@@ -108,16 +132,28 @@ export const HotspotPicker = ({ path }: UIFieldClientProps) => {
         Bấm vào ảnh để thêm chấm (tối đa {MAX_POINTS}), kéo chấm để dời, bấm ✕ để xóa. Nhãn gõ ở danh sách bên dưới.
       </p>
       <div className="hotspot-picker__box" ref={boxRef} onClick={onBoxClick} role="presentation">
-        {imageUrl ? (
+        {image && frame ? (
+          <div style={FRAME_CONTAINER}>
+            <div style={frameBoxStyle({ width: image.width!, height: image.height! }, frame)}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={image.url!} alt="" draggable={false} />
+            </div>
+          </div>
+        ) : image ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={imageUrl} alt="" draggable={false} />
+          <img
+            src={image.wideUrl!}
+            alt=""
+            draggable={false}
+            style={{ objectPosition: typeof image.focalX === 'number' && typeof image.focalY === 'number' ? `${image.focalX}% ${image.focalY}%` : undefined }}
+          />
         ) : (
           <div className="hotspot-picker__loading">Đang tải ảnh…</div>
         )}
         {points.map((p, i) => (
           <div
             key={i}
-            className="hotspot-picker__dot"
+            className={`hotspot-picker__dot${p.x > 50 ? ' hotspot-picker__dot--flip' : ''}`}
             style={{ left: `${p.x}%`, top: `${p.y}%` }}
             onPointerDown={onDotDown(i)}
             onPointerMove={onDotMove(i)}

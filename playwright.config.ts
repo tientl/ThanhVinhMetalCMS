@@ -1,7 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 import { config as loadEnv } from 'dotenv'
 
-import { ADMIN_STORAGE_STATE } from './tests/e2e/paths'
+import { ADMIN_STORAGE_STATE, EDITOR_STORAGE_STATE } from './tests/e2e/paths'
 import { testDatabaseUrl } from './tests/setup/database-url'
 
 loadEnv({ path: '.env' })
@@ -13,6 +13,11 @@ loadEnv({ path: '.env' })
  */
 const PORT = Number(process.env.E2E_PORT || 3100)
 const baseURL = `http://localhost:${PORT}`
+const browserExecutable = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
+const editorBrowser = {
+  ...devices['Desktop Chrome'],
+  ...(browserExecutable ? { launchOptions: { executablePath: browserExecutable } } : {}),
+}
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -38,7 +43,7 @@ export default defineConfig({
       name: 'desktop',
       // 1440px là bề ngang của thiết kế gốc. Màn laptop nhỏ hơn có test riêng trong theme-nav.spec.ts.
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
-      testIgnore: [/responsive\.spec\.ts/, /admin\.spec\.ts/],
+      testIgnore: [/responsive\.spec\.ts/, /admin\.spec\.ts/, /editor\.spec\.ts/],
     },
     {
       name: 'admin',
@@ -47,6 +52,14 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], storageState: ADMIN_STORAGE_STATE },
     },
     { name: 'mobile', use: { ...devices['Pixel 7'] }, testMatch: /responsive\.spec\.ts/ },
+    // Vai trò Nhân viên: tự tạo tài khoản (nếu chưa có) rồi đăng nhập một lần
+    { name: 'setup-editor', testMatch: /editor\.setup\.ts/, use: editorBrowser },
+    {
+      name: 'editor',
+      testMatch: /editor\.spec\.ts/,
+      dependencies: ['setup-editor'],
+      use: { ...editorBrowser, storageState: EDITOR_STORAGE_STATE },
+    },
   ],
   webServer: {
     command: 'pnpm build && pnpm start',

@@ -2,6 +2,7 @@ import type { Block } from 'payload'
 
 import {
   BlocksFeature,
+  createServerFeature,
   EXPERIMENTAL_TableFeature,
   FixedToolbarFeature,
   HeadingFeature,
@@ -26,6 +27,14 @@ export const YouTubeBlock: Block = {
   ],
 }
 
+/**
+ * Dán ảnh thì tự tải lên "Ảnh và tệp" rồi chèn luôn, không mở khung bắt bấm Lưu (src/components/admin/PasteImageFeature.tsx).
+ */
+export const PasteImageFeature = createServerFeature({
+  feature: { ClientFeature: '@/components/admin/PasteImageFeature#PasteImageFeatureClient' },
+  key: 'pasteImage',
+})
+
 /** Trình soạn thảo đầy đủ cho bài viết và trang tĩnh. */
 export const fullRichText = lexicalEditor({
   features: ({ defaultFeatures }) => [
@@ -33,6 +42,7 @@ export const fullRichText = lexicalEditor({
     ...defaultFeatures.filter((f) => f.key !== 'relationship' && f.key !== 'upload'),
     RelationshipFeature({ enabledCollections: ['products', 'posts', 'pages', 'product-categories', 'post-categories'] }),
     UploadFeature({ enabledCollections: ['media'] }),
+    PasteImageFeature(),
     HeadingFeature({ enabledHeadingSizes: ['h2', 'h3', 'h4'] }),
     EXPERIMENTAL_TableFeature(),
     BlocksFeature({ blocks: [YouTubeBlock] }),
@@ -46,6 +56,7 @@ export const simpleRichText = lexicalEditor({
   features: ({ defaultFeatures }) => [
     ...defaultFeatures,
     HeadingFeature({ enabledHeadingSizes: ['h3', 'h4'] }),
+    PasteImageFeature(),
     FixedToolbarFeature(),
     InlineToolbarFeature(),
   ],

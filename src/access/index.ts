@@ -29,3 +29,6 @@ export const publishedOrLoggedIn: Access = ({ req: { user } }) => {
   if (user) return true
   return { _status: { equals: 'published' } }
 }
+
+/** Ẩn khỏi menu trái và trang quản trị với Nhân viên (mục chỉ Quản trị sửa được: menu, thông tin công ty, tài khoản...). */
+export const hiddenFromEditors = ({ user }: { user: unknown }): boolean => roleOf(user) !== 'admin'
